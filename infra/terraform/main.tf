@@ -31,15 +31,15 @@ resource "google_cloud_tasks_queue" "whatsapp_queue" {
   location = var.region
 
   rate_limits {
-    max_concurrent_tasks = 10
+    max_concurrent_dispatches = 10
     max_dispatches_per_second = 5
   }
 
   retry_config {
-    max_attempts       = 5
-    min_backoff        = "2s"
-    max_backoff        = "300s"
-    max_double_indefinitely = true
+    max_attempts  = 5
+    min_backoff   = "2s"
+    max_backoff   = "300s"
+    max_doublings = 16
   }
 
   depends_on = [google_project_service.services]

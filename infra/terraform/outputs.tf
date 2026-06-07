@@ -42,10 +42,10 @@ Copia y pega este bloque en front/src/firebase.js:
 const firebaseConfig = {
   apiKey: "${data.google_firebase_web_app_config.frontend.api_key}",
   authDomain: "${data.google_firebase_web_app_config.frontend.auth_domain}",
-  projectId: "${data.google_firebase_web_app_config.frontend.project_id}",
+  projectId: "${var.project_id}",
   storageBucket: "${data.google_firebase_web_app_config.frontend.storage_bucket}",
   messagingSenderId: "${data.google_firebase_web_app_config.frontend.messaging_sender_id}",
-  appId: "${data.google_firebase_web_app_config.frontend.app_id}"
+  appId: "${google_firebase_web_app.frontend_app.app_id}"
 };
 EOT
   description = "Objeto de configuración de Firebase para el Frontend"
