@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Idealmente, se obtiene desde las variables de entorno / secrets de Firebase
+// Se obtiene desde las variables de entorno / secrets de Firebase (.env)
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'fake-api-key-for-local';
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
