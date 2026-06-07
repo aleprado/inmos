@@ -139,11 +139,5 @@ resource "google_firebase_web_app" "frontend_app" {
   depends_on = [google_firebase_project.firebase]
 }
 
-# Sitio de Firebase Hosting
-resource "google_firebase_hosting_site" "default" {
-  provider = google-beta
-  project  = var.project_id
-  site_id  = "${var.project_id}-site"
-  app_id   = google_firebase_web_app.frontend_app.app_id
-}
+
 

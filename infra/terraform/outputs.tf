@@ -24,7 +24,7 @@ output "media_bucket_name" {
 }
 
 output "firebase_hosting_url" {
-  value       = "https://${google_firebase_hosting_site.default.default_url}"
+  value       = "https://${var.project_id}.web.app"
   description = "URL predeterminada del sitio de Firebase Hosting"
 }
 
