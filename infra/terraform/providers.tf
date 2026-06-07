@@ -10,6 +10,10 @@ terraform {
       version = "~> 5.0"
     }
   }
+  backend "gcs" {
+    bucket = "inmos-2c701-tfstate"
+    prefix = "terraform/state"
+  }
 }
 
 provider "google" {

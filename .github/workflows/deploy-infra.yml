@@ -28,6 +28,10 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
+      - name: Ensure Terraform State Bucket Exists
+        run: |
+          gcloud storage buckets describe gs://inmos-2c701-tfstate || gcloud storage buckets create gs://inmos-2c701-tfstate --location=us-central1
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
