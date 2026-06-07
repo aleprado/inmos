@@ -3,6 +3,7 @@
     {
       "source": ".",
       "codebase": "default",
+      "runtime": "nodejs20",
       "ignore": [
         "node_modules",
         ".git",
@@ -14,6 +15,7 @@
     {
       "source": "auth-trigger",
       "codebase": "auth-trigger",
+      "runtime": "nodejs20",
       "ignore": [
         "node_modules",
         ".git",
@@ -25,6 +27,7 @@
     {
       "source": "operator-manager",
       "codebase": "operator-manager",
+      "runtime": "nodejs20",
       "ignore": [
         "node_modules",
         ".git",
@@ -36,6 +39,7 @@
     {
       "source": "qr-generator",
       "codebase": "qr-generator",
+      "runtime": "nodejs20",
       "ignore": [
         "node_modules",
         ".git",
