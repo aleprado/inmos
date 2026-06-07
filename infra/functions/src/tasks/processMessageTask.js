@@ -1,4 +1,4 @@
-const { onDispatch } = require('firebase-functions/v2/tasks');
+const { onTaskDispatched } = require('firebase-functions/v2/tasks');
 const { parsePropertyMessage } = require('../services/aiAgent');
 const { saveProperty, getOperatorTenant } = require('../services/propertyService');
 const { sendWhatsAppMessage } = require('../services/whatsappSender');
@@ -8,7 +8,7 @@ const { getMediaBufferFromId, uploadImageToStorage } = require('../services/what
  * Tarea asíncrona que procesa el texto, consulta a la IA y guarda en DB.
  * Se encola desde el webhook principal para no bloquear la respuesta a Meta.
  */
-exports.processMessage = onDispatch(async (request) => {
+exports.processMessage = onTaskDispatched(async (request) => {
   const { messageText, mediaId, mimeType, senderPhone } = request.data;
 
   try {
