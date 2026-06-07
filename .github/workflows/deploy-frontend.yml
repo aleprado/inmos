@@ -1,0 +1,46 @@
+name: "Deploy Frontend (Firebase Hosting)"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'front/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy_frontend:
+    name: "Build and Deploy Frontend"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./front
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: './front/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting
+        run: firebase deploy --only hosting --non-interactive
