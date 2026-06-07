@@ -14,6 +14,6 @@
     ]
   },
   "firestore": {
-    "rules": "../infra/firestore.rules"
+    "rules": "firestore.rules"
   }
 }

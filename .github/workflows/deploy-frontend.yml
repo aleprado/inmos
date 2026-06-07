@@ -43,6 +43,9 @@ jobs:
       - name: Build Project
         run: npm run build
 
+      - name: Copy Firestore Rules
+        run: cp ../infra/firestore.rules ./firestore.rules
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:

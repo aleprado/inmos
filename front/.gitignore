@@ -33,3 +33,6 @@ Thumbs.db
 .env.production.local
 .env.development
 .env.development.local
+
+# Firebase rules (copied during CI/CD)
+firestore.rules
