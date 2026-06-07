@@ -59,7 +59,22 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
   console.log(`Admin ${context.auth.uid} iniciando registro de operador: ${name} (${operatorEmail}, Tel: ${cleanPhone}) para el tenant: ${tenantId}`);
 
   try {
-    // 4. Crear el usuario en Firebase Auth usando el Admin SDK
+    // 4. Guardar primero el registro en la colección /operadores de Firestore
+    // para que el trigger de Auth onCreate sepa que es un operador y no lo convierta en admin
+    await admin
+      .firestore()
+      .collection("operadores")
+      .doc(cleanPhone)
+      .set({
+        nombre: name,
+        email: operatorEmail,
+        tenant_id: tenantId,
+        uid: "", // Se actualizará después de crear el usuario
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdBy: context.auth.uid
+      });
+
+    // 5. Crear el usuario en Firebase Auth usando el Admin SDK
     // Generar una contraseña temporal aleatoria (ej: Temp123! seguida de caracteres aleatorios)
     const tempPassword = `Temp123!${Math.random().toString(36).slice(-8)}`;
 
@@ -72,7 +87,16 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
 
     console.log(`Usuario creado en Auth con UID: ${userRecord.uid}`);
 
-    // 5. Configurar Custom Claims del nuevo operador
+    // Actualizar el UID del operador en Firestore
+    await admin
+      .firestore()
+      .collection("operadores")
+      .doc(cleanPhone)
+      .update({
+        uid: userRecord.uid
+      });
+
+    // 6. Configurar Custom Claims del nuevo operador
     // El operador hereda el tenant_id pero no tiene permisos de admin
     const operatorClaims = {
       admin: false,
@@ -81,23 +105,6 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
 
     await admin.auth().setCustomUserClaims(userRecord.uid, operatorClaims);
     console.log(`Claims configuradas para el operador: tenant_id = ${tenantId}`);
-
-    // 6. Guardar el registro en la colección /operadores de Firestore
-    // Usamos el número de teléfono como clave del documento para búsquedas rápidas en el webhook
-    await admin
-      .firestore()
-      .collection("operadores")
-      .doc(cleanPhone)
-      .set({
-        nombre: name,
-        email: operatorEmail,
-        tenant_id: tenantId,
-        uid: userRecord.uid,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        createdBy: context.auth.uid
-      });
-
-    console.log(`Operador registrado con éxito en Firestore en /operadores/${cleanPhone}`);
 
     // En un entorno productivo real, aquí enviarías un correo de invitación
     // o un mensaje por WhatsApp al operador con sus credenciales de acceso temporal.

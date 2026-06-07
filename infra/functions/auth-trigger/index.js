@@ -21,13 +21,26 @@ exports.processSignUp = functions.auth.user().onCreate(async (user) => {
 
   console.log(`Procesando registro para ${email}. Asignando tenant_id: ${tenantId}`);
 
-  // Definir los Custom Claims
-  const customClaims = {
-    admin: true,
-    tenant_id: tenantId
-  };
-
   try {
+    // 1. Verificar si el correo ya está registrado como operador en Firestore.
+    // Si ya existe, significa que es un operador y no debe ser tratado como admin por este trigger.
+    const operatorsSnap = await admin.firestore()
+      .collection("operadores")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
+
+    if (!operatorsSnap.empty) {
+      console.log(`El usuario ${email} es un operador registrado. Ignorando trigger de admin.`);
+      return null;
+    }
+
+    // Definir los Custom Claims de administrador
+    const customClaims = {
+      admin: true,
+      tenant_id: tenantId
+    };
+
     // Establecer las claims en la cuenta de Firebase Auth
     await admin.auth().setCustomUserClaims(user.uid, customClaims);
     console.log(`Claims de seguridad asignadas exitosamente al usuario ${user.uid}`);
