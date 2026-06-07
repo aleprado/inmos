@@ -69,16 +69,22 @@ function App() {
     return () => unsubscribe()
   }, [])
 
-  // 2. Enrutador por URL en base al path
+  // 2. Enrutador por URL en base al path y query parameters
   useEffect(() => {
     const hostname = window.location.hostname
-    let currentTenant = 'demo'
+    const urlParams = new URLSearchParams(window.location.search)
+    const queryTenant = urlParams.get('tenant')
+    
+    let currentTenant = queryTenant || 'demo'
 
-    // Extraer tenant del subdominio si no está logueado
-    if (hostname && !hostname.startsWith('localhost') && hostname.includes('inmos.app')) {
-      const parts = hostname.split('.')
-      if (parts.length > 2) {
-        currentTenant = parts[0]
+    // Extraer tenant del subdominio si no está logueado y no hay parámetro query
+    if (!queryTenant && hostname && !hostname.startsWith('localhost')) {
+      if (hostname.includes('inmos.app') || hostname.includes('web.app') || hostname.includes('firebaseapp.com')) {
+        const parts = hostname.split('.')
+        // Si es lopez.inmos-2c701.web.app, parts.length > 2 y parts[0] es "lopez"
+        if (parts.length > 2) {
+          currentTenant = parts[0]
+        }
       }
     }
 
