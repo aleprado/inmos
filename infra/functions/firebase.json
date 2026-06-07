@@ -1,5 +1,48 @@
 {
-  "functions": {
-    "source": "."
-  }
+  "functions": [
+    {
+      "source": ".",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firestore-debug.log",
+        "ui-debug.log"
+      ]
+    },
+    {
+      "source": "auth-trigger",
+      "codebase": "auth-trigger",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firestore-debug.log",
+        "ui-debug.log"
+      ]
+    },
+    {
+      "source": "operator-manager",
+      "codebase": "operator-manager",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firestore-debug.log",
+        "ui-debug.log"
+      ]
+    },
+    {
+      "source": "qr-generator",
+      "codebase": "qr-generator",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firestore-debug.log",
+        "ui-debug.log"
+      ]
+    }
+  ]
 }

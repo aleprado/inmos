@@ -27,7 +27,11 @@ jobs:
           node-version: '18'
 
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
+          cd auth-trigger && npm install && cd ..
+          cd operator-manager && npm install && cd ..
+          cd qr-generator && npm install && cd ..
 
       - name: Create .env file
         run: |
