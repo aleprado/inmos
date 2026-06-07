@@ -11,6 +11,11 @@ const WA_ACCESS_TOKEN = process.env.WA_ACCESS_TOKEN || 'fake-access-token';
  */
 async function sendWhatsAppMessage(to, text) {
   try {
+    if (!WA_ACCESS_TOKEN || WA_ACCESS_TOKEN === 'fake-access-token' || WA_PHONE_NUMBER_ID === 'fake-phone-id') {
+      console.log(`[Mock WA] Enviando mensaje a ${to}: ${text}`);
+      return;
+    }
+
     const url = `https://graph.facebook.com/v17.0/${WA_PHONE_NUMBER_ID}/messages`;
     
     const payload = {
