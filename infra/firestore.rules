@@ -64,5 +64,11 @@ service cloud.firestore {
                     && request.resource.data.tenant_id == request.auth.token.tenant_id
                     && isAdmin(request.auth.token.tenant_id);
     }
+
+    // --- REGLAS DE SEGURIDAD PARA LA COLECCIÓN DE TENANTS ---
+    match /tenants/{tenantId} {
+      allow read: if true;
+      allow write: if isAuthed() && isAdmin(tenantId);
+    }
   }
 }
