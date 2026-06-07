@@ -12,12 +12,7 @@ export default function Navbar({ tenantData, children }) {
             <img src={tenantData.logoUrl} alt={name} className="h-9 w-auto max-w-[120px] object-contain" />
           ) : (
             <>
-              <div 
-                className="h-9 w-9 rounded-xl flex items-center justify-center text-white font-bold text-lg"
-                style={{ backgroundColor: tenantData?.primaryColor || '#0b57d0' }}
-              >
-                {initial}
-              </div>
+              <img src="/favicon.png" alt="Inmos Logo" className="h-9 w-9 rounded-xl object-cover shadow-sm" />
               <div>
                 <span className="text-xs text-slate-400 font-bold uppercase tracking-widest block -mb-0.5">Catálogo</span>
                 <span className="font-extrabold text-slate-800 text-base">{name.toUpperCase()}</span>

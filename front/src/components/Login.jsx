@@ -53,9 +53,7 @@ export default function Login({ onLoginSuccess }) {
         
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="h-12 w-12 bg-brand-500 rounded-2xl flex items-center justify-center text-white font-extrabold text-2xl mx-auto mb-4 shadow-lg shadow-brand-500/20">
-            I
-          </div>
+          <img src="/favicon.png" alt="Inmos Logo" className="h-12 w-12 rounded-2xl mx-auto mb-4 shadow-lg shadow-brand-500/20 object-cover" />
           <h1 className="text-2xl font-black text-white tracking-tight">
             Acceso Operadores
           </h1>
