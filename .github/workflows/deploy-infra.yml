@@ -13,6 +13,8 @@ jobs:
   terraform:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
     defaults:
       run:
         working-directory: ./infra/terraform
@@ -30,14 +32,14 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -input=false
 
       - name: Terraform Format
         run: terraform fmt -check
         continue-on-error: true
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -input=false -out=tfplan
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -input=false -auto-approve tfplan
