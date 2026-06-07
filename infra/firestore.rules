@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Auxiliar: Verifica si la petición proviene de un cliente oficial verificado por Firebase App Check
+    function isValidApp() {
+      return request.app != null;
+    }
+    
+    // Auxiliar: Verifica si el usuario está autenticado en la plataforma
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // Auxiliar: Verifica si el token del usuario tiene asignado el tenant correspondiente a la propiedad
+    function belongsToTenant(tenantId) {
+      return isAuthed() && request.auth.token.tenant_id == tenantId;
+    }
+
+    // Auxiliar: Verifica si el usuario tiene rol de administrador del tenant
+    function isAdmin(tenantId) {
+      return isAuthed() && 
+             request.auth.token.admin == true && 
+             request.auth.token.tenant_id == tenantId;
+    }
+
+    // --- REGLAS DE SEGURIDAD PARA LA COLECCIÓN DE PROPIEDADES ---
+    match /properties/{propertyId} {
+      
+      // Lectura: 
+      // 1. Un usuario anónimo puede leer si el inmueble está aprobado (status == "approved")
+      //    Y la petición viene obligatoriamente desde nuestra web oficial validada por App Check (isValidApp()).
+      // 2. Un operador autenticado puede leer cualquier propiedad (incluso pendientes o archivadas)
+      //    que pertenezca a su propia inmobiliaria (tenant_id).
+      allow read: if (resource.data.status == "approved" && isValidApp())
+                  || belongsToTenant(resource.data.tenant_id);
+
+      // Creación:
+      // 1. El usuario debe estar logueado y registrar la propiedad bajo su propio tenant_id (evita suplantación).
+      // 2. Por defecto, las creaciones web por operadores quedan en estado "pending" para revisión.
+      allow create: if isAuthed() 
+                    && request.resource.data.tenant_id == request.auth.token.tenant_id
+                    && (request.resource.data.status == "pending" || isAdmin(request.resource.data.tenant_id));
+
+      // Edición y Eliminación:
+      // 1. Solo operadores autenticados pertenecientes a la inmobiliaria propietaria del anuncio.
+      // 2. El usuario no puede modificar el tenant_id original ni la fecha de creación.
+      allow update: if belongsToTenant(resource.data.tenant_id)
+                    && request.resource.data.tenant_id == resource.data.tenant_id
+                    && request.resource.data.createdAt == resource.data.createdAt;
+                    
+      allow delete: if belongsToTenant(resource.data.tenant_id);
+    }
+
+    // --- REGLAS DE SEGURIDAD PARA LA COLECCIÓN DE OPERADORES ---
+    match /operadores/{phone} {
+      
+      // Lectura y Escritura:
+      // Solo administradores autenticados de la inmobiliaria correspondiente pueden ver, agregar o remover operadores.
+      allow read, update, delete: if belongsToTenant(resource.data.tenant_id) 
+                                  && isAdmin(resource.data.tenant_id);
+                                  
+      allow create: if isAuthed() 
+                    && request.resource.data.tenant_id == request.auth.token.tenant_id
+                    && isAdmin(request.auth.token.tenant_id);
+    }
+  }
+}

@@ -1,0 +1,67 @@
+const { db, admin } = require('../config/firebase');
+
+/**
+ * Guarda una nueva propiedad generada por la IA en Firestore
+ * @param {Object} parsedData Datos estructurados por la IA
+ * @param {string} senderPhone Número de WhatsApp del operador
+ * @param {string} tenantId ID de la inmobiliaria a la que pertenece el operador
+ */
+async function saveProperty(parsedData, senderPhone, tenantId) {
+  try {
+    const propertiesRef = db.collection('properties');
+    
+    // Preparar el payload
+    const payload = {
+      title: parsedData.title || "Nueva propiedad",
+      description: parsedData.description || "",
+      operationType: parsedData.operationType || "Venta",
+      propertyType: parsedData.propertyType || "Departamento",
+      price: parsedData.price || null,
+      currency: parsedData.currency || "USD",
+      rooms: parsedData.rooms || null,
+      bathrooms: parsedData.bathrooms || null,
+      area: parsedData.area || null,
+      address: parsedData.address || null,
+      
+      // Metadatos internos
+      tenant_id: tenantId,
+      status: "pending", // Queda pendiente de revisión en el panel por defecto
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      featured: false,
+      images: [], // Las imágenes se procesarán en otro flujo o si llegaron en el mensaje
+      metadata: {
+        source: "whatsapp_ai",
+        sender: senderPhone
+      }
+    };
+
+    const docRef = await propertiesRef.add(payload);
+    return docRef.id;
+
+  } catch (error) {
+    console.error("Error al guardar propiedad en DB:", error);
+    throw new Error("Error interno al guardar los datos.");
+  }
+}
+
+/**
+ * Obtiene el tenantId asociado a un operador basado en su número de teléfono
+ */
+async function getOperatorTenant(phoneNumber) {
+  try {
+    const opDoc = await db.collection('operadores').doc(phoneNumber).get();
+    if (!opDoc.exists) {
+      return null;
+    }
+    return opDoc.data().tenant_id;
+  } catch (error) {
+    console.error("Error al buscar operador:", error);
+    return null;
+  }
+}
+
+module.exports = {
+  saveProperty,
+  getOperatorTenant
+};
