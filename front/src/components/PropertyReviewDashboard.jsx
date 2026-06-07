@@ -746,28 +746,33 @@ export default function PropertyReviewDashboard({ tenantId, userClaims, currentU
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Email de acceso</label>
-                <input 
-                  type="email" 
-                  value={operatorForm.email} 
-                  onChange={(e) => setOperatorForm({...operatorForm, email: e.target.value})}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
-                  placeholder="ej: juan.gomez@inmobiliaria.com"
-                  required
-                />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Usuario de acceso (Email)</label>
+                <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl overflow-hidden focus-within:border-emerald-500 transition">
+                  <input 
+                    type="text" 
+                    value={operatorForm.email} 
+                    onChange={(e) => setOperatorForm({...operatorForm, email: e.target.value})}
+                    className="flex-1 bg-transparent px-3.5 py-2 text-xs text-slate-200 focus:outline-none border-0"
+                    placeholder="ej: juan.gomez"
+                    required
+                  />
+                  <span className="bg-slate-800 text-slate-400 text-xs px-3.5 py-2 border-l border-slate-700 font-mono font-bold select-none shrink-0">
+                    @{tenantId}.com
+                  </span>
+                </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Teléfono de WhatsApp (con código de país)</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Teléfono de WhatsApp</label>
                 <input 
                   type="text" 
                   value={operatorForm.phone} 
                   onChange={(e) => setOperatorForm({...operatorForm, phone: e.target.value})}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
-                  placeholder="ej: 5491199999999"
+                  placeholder="ej: 91155556666"
                   required
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">Debe incluir el código de país sin el signo '+' ni espacios.</span>
+                <span className="text-[10px] text-slate-500 mt-1 block">Si no ingresas código de país, se agregará "54" (Argentina) por defecto.</span>
               </div>
 
               <div className="pt-2 flex gap-3">

@@ -46,9 +46,17 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
   }
 
   // Limpiar número de teléfono (quitar espacios, guiones o el signo + si existiera)
-  const cleanPhone = phone.replace(/[\s\-\+]/g, "");
+  let cleanPhone = phone.replace(/[\s\-\+]/g, "");
+  // Agregar prefijo 54 (Argentina) por defecto si no lo tiene
+  if (!cleanPhone.startsWith("54")) {
+    cleanPhone = "54" + cleanPhone;
+  }
 
-  console.log(`Admin ${context.auth.uid} iniciando registro de operador: ${name} (${email}, Tel: ${cleanPhone}) para el tenant: ${tenantId}`);
+  // Asegurar que el email sea nombre@tenant.com (restringido al dominio del tenant)
+  const emailPrefix = email.split("@")[0].trim();
+  const operatorEmail = `${emailPrefix}@${tenantId}.com`;
+
+  console.log(`Admin ${context.auth.uid} iniciando registro de operador: ${name} (${operatorEmail}, Tel: ${cleanPhone}) para el tenant: ${tenantId}`);
 
   try {
     // 4. Crear el usuario en Firebase Auth usando el Admin SDK
@@ -56,7 +64,7 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
     const tempPassword = `Temp123!${Math.random().toString(36).slice(-8)}`;
 
     const userRecord = await admin.auth().createUser({
-      email: email,
+      email: operatorEmail,
       password: tempPassword,
       displayName: name,
       emailVerified: true // Auto-verificar correo
@@ -82,7 +90,7 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
       .doc(cleanPhone)
       .set({
         nombre: name,
-        email: email,
+        email: operatorEmail,
         tenant_id: tenantId,
         uid: userRecord.uid,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -98,7 +106,7 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
       success: true,
       uid: userRecord.uid,
       phone: cleanPhone,
-      email: email,
+      email: operatorEmail,
       tempPassword: tempPassword, // Retornamos para visualización del admin
       message: "Operador registrado exitosamente en Auth y Firestore."
     };
