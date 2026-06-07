@@ -79,7 +79,7 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
     await admin
       .firestore()
       .collection("operadores")
-      .document(cleanPhone)
+      .doc(cleanPhone)
       .set({
         nombre: name,
         email: email,
