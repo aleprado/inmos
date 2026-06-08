@@ -15,7 +15,8 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
     rooms: property?.rooms || '',
     bathrooms: property?.bathrooms || '',
     area: property?.area || '',
-    virtualTourUrl: property?.virtualTourUrl || ''
+    virtualTourUrl: property?.virtualTourUrl || '',
+    address: property?.address || ''
   });
 
   const [saving, setSaving] = useState(false);
@@ -34,6 +35,26 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
     try {
       const docRef = doc(db, 'properties', property.id);
       
+      let latitude = property.latitude || null;
+      let longitude = property.longitude || null;
+
+      // Si la dirección cambió, intentamos geocodificarla en el cliente
+      if (formData.address !== property.address) {
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.address + ', Argentina')}&format=json&limit=1`);
+          const data = await response.json();
+          if (data && data.length > 0) {
+            latitude = parseFloat(data[0].lat);
+            longitude = parseFloat(data[0].lon);
+          } else {
+            latitude = null;
+            longitude = null;
+          }
+        } catch (err) {
+          console.error("Error geocodificando en cliente:", err);
+        }
+      }
+
       const payload = {
         title: formData.title,
         description: formData.description,
@@ -41,7 +62,10 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
         operationType: formData.operationType,
         propertyType: formData.propertyType,
         status: formData.status,
-        virtualTourUrl: formData.virtualTourUrl || null
+        virtualTourUrl: formData.virtualTourUrl || null,
+        address: formData.address || null,
+        latitude: latitude,
+        longitude: longitude
       };
 
       // Limpiar numéricos
@@ -98,6 +122,19 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
                 value={formData.title} 
                 onChange={handleChange}
                 required
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+              />
+            </div>
+
+            {/* Dirección */}
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Dirección / Ubicación</label>
+              <input 
+                type="text" 
+                name="address" 
+                value={formData.address} 
+                onChange={handleChange}
+                placeholder="ej: Av. Cabildo 1500, Belgrano, CABA"
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
               />
             </div>

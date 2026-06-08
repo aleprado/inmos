@@ -1,4 +1,37 @@
 const { db, admin } = require('../config/firebase');
+const axios = require('axios');
+
+/**
+ * Geocodifica una dirección de texto a coordenadas lat/lng usando OpenStreetMap Nominatim
+ */
+async function geocodeAddress(address) {
+  if (!address) return null;
+  try {
+    const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+      params: {
+        q: `${address}, Argentina`, // Enfocado en Argentina
+        format: 'json',
+        limit: 1
+      },
+      headers: {
+        'User-Agent': 'InmosApp/1.0 (contact@inmos.com)'
+      }
+    });
+
+    if (response.data && response.data.length > 0) {
+      const result = response.data[0];
+      return {
+        latitude: parseFloat(result.lat),
+        longitude: parseFloat(result.lon)
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error al geocodificar dirección "${address}":`, error.message);
+    return null;
+  }
+}
+
 
 /**
  * Guarda una nueva propiedad generada por la IA en Firestore
@@ -10,6 +43,17 @@ async function saveProperty(parsedData, senderPhone, tenantId) {
   try {
     const propertiesRef = db.collection('properties');
     
+    // Geocodificar dirección si existe
+    let latitude = null;
+    let longitude = null;
+    if (parsedData.address) {
+      const coords = await geocodeAddress(parsedData.address);
+      if (coords) {
+        latitude = coords.latitude;
+        longitude = coords.longitude;
+      }
+    }
+
     // Preparar el payload
     const payload = {
       title: parsedData.title || "Nueva propiedad",
@@ -22,6 +66,8 @@ async function saveProperty(parsedData, senderPhone, tenantId) {
       bathrooms: parsedData.bathrooms || null,
       area: parsedData.area || null,
       address: parsedData.address || null,
+      latitude: latitude,
+      longitude: longitude,
       
       // Metadatos internos
       tenant_id: tenantId,
@@ -84,6 +130,16 @@ async function updateProperty(propertyId, updatedData) {
       ...updatedData,
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
+    
+    // Si se actualiza la dirección, volvemos a geocodificar para actualizar el pin del mapa
+    if (updatedData.address) {
+      const coords = await geocodeAddress(updatedData.address);
+      if (coords) {
+        payload.latitude = coords.latitude;
+        payload.longitude = coords.longitude;
+      }
+    }
+    
     await db.collection('properties').doc(propertyId).update(payload);
     console.log(`Propiedad ${propertyId} actualizada.`);
   } catch (error) {
