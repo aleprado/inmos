@@ -3,9 +3,33 @@ const admin = require("firebase-admin");
 
 admin.initializeApp();
 
+const FREE_DOMAINS = new Set([
+  'gmail.com', 'hotmail.com', 'outlook.com', 'live.com', 'yahoo.com', 'yahoo.com.ar',
+  'icloud.com', 'aol.com', 'zoho.com', 'protonmail.com', 'proton.me', 'mail.com',
+  'gmx.com', 'yandex.com', 'live.com.ar', 'hotmail.com.ar', 'outlook.com.ar'
+]);
+
+function getTenantIdFromEmail(email) {
+  const atIndex = email.lastIndexOf("@");
+  if (atIndex === -1) return "demo";
+  
+  const localPart = email.substring(0, atIndex).toLowerCase();
+  const domain = email.substring(atIndex + 1).toLowerCase();
+  
+  // Si es un dominio público/gratuito común, usamos la parte local (delante del @)
+  if (FREE_DOMAINS.has(domain)) {
+    // Reemplazar caracteres no alfanuméricos por guiones
+    return localPart.replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  }
+  
+  // Si es un dominio propio, usamos el nombre del dominio
+  const domainPart = domain.split(".")[0];
+  return domainPart.replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+
 /**
  * Trigger que se ejecuta al crear un usuario en Firebase Auth.
- * Determina el tenant_id basándose en el dominio del correo electrónico y asigna los Custom Claims.
+ * Determina el tenant_id basándose en el dominio o la parte local del correo electrónico y asigna los Custom Claims.
  */
 exports.processSignUp = functions.auth.user().onCreate(async (user) => {
   const email = user.email;
@@ -15,9 +39,7 @@ exports.processSignUp = functions.auth.user().onCreate(async (user) => {
     return null;
   }
 
-  // Extraer el dominio del correo electrónico (ej: usuario@inmos.app -> inmos)
-  const domain = email.substring(email.lastIndexOf("@") + 1);
-  const tenantId = domain.split(".")[0]; // Toma la primera parte del dominio como identificador único
+  const tenantId = getTenantIdFromEmail(email);
 
   console.log(`Procesando registro para ${email}. Asignando tenant_id: ${tenantId}`);
 

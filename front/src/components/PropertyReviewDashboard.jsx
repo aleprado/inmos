@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer, Eye, Settings, Save } from 'lucide-react';
@@ -69,7 +69,7 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
         logoUrl: finalLogoUrl
       };
 
-      await updateDoc(tenantRef, payload);
+      await setDoc(tenantRef, payload, { merge: true });
       
       setTenantSettings(prev => ({ ...prev, logoUrl: finalLogoUrl }));
       setLogoFile(null);
