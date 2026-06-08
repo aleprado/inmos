@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-import { X, Save, AlertCircle } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
+import { X, Save, AlertCircle, Upload, Trash2 } from 'lucide-react';
 
 export default function PropertyEditModal({ property, onClose, onUpdated }) {
   const [formData, setFormData] = useState({
@@ -19,8 +20,37 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
     address: property?.address || ''
   });
 
+  const [images, setImages] = useState(property?.images || []);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    
+    setUploadingImages(true);
+    setError(null);
+    try {
+      const uploadedUrls = [];
+      for (const file of files) {
+        const fileRef = ref(storage, `properties/${property.id}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        uploadedUrls.push(url);
+      }
+      setImages(prev => [...prev, ...uploadedUrls]);
+    } catch (err) {
+      console.error("Error uploading images:", err);
+      setError("Ocurrió un error al subir las imágenes. Inténtalo de nuevo.");
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleImageDelete = (idxToRemove) => {
+    setImages(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,7 +95,8 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
         virtualTourUrl: formData.virtualTourUrl || null,
         address: formData.address || null,
         latitude: latitude,
-        longitude: longitude
+        longitude: longitude,
+        images: images
       };
 
       // Limpiar numéricos
@@ -263,6 +294,55 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
                 placeholder="ej: https://www.youtube.com/watch?v=..."
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition bg-indigo-50/30"
               />
+            </div>
+
+            {/* Gestión de Imágenes */}
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                Imágenes de la Propiedad
+                {uploadingImages && (
+                  <span className="text-[10px] text-brand-500 animate-pulse font-bold">Subiendo fotos...</span>
+                )}
+              </label>
+              
+              {/* Grilla de Miniaturas */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                  {images.map((url, idx) => (
+                    <div key={idx} className="relative aspect-video rounded-xl border border-slate-200 overflow-hidden bg-slate-50 group">
+                      <img src={url} alt={`Imagen ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleImageDelete(idx)}
+                        className="absolute top-1.5 right-1.5 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full transition shadow-md"
+                        title="Eliminar imagen"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Botón de Carga de Archivos */}
+              <div className="flex items-center gap-3 mb-5">
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  id="images-upload-input"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImages}
+                  className="hidden" 
+                />
+                <label 
+                  htmlFor="images-upload-input"
+                  className={`cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center gap-2 ${uploadingImages ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  <Upload className="h-3.5 w-3.5 text-slate-500" />
+                  {uploadingImages ? 'Subiendo...' : 'Agregar Fotos'}
+                </label>
+              </div>
             </div>
 
             {/* Descripción */}

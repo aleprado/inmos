@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer, Eye } from 'lucide-react';
+import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer, Eye, Settings, Save } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { db, auth } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth, storage } from '../firebase';
 import PropertyEditModal from './PropertyEditModal';
 import PropertyFlyer from './PropertyFlyer';
 import SignageFlyer from './SignageFlyer';
 import { useToast } from '../contexts/ToastContext';
 
-export default function PropertyReviewDashboard({ tenantId, userClaims, currentUser }) {
+export default function PropertyReviewDashboard({ tenantId, tenantData, userClaims, currentUser }) {
   const toast = useToast();
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
@@ -19,9 +20,74 @@ export default function PropertyReviewDashboard({ tenantId, userClaims, currentU
   const [loading, setLoading] = useState(true);
   const [operatorsLoading, setOperatorsLoading] = useState(true);
   
-  // Pestañas del Panel: 'pending' | 'approved' | 'archived' | 'operators'
+  // Pestañas del Panel: 'pending' | 'approved' | 'archived' | 'operators' | 'settings'
   const [activeTab, setActiveTab] = useState('pending');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Estado para la configuración del tenant
+  const [tenantSettings, setTenantSettings] = useState({
+    name: tenantData?.name || '',
+    whatsappNumber: tenantData?.whatsappNumber || '',
+    primaryColor: tenantData?.primaryColor || '#0b57d0',
+    logoUrl: tenantData?.logoUrl || ''
+  });
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+
+  // Sincronizar el estado con los datos cargados del tenant
+  useEffect(() => {
+    if (tenantData) {
+      setTenantSettings({
+        name: tenantData.name || '',
+        whatsappNumber: tenantData.whatsappNumber || '',
+        primaryColor: tenantData.primaryColor || '#0b57d0',
+        logoUrl: tenantData.logoUrl || ''
+      });
+    }
+  }, [tenantData]);
+
+  // Guardar cambios del tenant en Storage y Firestore
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    setSettingsSaving(true);
+    try {
+      let finalLogoUrl = tenantSettings.logoUrl;
+
+      // Subir el logotipo si el administrador cargó un archivo nuevo
+      if (logoFile) {
+        const logoRef = ref(storage, `tenants/${tenantId}/logo_${Date.now()}`);
+        const snapshot = await uploadBytes(logoRef, logoFile);
+        finalLogoUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      const tenantRef = doc(db, 'tenants', tenantId);
+      const payload = {
+        name: tenantSettings.name,
+        whatsappNumber: tenantSettings.whatsappNumber,
+        primaryColor: tenantSettings.primaryColor,
+        logoUrl: finalLogoUrl
+      };
+
+      await updateDoc(tenantRef, payload);
+      
+      setTenantSettings(prev => ({ ...prev, logoUrl: finalLogoUrl }));
+      setLogoFile(null);
+      
+      toast.success("Configuración de marca guardada con éxito.");
+      
+      // Recargar para aplicar los colores del tema y el logo
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error al guardar configuración:", error);
+      toast.error("No se pudo guardar la configuración.");
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
   
   // Estado para el modal de edición de propiedad
   const [editingProperty, setEditingProperty] = useState(null);
@@ -409,10 +475,21 @@ export default function PropertyReviewDashboard({ tenantId, userClaims, currentU
               </span>
             </button>
           )}
+
+          {/* Pestaña de Configuración de Marca (Solo visible para admins) */}
+          {userClaims.admin && (
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === 'settings' ? 'bg-indigo-650 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              <Settings className="h-4 w-4" />
+              Configuración
+            </button>
+          )}
         </div>
 
-        {/* Buscador (No visible en la pestaña de operadores para simplificar) */}
-        {activeTab !== 'operators' && (
+        {/* Buscador (No visible en las pestañas de administración para simplificar) */}
+        {activeTab !== 'operators' && activeTab !== 'settings' && (
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-500 h-4.5 w-4.5" />
             <input
@@ -428,7 +505,138 @@ export default function PropertyReviewDashboard({ tenantId, userClaims, currentU
 
       {/* Vista de Catálogo de Propiedades o Vista de Gestión de Operadores */}
       <main className="max-w-7xl mx-auto">
-        {activeTab === 'operators' ? (
+        {activeTab === 'settings' ? (
+          /* --- SECCIÓN CONFIGURACIÓN --- */
+          <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-2xl mx-auto">
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <Settings className="h-5.5 w-5.5 text-indigo-500" />
+              Configuración de Marca Blanca
+            </h2>
+            <p className="text-slate-400 text-xs mb-6">
+              Personaliza el logotipo, nombre, color de marca y datos de contacto de tu portal público.
+            </p>
+
+            <form onSubmit={handleSaveSettings} className="space-y-6">
+              {/* Nombre */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nombre de la Inmobiliaria</label>
+                <input 
+                  type="text"
+                  required
+                  value={tenantSettings.name}
+                  onChange={(e) => setTenantSettings(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                  placeholder="Ej: López Propiedades"
+                />
+              </div>
+
+              {/* WhatsApp de Contacto */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">WhatsApp de Contacto Oficial</label>
+                <input 
+                  type="text"
+                  required
+                  value={tenantSettings.whatsappNumber}
+                  onChange={(e) => setTenantSettings(prev => ({ ...prev, whatsappNumber: e.target.value }))}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                  placeholder="Ej: 5491165432100"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">Con código de país y código móvil (Ej: 549...). Se usará como contacto por defecto.</span>
+              </div>
+
+              {/* Color de Marca */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Color Primario (Tema)</label>
+                <div className="flex flex-wrap items-center gap-3 mb-3">
+                  {[
+                    { hex: '#0b57d0', name: 'Azul Inmos' },
+                    { hex: '#1e3a8a', name: 'Azul Marino' },
+                    { hex: '#059669', name: 'Esmeralda' },
+                    { hex: '#4f46e5', name: 'Índigo' },
+                    { hex: '#d97706', name: 'Ámbar' },
+                    { hex: '#e11d48', name: 'Rosa' },
+                    { hex: '#374151', name: 'Carbón' }
+                  ].map((color) => (
+                    <button
+                      key={color.hex}
+                      type="button"
+                      onClick={() => setTenantSettings(prev => ({ ...prev, primaryColor: color.hex }))}
+                      style={{ backgroundColor: color.hex }}
+                      title={color.name}
+                      className={`h-7 w-7 rounded-full border-2 transition ${tenantSettings.primaryColor === color.hex ? 'border-white scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="color"
+                    value={tenantSettings.primaryColor}
+                    onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
+                    className="h-10 w-12 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                  />
+                  <input 
+                    type="text"
+                    value={tenantSettings.primaryColor}
+                    onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
+                    className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+              </div>
+
+              {/* Logotipo */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Logotipo de la Inmobiliaria</label>
+                <div className="flex items-center gap-5 bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
+                  <div className="h-16 w-32 border border-slate-800 bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                    {logoPreview || tenantSettings.logoUrl ? (
+                      <img src={logoPreview || tenantSettings.logoUrl} alt="Logo preview" className="max-h-full max-w-full object-contain" />
+                    ) : (
+                      <span className="text-[10px] text-slate-600">Sin Logotipo</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setLogoFile(file);
+                          setLogoPreview(URL.createObjectURL(file));
+                        }
+                      }}
+                      className="hidden"
+                      id="logo-upload-input"
+                    />
+                    <label 
+                      htmlFor="logo-upload-input"
+                      className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition inline-block mb-1.5"
+                    >
+                      Seleccionar Archivo
+                    </label>
+                    <p className="text-[9px] text-slate-500">Se recomienda formato PNG transparente y fondo claro, máx. 2MB.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón de Guardado */}
+              <div className="pt-4 border-t border-slate-800 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={settingsSaving}
+                  className="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl text-xs flex items-center gap-2 transition disabled:opacity-50 shadow-lg shadow-brand-500/10"
+                >
+                  {settingsSaving ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  {settingsSaving ? 'Guardando...' : 'Guardar Configuración'}
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : activeTab === 'operators' ? (
           
           /* --- SECCIÓN GESTIÓN DE OPERADORES --- */
           <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8">

@@ -9,6 +9,7 @@ import { auth } from './firebase'
 import { useTenant } from './hooks/useTenant'
 import { ToastProvider } from './contexts/ToastContext'
 import './index.css'
+import { applyTheme } from './utils/theme'
 
 function App() {
   const [route, setRoute] = useState({
@@ -22,6 +23,13 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true)
 
   const { tenantData, loading: tenantLoading } = useTenant(route.tenantId)
+
+  // Aplicar el tema dinámico del tenant
+  useEffect(() => {
+    if (tenantData?.primaryColor) {
+      applyTheme(tenantData.primaryColor);
+    }
+  }, [tenantData]);
 
   // 1. Escuchar el estado de autenticación de Firebase
   useEffect(() => {
