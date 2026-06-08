@@ -326,14 +326,16 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
 
   // Eliminar Operador de Firestore / Revocar acceso
   const handleDeleteOperator = async (phone) => {
-    if (!window.confirm("¿Seguro que deseas revocar el acceso a este operador? Ya no podrá enviar publicaciones por WhatsApp.")) return;
+    if (!window.confirm("¿Seguro que deseas revocar el acceso a este operador? Se eliminará de la base de datos y de Firebase Auth, y ya no podrá enviar publicaciones por WhatsApp.")) return;
     try {
-      const docRef = doc(db, 'operadores', phone);
-      await deleteDoc(docRef);
-      toast.info("Acceso del operador revocado.");
+      const functions = getFunctions();
+      const deleteOperatorFn = httpsCallable(functions, 'deleteOperator');
+      await deleteOperatorFn({ phone });
+      
+      toast.success("Acceso del operador revocado y cuenta eliminada.");
     } catch (error) {
       console.error("Error al revocar acceso de operador:", error);
-      toast.error("Error al revocar acceso.");
+      toast.error(error.message || "Error al revocar acceso.");
     }
   };
 

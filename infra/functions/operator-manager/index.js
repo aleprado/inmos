@@ -135,3 +135,103 @@ exports.createOperator = functions.https.onCall(async (data, context) => {
     );
   }
 });
+
+/**
+ * Función HTTPS Callable para revocar el acceso y eliminar un operador de Firebase Auth y Firestore.
+ * Solo puede ser llamada por un administrador autenticado del mismo tenant.
+ */
+exports.deleteOperator = functions.https.onCall(async (data, context) => {
+  // 1. Validar autenticación
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "El usuario debe estar autenticado para realizar esta acción."
+    );
+  }
+
+  // 2. Validar que el llamador sea Administrador
+  const callerClaims = context.auth.token;
+  if (!callerClaims.admin) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Solo los administradores autorizados pueden eliminar operadores."
+    );
+  }
+
+  const tenantId = callerClaims.tenant_id;
+  if (!tenantId) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "El administrador no tiene un identificador de inmobiliaria (tenant_id) válido."
+    );
+  }
+
+  // 3. Obtener parámetros de entrada
+  const { phone } = data;
+  if (!phone) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Debes proporcionar el 'phone' del operador a eliminar."
+    );
+  }
+
+  // Limpiar número de teléfono
+  let cleanPhone = phone.replace(/[\s\-\+]/g, "");
+  if (!cleanPhone.startsWith("54")) {
+    cleanPhone = "54" + cleanPhone;
+  }
+
+  const db = admin.firestore();
+  const operatorDocRef = db.collection("operadores").doc(cleanPhone);
+
+  try {
+    // 4. Buscar al operador en Firestore para comprobar permisos de inquilino (tenant) y obtener el UID de Auth
+    const docSnap = await operatorDocRef.get();
+    if (!docSnap.exists) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "No se encontró el registro del operador en la base de datos."
+      );
+    }
+
+    const operatorData = docSnap.data();
+
+    // 5. Validar que pertenezcan al mismo tenant
+    if (operatorData.tenant_id !== tenantId) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "No tienes permisos para revocar el acceso de un operador de otra inmobiliaria."
+      );
+    }
+
+    // 6. Eliminar de Firebase Auth (si tiene UID registrado)
+    if (operatorData.uid) {
+      try {
+        await admin.auth().deleteUser(operatorData.uid);
+        console.log(`Usuario con UID ${operatorData.uid} eliminado exitosamente de Auth.`);
+      } catch (authError) {
+        if (authError.code === "auth/user-not-found") {
+          console.warn(`El usuario con UID ${operatorData.uid} no existía en Firebase Auth.`);
+        } else {
+          throw authError;
+        }
+      }
+    }
+
+    // 7. Eliminar de Firestore
+    await operatorDocRef.delete();
+    console.log(`Registro de operador con teléfono ${cleanPhone} eliminado exitosamente de Firestore.`);
+
+    return {
+      success: true,
+      message: "Acceso revocado y cuenta eliminada correctamente."
+    };
+
+  } catch (error) {
+    console.error("Error al revocar acceso del operador:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      `Error interno al eliminar la cuenta del operador: ${error.message}`
+    );
+  }
+});
