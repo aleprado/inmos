@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer } from 'lucide-react';
+import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer, Eye } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { db, auth } from '../firebase';
