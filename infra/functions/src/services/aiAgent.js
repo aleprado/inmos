@@ -62,6 +62,85 @@ async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = 
   }
 }
 
+/**
+ * Combina los detalles existentes de una propiedad con información nueva usando Gemini
+ */
+async function mergePropertyDetails(existingProperty, newText) {
+  try {
+    const prompt = `
+Eres un asistente experto en el mercado inmobiliario. 
+Se te proporcionará el estado actual de los detalles de una propiedad en formato JSON y un nuevo mensaje enviado por el operador de la inmobiliaria.
+Tu tarea es analizar el nuevo mensaje e incorporar los nuevos detalles, correcciones o adiciones al JSON original.
+
+JSON original:
+${JSON.stringify(existingProperty, null, 2)}
+
+Mensaje del operador:
+"${newText}"
+
+Devuelve estrictamente el objeto JSON actualizado con la misma estructura y nada más. No inventes campos. Si el mensaje corrige un dato (ej: "no cuesta 150000, cuesta 140000"), cámbialo. Si agrega datos (ej: "tiene 2 baños"), añádelos.
+Estructura esperada:
+{
+  "operationType": "Venta" | "Alquiler" | "Alquiler Temporario",
+  "propertyType": "Departamento" | "Casa" | "Oficina" | "Local Comercial" | "Terreno",
+  "title": "string",
+  "price": número entero o null,
+  "currency": "USD" | "ARS",
+  "rooms": número entero o null,
+  "bathrooms": número entero o null,
+  "area": número entero o null,
+  "description": "string",
+  "address": "string" o null
+}
+
+JSON Output:`;
+
+    const result = await aiModel.generateContent([{ text: prompt }]);
+    const responseText = result.response.text();
+    const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error("Error en mergePropertyDetails:", error);
+    return existingProperty;
+  }
+}
+
+/**
+ * Extrae el valor de un único campo a partir del texto del usuario usando Gemini
+ */
+async function extractSingleField(fieldName, text) {
+  try {
+    const prompt = `
+Tu tarea es extraer el valor para el campo '${fieldName}' a partir de la respuesta del usuario.
+El usuario está respondiendo a una pregunta sobre este campo en específico.
+
+Campo a extraer: '${fieldName}' (puede ser 'rooms', 'bathrooms' o 'area').
+Respuesta del usuario: "${text}"
+
+Debes devolver estrictamente un objeto JSON con el siguiente formato y nada más:
+{
+  "${fieldName}": número entero o null si no se puede determinar o si no es un número válido.
+}
+
+Ejemplos:
+- Si el campo es 'bathrooms' y la respuesta es 'tiene 2 baños', devuelve: { "bathrooms": 2 }
+- Si el campo es 'area' y la respuesta es 'son 80 metros', devuelve: { "area": 80 }
+- Si el texto es 'no sé', 'omitir', 'después', devuelve: { "${fieldName}": null }
+
+JSON Output:`;
+
+    const result = await aiModel.generateContent([{ text: prompt }]);
+    const responseText = result.response.text();
+    const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error(`Error en extractSingleField para ${fieldName}:`, error);
+    return { [fieldName]: null };
+  }
+}
+
 module.exports = {
-  parsePropertyMessage
+  parsePropertyMessage,
+  mergePropertyDetails,
+  extractSingleField
 };

@@ -61,7 +61,57 @@ async function getOperatorTenant(phoneNumber) {
   }
 }
 
+/**
+ * Obtiene una propiedad por su ID
+ */
+async function getPropertyById(propertyId) {
+  try {
+    const doc = await db.collection('properties').doc(propertyId).get();
+    if (!doc.exists) return null;
+    return doc.data();
+  } catch (error) {
+    console.error(`Error al obtener propiedad ${propertyId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Actualiza los campos de una propiedad existente
+ */
+async function updateProperty(propertyId, updatedData) {
+  try {
+    const payload = {
+      ...updatedData,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+    await db.collection('properties').doc(propertyId).update(payload);
+    console.log(`Propiedad ${propertyId} actualizada.`);
+  } catch (error) {
+    console.error(`Error al actualizar propiedad ${propertyId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Agrega una URL de imagen al array de imágenes de la propiedad
+ */
+async function appendImageToProperty(propertyId, imageUrl) {
+  try {
+    await db.collection('properties').doc(propertyId).update({
+      images: admin.firestore.FieldValue.arrayUnion(imageUrl),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    console.log(`Imagen agregada a la propiedad ${propertyId}: ${imageUrl}`);
+  } catch (error) {
+    console.error(`Error al agregar imagen a propiedad ${propertyId}:`, error);
+    throw error;
+  }
+}
+
 module.exports = {
   saveProperty,
-  getOperatorTenant
+  getOperatorTenant,
+  getPropertyById,
+  updateProperty,
+  appendImageToProperty
 };
