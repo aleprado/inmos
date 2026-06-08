@@ -71,7 +71,7 @@ async function saveProperty(parsedData, senderPhone, tenantId) {
       
       // Metadatos internos
       tenant_id: tenantId,
-      status: "pending", // Queda pendiente de revisión en el panel por defecto
+      status: tenantId === 'demo' ? 'approved' : 'pending', // Auto-aprobado para la demo
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       featured: false,

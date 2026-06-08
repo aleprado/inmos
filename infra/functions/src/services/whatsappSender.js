@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { db, admin } = require('../config/firebase');
 
 // Idealmente desde env vars
 const WA_PHONE_NUMBER_ID = process.env.WA_PHONE_NUMBER_ID || 'fake-phone-id';
@@ -11,6 +12,17 @@ const WA_ACCESS_TOKEN = process.env.WA_ACCESS_TOKEN || 'fake-access-token';
  */
 async function sendWhatsAppMessage(to, text) {
   try {
+    // Interceptar mensajes dirigidos a la demo web
+    if (to && to.startsWith('demo_session_')) {
+      console.log(`[Demo WA] Guardando respuesta del bot para la sesión ${to}: ${text}`);
+      await db.collection('chats').doc(to).collection('messages').add({
+        text: text,
+        sender: 'bot',
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      return;
+    }
+
     if (!WA_ACCESS_TOKEN || WA_ACCESS_TOKEN === 'fake-access-token' || WA_PHONE_NUMBER_ID === 'fake-phone-id') {
       console.log(`[Mock WA] Enviando mensaje a ${to}: ${text}`);
       return;
