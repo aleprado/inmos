@@ -36,10 +36,7 @@ resource "google_cloud_tasks_queue" "whatsapp_queue" {
   }
 
   retry_config {
-    max_attempts  = 3
-    min_backoff   = "2s"
-    max_backoff   = "300s"
-    max_doublings = 16
+    max_attempts  = 1
   }
 
   depends_on = [google_project_service.services]
