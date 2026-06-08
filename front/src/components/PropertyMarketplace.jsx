@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { Search, Home, MapPin, BedDouble, Ruler, ArrowRight, X, SlidersHorizontal, Info, Map as MapIcon, Grid } from 'lucide-react';
+import { Search, Home, MapPin, BedDouble, Ruler, ArrowRight, X, SlidersHorizontal, Info, Map as MapIcon, Grid, Columns } from 'lucide-react';
 import { db } from '../firebase';
 import Navbar from './Navbar';
 
@@ -17,9 +17,32 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
   const [priceMax, setPriceMax] = useState('');
   const [rooms, setRooms] = useState('');
   
-  // Modos de Vista: 'grid' (Solo Grilla), 'map' (Solo Mapa en móviles, dividido en desktop)
-  const [viewMode, setViewMode] = useState('grid'); 
+  // Modos de Vista: 'grid' (Solo Lista), 'map' (Solo Mapa), 'mixed' (Lista y Mapa)
+  const [viewMode, setViewMode] = useState(() => window.innerWidth >= 768 ? 'mixed' : 'grid'); 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  // Clases CSS dinámicas para los paneles
+  const getLeftPanelClass = () => {
+    if (viewMode === 'grid') return 'w-full flex flex-col h-full bg-white overflow-hidden';
+    if (viewMode === 'map') return 'hidden';
+    // 'mixed'
+    return 'w-full md:w-1/2 lg:w-[45%] flex flex-col h-full bg-white border-r border-slate-100 overflow-hidden';
+  };
+
+  const getRightPanelClass = () => {
+    if (viewMode === 'grid') return 'hidden';
+    if (viewMode === 'map') return 'w-full h-full flex bg-slate-200 relative';
+    // 'mixed'
+    return 'hidden md:flex flex-1 h-full bg-slate-200 relative';
+  };
+
+  const getGridColumnsClass = () => {
+    if (viewMode === 'grid') {
+      return 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6';
+    }
+    // 'mixed'
+    return 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4';
+  };
 
   // Referencias para Leaflet Map
   const mapContainerRef = useRef(null);
@@ -175,6 +198,15 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
 
   }, [filteredProperties, viewMode]);
 
+  // 4. Forzar redibujado/redimensionamiento de Leaflet cuando cambia el modo de vista
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => {
+        mapRef.current.invalidateSize({ animate: true });
+      }, 100);
+    }
+  }, [viewMode]);
+
   const handleClearFilters = () => {
     setSearchTerm('');
     setOperationType('');
@@ -218,6 +250,13 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
             <MapIcon className="h-3.5 w-3.5" />
             Mapa
           </button>
+          <button
+            onClick={() => setViewMode('mixed')}
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition ${viewMode === 'mixed' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            <Columns className="h-3.5 w-3.5" />
+            Mixta
+          </button>
         </div>
       </Navbar>
 
@@ -225,7 +264,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
         
         {/* PANEL IZQUIERDO: FILTROS Y LISTA DE PROPIEDADES */}
-        <div className={`w-full md:w-1/2 lg:w-[45%] flex flex-col h-full bg-white border-r border-slate-100 overflow-hidden ${viewMode === 'map' ? 'hidden md:flex' : 'flex'}`}>
+        <div className={getLeftPanelClass()}>
           {/* Caja de Búsqueda y Filtros Rápidos */}
           <div className="p-5 border-b border-slate-100 bg-slate-50/50 shrink-0 space-y-3">
             <div className="relative">
@@ -262,7 +301,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
           {/* Listado de Propiedades con Scroll Interno */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className={getGridColumnsClass()}>
                 {[1, 2, 3, 4].map(n => (
                   <div key={n} className="bg-white border border-slate-150 rounded-2xl overflow-hidden flex flex-col h-64 animate-pulse">
                     <div className="h-36 bg-slate-200 w-full" />
@@ -285,7 +324,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
                 <p className="text-slate-500 text-xs mt-1">Prueba reajustando la búsqueda o los filtros.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className={getGridColumnsClass()}>
                 {filteredProperties.map((prop) => (
                   <a
                     href={`/propiedad/${prop.id}`}
@@ -342,7 +381,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
         </div>
 
         {/* PANEL DERECHO: MAPA INTERACTIVO */}
-        <div className={`flex-1 h-full bg-slate-200 relative ${viewMode === 'grid' ? 'hidden md:block' : 'flex'}`}>
+        <div className={getRightPanelClass()}>
           <div id="map-container" className="h-full w-full z-10" />
           
           {/* Leyenda/Estado del Mapa */}

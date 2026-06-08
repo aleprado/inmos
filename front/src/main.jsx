@@ -5,6 +5,7 @@ import PropertyReviewDashboard from './components/PropertyReviewDashboard'
 import PropertyDetailView from './components/PropertyDetailView'
 import PropertyMarketplace from './components/PropertyMarketplace'
 import Login from './components/Login'
+import Landing from './components/Landing'
 import { auth } from './firebase'
 import { useTenant } from './hooks/useTenant'
 import { ToastProvider } from './contexts/ToastContext'
@@ -83,15 +84,18 @@ function App() {
     const urlParams = new URLSearchParams(window.location.search)
     const queryTenant = urlParams.get('tenant')
     
-    let currentTenant = queryTenant || 'demo'
+    let currentTenant = queryTenant || null
 
-    // Extraer tenant del subdominio si no está logueado y no hay parámetro query
-    if (!queryTenant && hostname && !hostname.startsWith('localhost')) {
-      if (hostname.includes('inmos.app') || hostname.includes('web.app') || hostname.includes('firebaseapp.com')) {
-        const parts = hostname.split('.')
-        // Si es lopez.inmos-2c701.web.app, parts.length > 2 y parts[0] es "lopez"
-        if (parts.length > 2) {
-          currentTenant = parts[0]
+    // Extraer tenant del subdominio si no hay parámetro query
+    if (!queryTenant && hostname) {
+      const parts = hostname.split('.')
+      const isLocal = hostname.startsWith('localhost') || hostname === '127.0.0.1'
+      
+      // Si no es local y tiene subdominio (ej: lopez.inmos.app o lopez.inmos-2c701.web.app)
+      if (!isLocal && parts.length > 2) {
+        const subdomain = parts[0]
+        if (subdomain !== 'www') {
+          currentTenant = subdomain
         }
       }
     }
@@ -111,12 +115,18 @@ function App() {
         view = 'detail'
         propertyId = cleanPath
       }
+    } else if (path === '/' && !currentTenant) {
+      // Si estamos en la raíz y no hay ningún subdominio/parámetro de tenant, cargamos landing page
+      view = 'landing'
     }
+
+    // Si no es landing y no hay tenant, usar 'demo' como fallback de marketplace
+    const finalTenant = currentTenant || (view === 'landing' ? null : 'demo')
 
     setRoute((prev) => ({
       view: authLoading ? prev.view : view, // Evitar parpadeos durante la carga de auth
       propertyId,
-      tenantId: userClaims.tenant_id || currentTenant
+      tenantId: userClaims.tenant_id || finalTenant
     }))
   }, [currentUser, authLoading, userClaims])
 
@@ -136,6 +146,8 @@ function App() {
   // Renderizador de Vistas
   const renderView = () => {
     switch (route.view) {
+      case 'landing':
+        return <Landing setRoute={setRoute} />
       case 'login':
         return <Login onLoginSuccess={handleLoginSuccess} />
       case 'admin':

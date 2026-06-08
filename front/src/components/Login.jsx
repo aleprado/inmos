@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { Lock, Mail, ShieldAlert, ArrowRight } from 'lucide-react';
 import { auth } from '../firebase';
 
@@ -7,11 +7,13 @@ export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
@@ -35,6 +37,36 @@ export default function Login({ onLoginSuccess }) {
           break;
         default:
           setError('Ocurrió un error inesperado. Inténtalo de nuevo.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setError('');
+    setSuccessMessage('');
+    
+    if (!email.trim()) {
+      setError('Por favor, ingresa tu correo electrónico en el campo superior para poder enviarte el enlace de restablecimiento.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setSuccessMessage('Se ha enviado un correo electrónico para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada.');
+    } catch (err) {
+      console.error("Error al enviar email de restablecimiento:", err);
+      switch (err.code) {
+        case 'auth/invalid-email':
+          setError('El formato del correo electrónico ingresado no es válido.');
+          break;
+        case 'auth/user-not-found':
+          setError('No encontramos ninguna cuenta registrada con este correo electrónico.');
+          break;
+        default:
+          setError('No se pudo enviar el correo de restablecimiento. Inténtalo de nuevo más tarde.');
       }
     } finally {
       setLoading(false);
@@ -70,6 +102,16 @@ export default function Login({ onLoginSuccess }) {
           </div>
         )}
 
+        {/* Alerta de Éxito */}
+        {successMessage && (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex gap-3 text-emerald-400 text-xs mb-6 animate-in fade-in slide-in-from-top-2 duration-200">
+            <svg className="h-5 w-5 shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="leading-relaxed">{successMessage}</span>
+          </div>
+        )}
+
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
@@ -91,7 +133,17 @@ export default function Login({ onLoginSuccess }) {
 
           {/* Contraseña */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contraseña</label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contraseña</label>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-[10px] text-brand-400 hover:text-brand-300 font-bold tracking-wide transition focus:outline-none"
+                disabled={loading}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 h-4.5 w-4.5" />
               <input

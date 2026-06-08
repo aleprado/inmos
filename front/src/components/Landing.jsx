@@ -1,0 +1,242 @@
+import React from 'react';
+import { MessageSquare, Sparkles, Globe, QrCode, Eye, ArrowRight, LogIn } from 'lucide-react';
+
+export default function Landing({ setRoute }) {
+  const handleGoToLogin = () => {
+    setRoute({ view: 'login', propertyId: null, tenantId: 'demo' });
+  };
+
+  const handleGoToDemo = () => {
+    setRoute({ view: 'marketplace', propertyId: null, tenantId: 'demo' });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-hidden flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+      
+      {/* Decorative background blobs */}
+      <div className="absolute top-0 left-1/4 h-[500px] w-[500px] bg-brand-900/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] bg-emerald-950/10 rounded-full blur-[100px] pointer-events-none" />
+
+      {/* HEADER */}
+      <header className="border-b border-slate-900/80 sticky top-0 bg-slate-950/80 backdrop-blur-md z-40 shrink-0">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src="/favicon.png" alt="Inmos Logo" className="h-9 w-9 rounded-xl object-cover shadow-lg shadow-brand-500/10" />
+            <div>
+              <span className="text-[10px] text-brand-400 font-bold uppercase tracking-widest block -mb-0.5">Plataforma</span>
+              <span className="font-extrabold text-white text-base tracking-tight">INMOS</span>
+            </div>
+          </div>
+          
+          <button 
+            onClick={handleGoToLogin}
+            className="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-bold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 transition btn-premium shadow-sm"
+          >
+            <LogIn className="h-4 w-4" />
+            Acceso Operadores
+          </button>
+        </div>
+      </header>
+
+      {/* HERO SECTION */}
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-12 md:py-20 lg:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
+        
+        {/* Left column (CTA / Pitch) */}
+        <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-950/40 border border-brand-900/40 text-brand-400 text-xs font-bold font-mono tracking-wider">
+            <Sparkles className="h-4.5 w-4.5 text-brand-400 animate-pulse" />
+            SaaS Inmobiliario Inteligente
+          </div>
+          
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
+            Gestiona tu inmobiliaria <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-brand-500 to-emerald-400">
+              desde WhatsApp con IA
+            </span>
+          </h1>
+          
+          <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            Sube propiedades enviando audios, fotos y videos por WhatsApp. Nuestra Inteligencia Artificial procesa la información y publica tu catálogo premium de marca blanca al instante. Sin fricciones, sin cargar planillas.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+            <button
+              onClick={handleGoToLogin}
+              className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 px-8 rounded-2xl flex items-center justify-center gap-2 transition btn-premium shadow-lg shadow-brand-500/20 text-sm"
+            >
+              Comenzar / Ingresar
+              <ArrowRight className="h-4.5 w-4.5" />
+            </button>
+            <button
+              onClick={handleGoToDemo}
+              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-bold py-4 px-8 rounded-2xl flex items-center justify-center gap-2 transition btn-premium text-sm"
+            >
+              Ver demo del catálogo
+            </button>
+          </div>
+        </div>
+        
+        {/* Right column (Visual Mock-up) */}
+        <div className="lg:col-span-5 flex justify-center">
+          <div className="w-full max-w-[420px] dark-glassmorphism rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+            
+            {/* Mock Header */}
+            <div className="flex items-center gap-2 border-b border-slate-800/80 pb-4 mb-4">
+              <div className="h-8.5 w-8.5 bg-emerald-600 rounded-full flex items-center justify-center text-white font-black text-xs">
+                WA
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-100">WhatsApp Inmos Bot</h4>
+                <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-ping"></span>
+                  En línea
+                </span>
+              </div>
+            </div>
+
+            {/* Mock Chat Bubbles */}
+            <div className="space-y-4">
+              {/* User Voice Message */}
+              <div className="flex justify-end">
+                <div className="bg-emerald-950/60 border border-emerald-900/50 text-slate-100 rounded-2xl rounded-tr-none px-4 py-3 max-w-[85%] text-xs shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-emerald-500 text-slate-950 p-1 rounded-full cursor-pointer">
+                      ▶
+                    </span>
+                    <div className="flex-1">
+                      <div className="h-1 bg-slate-700 w-32 rounded-full overflow-hidden relative">
+                        <div className="h-full bg-emerald-400 w-3/4" />
+                      </div>
+                      <span className="text-[8px] text-emerald-400 mt-1 block">Audio · 0:24</span>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[10px] italic text-slate-300 leading-normal">
+                    "Hola, quiero subir un departamento de 2 ambientes en Palermo con cochera por USD 150.000. Tiene 50m² y balcón al frente..."
+                  </p>
+                </div>
+              </div>
+
+              {/* Bot Processing */}
+              <div className="flex justify-start">
+                <div className="bg-slate-900/90 border border-slate-800 text-slate-300 rounded-2xl rounded-tl-none px-4 py-3 max-w-[85%] text-xs shadow-sm flex items-start gap-2.5">
+                  <Sparkles className="h-4.5 w-4.5 text-brand-400 mt-0.5 shrink-0" />
+                  <div>
+                    <span className="text-[9px] text-brand-400 font-bold block mb-1">PROCESANDO CON IA</span>
+                    <p className="text-[10px] leading-relaxed text-slate-200">
+                      Entendido. He extraído los siguientes datos para Palermo:
+                    </p>
+                    <ul className="mt-2 space-y-1 text-[9px] text-slate-400 font-mono">
+                      <li>• Operación: Venta</li>
+                      <li>• Precio: USD 150,000</li>
+                      <li>• Ambientes: 2 (50m²)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bot Success Card */}
+              <div className="flex justify-start">
+                <div className="bg-slate-900/90 border border-slate-800 text-slate-200 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-xs shadow-md">
+                  <div className="h-24 bg-slate-950 rounded-xl overflow-hidden mb-2 relative">
+                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full uppercase">
+                      Venta
+                    </div>
+                    {/* CSS abstract representation of property image */}
+                    <div className="w-full h-full bg-gradient-to-br from-brand-900/40 to-slate-900 flex items-center justify-center">
+                      <Globe className="h-8 w-8 text-brand-500/50" />
+                    </div>
+                  </div>
+                  <h5 className="font-extrabold text-[10.5px] text-slate-100 truncate">Depto 2 ambientes en Palermo</h5>
+                  <span className="text-[9.5px] text-brand-400 font-bold block mt-1">USD 150,000</span>
+                  <div className="mt-2.5 pt-2.5 border-t border-slate-800 flex justify-between items-center text-[9px] text-slate-400">
+                    <span>✨ Publicado en borrador</span>
+                    <span className="text-brand-400 font-bold flex items-center gap-0.5">
+                      Ver panel →
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      {/* FEATURE GRID */}
+      <section className="bg-slate-900/30 border-t border-b border-slate-900 py-16 md:py-24 relative z-10 shrink-0">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Diseñado para simplificar tu operación diaria
+            </h2>
+            <p className="text-slate-400 text-xs sm:text-sm mt-3 leading-relaxed">
+              Eliminamos la carga burocrática y creamos herramientas premium de venta para tus agentes inmobiliarios.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Feature 1 */}
+            <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-brand-500/30 transition duration-300">
+              <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
+                <MessageSquare className="h-5 w-5 text-brand-400" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-200">Carga por WhatsApp</h3>
+              <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
+                Envía un audio describiendo la propiedad, adjunta fotos/videos y deja que nuestra IA procese los datos automáticamente.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-brand-500/30 transition duration-300">
+              <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
+                <Globe className="h-5 w-5 text-brand-400" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-200">Catálogo Premium</h3>
+              <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
+                Sitio web de marca blanca optimizado para móviles con filtros, mapas interactivos y diseño visual adaptado a tus colores corporativos.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-brand-500/30 transition duration-300">
+              <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
+                <QrCode className="h-5 w-5 text-brand-400" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-200">Flyers y Carteles QR</h3>
+              <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
+                Genera folletos PDF en formato A4 comercial y carteles masivos de vidriera con código QR directo con un solo clic.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-brand-500/30 transition duration-300">
+              <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
+                <Eye className="h-5 w-5 text-brand-400" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-200">Métricas de Rendimiento</h3>
+              <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
+                Monitorea el total de vistas orgánicas de cada propiedad desde tu panel de administración para medir el ROI real de tu catálogo.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-slate-900 py-8 text-center text-xs text-slate-500 shrink-0">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© {new Date().getFullYear()} Inmos. Todos los derechos reservados.</p>
+          <div className="flex gap-4">
+            <span className="cursor-pointer hover:text-slate-350 transition">Términos de servicio</span>
+            <span className="cursor-pointer hover:text-slate-350 transition">Privacidad</span>
+            <span className="cursor-pointer hover:text-slate-350 transition" onClick={handleGoToLogin}>Panel</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+}

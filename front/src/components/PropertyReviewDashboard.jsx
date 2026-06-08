@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
+import { signOut, updatePassword } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer, Eye, Settings, Save } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -98,6 +98,12 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
   const [operatorForm, setOperatorForm] = useState({ name: '', email: '', phone: '' });
   const [operatorSubmitting, setOperatorSubmitting] = useState(false);
   const [operatorError, setOperatorError] = useState('');
+  
+  // Estados para contraseñas y éxito de operadores
+  const [createdOperatorData, setCreatedOperatorData] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passSaving, setPassSaving] = useState(false);
 
   // Estado para la generación de PDF
   const [generatingPdf, setGeneratingPdf] = useState(null);
@@ -273,14 +279,48 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
       });
 
       toast.success("Operador autorizado con éxito.");
-      setShowAddOperatorModal(false);
-      setOperatorForm({ name: '', email: '', phone: '' });
+      setCreatedOperatorData({
+        name: operatorForm.name,
+        email: result.data.email || `${operatorForm.email}@${tenantId}.com`,
+        phone: result.data.phone || operatorForm.phone,
+        tempPassword: result.data.tempPassword
+      });
     } catch (error) {
       console.error("Error al crear operador mediante Cloud Function:", error);
       setOperatorError(error.message || 'Error al procesar el alta de operador.');
       toast.error("Error al autorizar operador.");
     } finally {
       setOperatorSubmitting(false);
+    }
+  };
+
+  // Actualizar contraseña de Firebase Auth para el usuario logueado
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error("Las contraseñas no coinciden.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    setPassSaving(true);
+    try {
+      await updatePassword(auth.currentUser, newPassword);
+      toast.success("Contraseña actualizada con éxito.");
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error("Error al actualizar contraseña:", error);
+      if (error.code === 'auth/requires-recent-login') {
+        toast.error("Por seguridad, por favor cierra sesión y vuelve a ingresar para cambiar tu contraseña.");
+      } else {
+        toast.error(error.message || "No se pudo actualizar la contraseña.");
+      }
+    } finally {
+      setPassSaving(false);
     }
   };
 
@@ -476,16 +516,14 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
             </button>
           )}
 
-          {/* Pestaña de Configuración de Marca (Solo visible para admins) */}
-          {userClaims.admin && (
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === 'settings' ? 'bg-indigo-650 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
-            >
-              <Settings className="h-4 w-4" />
-              Configuración
-            </button>
-          )}
+          {/* Pestaña de Configuración y Perfil (Visible para todos) */}
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === 'settings' ? 'bg-indigo-650 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
+          >
+            <Settings className="h-4 w-4" />
+            {userClaims.admin ? 'Configuración' : 'Mi Perfil'}
+          </button>
         </div>
 
         {/* Buscador (No visible en las pestañas de administración para simplificar) */}
@@ -506,135 +544,189 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
       {/* Vista de Catálogo de Propiedades o Vista de Gestión de Operadores */}
       <main className="max-w-7xl mx-auto">
         {activeTab === 'settings' ? (
-          /* --- SECCIÓN CONFIGURACIÓN --- */
-          <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-2xl mx-auto">
-            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-              <Settings className="h-5.5 w-5.5 text-indigo-500" />
-              Configuración de Marca Blanca
-            </h2>
-            <p className="text-slate-400 text-xs mb-6">
-              Personaliza el logotipo, nombre, color de marca y datos de contacto de tu portal público.
-            </p>
+          <div className="space-y-8 max-w-2xl mx-auto">
+            {/* 1. CONFIGURACIÓN DE MARCA BLANCA (Solo Admin) */}
+            {userClaims.admin && (
+              <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8">
+                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                  <Settings className="h-5.5 w-5.5 text-indigo-500" />
+                  Configuración de Marca Blanca
+                </h2>
+                <p className="text-slate-400 text-xs mb-6">
+                  Personaliza el logotipo, nombre, color de marca y datos de contacto de tu portal público.
+                </p>
 
-            <form onSubmit={handleSaveSettings} className="space-y-6">
-              {/* Nombre */}
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nombre de la Inmobiliaria</label>
-                <input 
-                  type="text"
-                  required
-                  value={tenantSettings.name}
-                  onChange={(e) => setTenantSettings(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
-                  placeholder="Ej: López Propiedades"
-                />
-              </div>
-
-              {/* WhatsApp de Contacto */}
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">WhatsApp de Contacto Oficial</label>
-                <input 
-                  type="text"
-                  required
-                  value={tenantSettings.whatsappNumber}
-                  onChange={(e) => setTenantSettings(prev => ({ ...prev, whatsappNumber: e.target.value }))}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
-                  placeholder="Ej: 5491165432100"
-                />
-                <span className="text-[10px] text-slate-500 mt-1 block">Con código de país y código móvil (Ej: 549...). Se usará como contacto por defecto.</span>
-              </div>
-
-              {/* Color de Marca */}
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Color Primario (Tema)</label>
-                <div className="flex flex-wrap items-center gap-3 mb-3">
-                  {[
-                    { hex: '#0b57d0', name: 'Azul Inmos' },
-                    { hex: '#1e3a8a', name: 'Azul Marino' },
-                    { hex: '#059669', name: 'Esmeralda' },
-                    { hex: '#4f46e5', name: 'Índigo' },
-                    { hex: '#d97706', name: 'Ámbar' },
-                    { hex: '#e11d48', name: 'Rosa' },
-                    { hex: '#374151', name: 'Carbón' }
-                  ].map((color) => (
-                    <button
-                      key={color.hex}
-                      type="button"
-                      onClick={() => setTenantSettings(prev => ({ ...prev, primaryColor: color.hex }))}
-                      style={{ backgroundColor: color.hex }}
-                      title={color.name}
-                      className={`h-7 w-7 rounded-full border-2 transition ${tenantSettings.primaryColor === color.hex ? 'border-white scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center gap-3">
-                  <input 
-                    type="color"
-                    value={tenantSettings.primaryColor}
-                    onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                    className="h-10 w-12 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
-                  />
-                  <input 
-                    type="text"
-                    value={tenantSettings.primaryColor}
-                    onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                    className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
-                  />
-                </div>
-              </div>
-
-              {/* Logotipo */}
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Logotipo de la Inmobiliaria</label>
-                <div className="flex items-center gap-5 bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
-                  <div className="h-16 w-32 border border-slate-800 bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-                    {logoPreview || tenantSettings.logoUrl ? (
-                      <img src={logoPreview || tenantSettings.logoUrl} alt="Logo preview" className="max-h-full max-w-full object-contain" />
-                    ) : (
-                      <span className="text-[10px] text-slate-600">Sin Logotipo</span>
-                    )}
-                  </div>
-                  <div className="flex-1">
+                <form onSubmit={handleSaveSettings} className="space-y-6">
+                  {/* Nombre */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nombre de la Inmobiliaria</label>
                     <input 
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setLogoFile(file);
-                          setLogoPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                      className="hidden"
-                      id="logo-upload-input"
+                      type="text"
+                      required
+                      value={tenantSettings.name}
+                      onChange={(e) => setTenantSettings(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                      placeholder="Ej: López Propiedades"
                     />
-                    <label 
-                      htmlFor="logo-upload-input"
-                      className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition inline-block mb-1.5"
-                    >
-                      Seleccionar Archivo
-                    </label>
-                    <p className="text-[9px] text-slate-500">Se recomienda formato PNG transparente y fondo claro, máx. 2MB.</p>
                   </div>
-                </div>
-              </div>
 
-              {/* Botón de Guardado */}
-              <div className="pt-4 border-t border-slate-800 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={settingsSaving}
-                  className="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl text-xs flex items-center gap-2 transition disabled:opacity-50 shadow-lg shadow-brand-500/10"
-                >
-                  {settingsSaving ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  {settingsSaving ? 'Guardando...' : 'Guardar Configuración'}
-                </button>
+                  {/* WhatsApp de Contacto */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">WhatsApp de Contacto Oficial</label>
+                    <input 
+                      type="text"
+                      required
+                      value={tenantSettings.whatsappNumber}
+                      onChange={(e) => setTenantSettings(prev => ({ ...prev, whatsappNumber: e.target.value }))}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                      placeholder="Ej: 5491165432100"
+                    />
+                    <span className="text-[10px] text-slate-500 mt-1 block">Con código de país y código móvil (Ej: 549...). Se usará como contacto por defecto.</span>
+                  </div>
+
+                  {/* Color de Marca */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Color Primario (Tema)</label>
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      {[
+                        { hex: '#0b57d0', name: 'Azul Inmos' },
+                        { hex: '#1e3a8a', name: 'Azul Marino' },
+                        { hex: '#059669', name: 'Esmeralda' },
+                        { hex: '#4f46e5', name: 'Índigo' },
+                        { hex: '#d97706', name: 'Ámbar' },
+                        { hex: '#e11d48', name: 'Rosa' },
+                        { hex: '#374151', name: 'Carbón' }
+                      ].map((color) => (
+                        <button
+                          key={color.hex}
+                          type="button"
+                          onClick={() => setTenantSettings(prev => ({ ...prev, primaryColor: color.hex }))}
+                          style={{ backgroundColor: color.hex }}
+                          title={color.name}
+                          className={`h-7 w-7 rounded-full border-2 transition ${tenantSettings.primaryColor === color.hex ? 'border-white scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="color"
+                        value={tenantSettings.primaryColor}
+                        onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
+                        className="h-10 w-12 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                      />
+                      <input 
+                        type="text"
+                        value={tenantSettings.primaryColor}
+                        onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
+                        className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Logotipo */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Logotipo de la Inmobiliaria</label>
+                    <div className="flex items-center gap-5 bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
+                      <div className="h-16 w-32 border border-slate-800 bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                        {logoPreview || tenantSettings.logoUrl ? (
+                          <img src={logoPreview || tenantSettings.logoUrl} alt="Logo preview" className="max-h-full max-w-full object-contain" />
+                        ) : (
+                          <span className="text-[10px] text-slate-600">Sin Logotipo</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <input 
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setLogoFile(file);
+                              setLogoPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                          className="hidden"
+                          id="logo-upload-input"
+                        />
+                        <label 
+                          htmlFor="logo-upload-input"
+                          className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition inline-block mb-1.5"
+                        >
+                          Seleccionar Archivo
+                        </label>
+                        <p className="text-[9px] text-slate-500">Se recomienda formato PNG transparente y fondo claro, máx. 2MB.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Botón de Guardado */}
+                  <div className="pt-4 border-t border-slate-800 flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={settingsSaving}
+                      className="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl text-xs flex items-center gap-2 transition disabled:opacity-50 shadow-lg shadow-brand-500/10"
+                    >
+                      {settingsSaving ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                      {settingsSaving ? 'Guardando...' : 'Guardar Configuración'}
+                    </button>
+                  </div>
+                </form>
               </div>
-            </form>
+            )}
+
+            {/* 2. CAMBIAR CONTRASEÑA (Para todos) */}
+            <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8">
+              <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <Lock className="h-5.5 w-5.5 text-emerald-500" />
+                Seguridad de la Cuenta
+              </h2>
+              <p className="text-slate-400 text-xs mb-6">
+                Actualiza tu contraseña para mantener la seguridad de tu panel de operador.
+              </p>
+
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nueva Contraseña</label>
+                  <input 
+                    type="password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                    placeholder="Mínimo 6 caracteres"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Confirmar Nueva Contraseña</label>
+                  <input 
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                    placeholder="Repite la contraseña"
+                  />
+                </div>
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={passSaving}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl text-xs flex items-center gap-2 transition disabled:opacity-50 shadow-lg shadow-emerald-600/10"
+                  >
+                    {passSaving ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Actualizar Contraseña
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         ) : activeTab === 'operators' ? (
           
@@ -926,6 +1018,7 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
                 onClick={() => {
                   setShowAddOperatorModal(false);
                   setOperatorError('');
+                  setCreatedOperatorData(null);
                 }}
                 className="text-slate-400 hover:text-slate-200 p-1.5 rounded-full hover:bg-slate-800 transition"
               >
@@ -933,84 +1026,137 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
               </button>
             </div>
 
-            <form onSubmit={handleAddOperator} className="p-6 space-y-4">
-              {operatorError && (
-                <div className="bg-red-500/10 border border-red-500/15 text-red-400 text-xs p-3.5 rounded-xl flex gap-2">
-                  <ShieldCheck className="h-4 w-4 shrink-0 rotate-180" />
-                  <span>{operatorError}</span>
+            {createdOperatorData ? (
+              /* --- VISTA DE ÉXITO CON LA CONTRASEÑA --- */
+              <div className="p-6 space-y-5">
+                <div className="bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 text-xs p-4 rounded-2xl flex flex-col gap-2">
+                  <span className="font-bold text-sm">✓ Operador registrado con éxito</span>
+                  <p className="text-slate-300 leading-normal text-[11px]">
+                    El operador se ha creado correctamente. Comparte las siguientes credenciales para que pueda ingresar al panel:
+                  </p>
                 </div>
-              )}
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nombre del operador</label>
-                <input 
-                  type="text" 
-                  value={operatorForm.name} 
-                  onChange={(e) => setOperatorForm({...operatorForm, name: e.target.value})}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
-                  placeholder="ej: Juan Gómez"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Usuario de acceso (Email)</label>
-                <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl overflow-hidden focus-within:border-emerald-500 transition">
-                  <input 
-                    type="text" 
-                    value={operatorForm.email} 
-                    onChange={(e) => setOperatorForm({...operatorForm, email: e.target.value})}
-                    className="flex-1 bg-transparent px-3.5 py-2 text-xs text-slate-200 focus:outline-none border-0"
-                    placeholder="ej: juan.gomez"
-                    required
-                  />
-                  <span className="bg-slate-800 text-slate-400 text-xs px-3.5 py-2 border-l border-slate-700 font-mono font-bold select-none shrink-0">
-                    @{tenantId}.com
-                  </span>
+                <div className="space-y-3 bg-slate-900/60 border border-slate-850 p-4.5 rounded-2xl text-xs">
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block mb-0.5">Usuario (Email)</span>
+                    <span className="font-mono text-slate-200 select-all block break-all">{createdOperatorData.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block mb-0.5">Teléfono</span>
+                    <span className="font-mono text-slate-200 select-all block">{createdOperatorData.phone}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Contraseña Temporal</span>
+                    <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 border border-slate-800 rounded-xl">
+                      <span className="font-mono text-emerald-400 font-bold flex-1 select-all tracking-wider break-all">{createdOperatorData.tempPassword}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(createdOperatorData.tempPassword);
+                          toast.success("Contraseña copiada al portapapeles.");
+                        }}
+                        className="bg-slate-850 hover:bg-slate-800 text-[10px] font-bold text-slate-300 px-2.5 py-1 rounded-lg border border-slate-800 active:scale-95 transition"
+                      >
+                        Copiar
+                      </button>
+                    </div>
+                    <span className="text-[9px] text-amber-500 font-semibold mt-1.5 block">⚠️ Importante: Copia esta contraseña ahora. No volverá a mostrarse por seguridad.</span>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Teléfono de WhatsApp</label>
-                <input 
-                  type="text" 
-                  value={operatorForm.phone} 
-                  onChange={(e) => setOperatorForm({...operatorForm, phone: e.target.value})}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
-                  placeholder="ej: 91155556666"
-                  required
-                />
-                <span className="text-[10px] text-slate-500 mt-1 block">Si no ingresas código de país, se agregará "54" (Argentina) por defecto.</span>
-              </div>
-
-              <div className="pt-2 flex gap-3">
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     setShowAddOperatorModal(false);
-                    setOperatorError('');
+                    setCreatedOperatorData(null);
+                    setOperatorForm({ name: '', email: '', phone: '' });
                   }}
-                  className="flex-1 bg-slate-700 hover:bg-slate-650 text-white font-bold py-2.5 rounded-xl text-xs"
-                  disabled={operatorSubmitting}
+                  className="w-full bg-slate-700 hover:bg-slate-650 text-white font-bold py-3 rounded-xl text-xs transition"
                 >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-1.5"
-                  disabled={operatorSubmitting}
-                >
-                  {operatorSubmitting ? (
-                    <div className="h-4.5 w-4.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <UserPlus className="h-3.5 w-3.5" />
-                      Crear Operador
-                    </>
-                  )}
+                  Cerrar Ventana
                 </button>
               </div>
-            </form>
+            ) : (
+              /* --- FORMULARIO DE REGISTRO --- */
+              <form onSubmit={handleAddOperator} className="p-6 space-y-4">
+                {operatorError && (
+                  <div className="bg-red-500/10 border border-red-500/15 text-red-400 text-xs p-3.5 rounded-xl flex gap-2">
+                    <ShieldCheck className="h-4 w-4 shrink-0 rotate-180" />
+                    <span>{operatorError}</span>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nombre del operador</label>
+                  <input 
+                    type="text" 
+                    value={operatorForm.name} 
+                    onChange={(e) => setOperatorForm({...operatorForm, name: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
+                    placeholder="ej: Juan Gómez"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Usuario de acceso (Email)</label>
+                  <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl overflow-hidden focus-within:border-emerald-500 transition">
+                    <input 
+                      type="text" 
+                      value={operatorForm.email} 
+                      onChange={(e) => setOperatorForm({...operatorForm, email: e.target.value})}
+                      className="flex-1 bg-transparent px-3.5 py-2 text-xs text-slate-200 focus:outline-none border-0"
+                      placeholder="ej: juan.gomez"
+                      required
+                    />
+                    <span className="bg-slate-800 text-slate-400 text-xs px-3.5 py-2 border-l border-slate-700 font-mono font-bold select-none shrink-0">
+                      @{tenantId}.com
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Teléfono de WhatsApp</label>
+                  <input 
+                    type="text" 
+                    value={operatorForm.phone} 
+                    onChange={(e) => setOperatorForm({...operatorForm, phone: e.target.value})}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
+                    placeholder="ej: 91155556666"
+                    required
+                  />
+                  <span className="text-[10px] text-slate-500 mt-1 block">Si no ingresas código de país, se agregará "54" (Argentina) por defecto.</span>
+                </div>
+
+                <div className="pt-2 flex gap-3">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setShowAddOperatorModal(false);
+                      setOperatorError('');
+                    }}
+                    className="flex-1 bg-slate-700 hover:bg-slate-650 text-white font-bold py-2.5 rounded-xl text-xs"
+                    disabled={operatorSubmitting}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-1.5"
+                    disabled={operatorSubmitting}
+                  >
+                    {operatorSubmitting ? (
+                      <div className="h-4.5 w-4.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <UserPlus className="h-3.5 w-3.5" />
+                        Crear Operador
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
