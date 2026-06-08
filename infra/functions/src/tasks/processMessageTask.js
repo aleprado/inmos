@@ -4,6 +4,29 @@ const { saveProperty, getOperatorTenant, getPropertyById, updateProperty, append
 const { getSession, createOrUpdateSession, clearSession, isSessionValid } = require('../services/sessionService');
 const { sendWhatsAppMessage } = require('../services/whatsappSender');
 const { getMediaBufferFromId, uploadImageToStorage } = require('../services/whatsappMedia');
+const { aiModel } = require('../config/ai');
+
+/**
+ * Transcribe un archivo de audio a texto usando Gemini
+ */
+async function transcribeAudio(audioBuffer, mimeType) {
+  try {
+    const prompt = "Transcribe el siguiente audio de WhatsApp exactamente. No agregues comentarios, explicaciones, introducciones ni formato adicional. Si no hay voz inteligible, devuelve vacío.";
+    const result = await aiModel.generateContent([
+      { text: prompt },
+      {
+        inlineData: {
+          data: audioBuffer.toString("base64"),
+          mimeType: mimeType
+        }
+      }
+    ]);
+    return result.response.text().trim();
+  } catch (error) {
+    console.error("Error transcribiendo audio:", error);
+    return "";
+  }
+}
 
 /**
  * Tarea asíncrona que procesa el flujo conversacional y la persistencia de propiedades.
@@ -11,6 +34,7 @@ const { getMediaBufferFromId, uploadImageToStorage } = require('../services/what
  */
 exports.processMessage = onTaskDispatched(async (request) => {
   const { messageText, mediaId, mimeType, senderPhone } = request.data;
+  let processedText = messageText;
 
   try {
     console.log(`Procesando tarea para el mensaje de: ${senderPhone}`);
@@ -23,8 +47,16 @@ exports.processMessage = onTaskDispatched(async (request) => {
       return;
     }
 
+    // 1.5 Transcribir el audio a texto si es necesario
+    if (!messageText && mediaId && mimeType && mimeType.startsWith('audio/')) {
+      console.log(`Descargando y transcribiendo audio con mediaId: ${mediaId}`);
+      const audioBuffer = await getMediaBufferFromId(mediaId);
+      processedText = await transcribeAudio(audioBuffer, mimeType);
+      console.log(`Audio transcrito con éxito: "${processedText}"`);
+    }
+
     // 2. Comprobar comandos globales de finalización/cierre
-    const cleanedText = messageText ? messageText.trim().toLowerCase() : "";
+    const cleanedText = processedText ? processedText.trim().toLowerCase() : "";
     if (cleanedText === "terminar" || cleanedText === "finalizar") {
       await clearSession(senderPhone);
       await sendWhatsAppMessage(senderPhone, "✅ *¡Entendido!* Finalizamos el registro de esta propiedad. Todos los detalles actuales han sido guardados. Ya puedes revisarla en el panel web.");
@@ -60,7 +92,7 @@ exports.processMessage = onTaskDispatched(async (request) => {
       }
 
       // CASO B: El mensaje es de texto o audio (detalles descriptivos o respuestas a preguntas)
-      if (messageText) {
+      if (processedText) {
         // Sub-Caso B1: El operador finaliza la carga de fotos escribiendo "listo"
         if (session.status === 'waiting_images' && (cleanedText === 'listo' || cleanedText === 'omitir')) {
           console.log("El operador indicó 'listo'. Pasando a validar campos vacíos...");
@@ -105,8 +137,8 @@ exports.processMessage = onTaskDispatched(async (request) => {
           let fieldValue = null;
 
           if (cleanedText !== 'omitir' && cleanedText !== 'saltar') {
-            console.log(`Extrayendo valor numérico para el campo '${currentField}' de la respuesta: "${messageText}"`);
-            const extracted = await extractSingleField(currentField, messageText);
+            console.log(`Extrayendo valor numérico para el campo '${currentField}' de la respuesta: "${processedText}"`);
+            const extracted = await extractSingleField(currentField, processedText);
             fieldValue = extracted[currentField];
           }
 
@@ -143,7 +175,7 @@ exports.processMessage = onTaskDispatched(async (request) => {
           console.log(`Combinando nueva descripción en propiedad existente: ${propertyId}`);
           const propertyData = await getPropertyById(propertyId);
           if (propertyData) {
-            const mergedData = await mergePropertyDetails(propertyData, messageText);
+            const mergedData = await mergePropertyDetails(propertyData, processedText);
             await updateProperty(propertyId, mergedData);
             
             // Actualizar la última actividad
@@ -158,8 +190,8 @@ exports.processMessage = onTaskDispatched(async (request) => {
     // --- ESCENARIO 2: CREACIÓN DE NUEVA PROPIEDAD ---
     console.log("No hay sesión activa para el operador. Iniciando nueva propiedad...");
 
-    // Obligar a que el primer mensaje tenga texto (no puede iniciar solo enviando una foto huérfana)
-    if (!messageText && mediaId) {
+    // Obligar a que el primer mensaje tenga texto o sea un audio (no puede iniciar solo enviando una foto huérfana)
+    if (!processedText && mediaId && (!mimeType || !mimeType.startsWith('audio/'))) {
       await sendWhatsAppMessage(senderPhone, "🤖 *¡Hola!* Por favor envía primero la descripción en texto o un audio con los detalles de la propiedad para iniciar el registro.");
       return;
     }
@@ -173,7 +205,7 @@ exports.processMessage = onTaskDispatched(async (request) => {
     }
 
     console.log("Llamando al Agente IA Multimodal...");
-    const parsedData = await parsePropertyMessage(messageText, mediaBuffer, mimeType);
+    const parsedData = await parsePropertyMessage(processedText, mediaBuffer, mimeType);
     console.log("Datos extraídos por la IA:", parsedData);
 
     if (imageUrl) {
