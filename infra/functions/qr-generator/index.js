@@ -2,7 +2,12 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const QRCode = require("qrcode");
 
-admin.initializeApp();
+if (admin.apps.length === 0) {
+  const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'inmos-2c701';
+  admin.initializeApp({
+    storageBucket: process.env.STORAGE_BUCKET || `${projectId}-inmos-media`
+  });
+}
 
 /**
  * Trigger de Firestore que se dispara cuando una propiedad se actualiza.
