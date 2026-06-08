@@ -74,7 +74,11 @@ export default function PropertyDetailView({ propertyId, tenantId }) {
   const getWhatsAppLink = () => {
     if (!property) return '#';
     const message = `Hola, estoy interesado en el/la ${property.propertyType || 'propiedad'} en ${property.operationType || 'operación'} ubicado/a en "${property.address || property.title}" que vi mediante el código QR (Ref: ${property.id}). ¿Sigue disponible?`;
-    const phone = property.whatsappNumber || "5491100000000"; // Reemplazar por número real del operador o tenant
+    let phone = property.metadata?.sender || property.whatsappNumber || "5491100000000";
+    // Si es un número de Argentina de 11 dígitos (ej: 542342...), insertamos el '9' móvil para ruteo correcto de WhatsApp
+    if (phone.startsWith('54') && !phone.startsWith('549') && phone.length === 11) {
+      phone = '549' + phone.substring(2);
+    }
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
 
