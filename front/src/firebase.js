@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // Configuración de Firebase leída de las variables de entorno de Vite (.env)
 const firebaseConfig = {
@@ -39,8 +39,8 @@ if (typeof window !== "undefined") {
 
   try {
     const appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaEnterpriseProvider(
-        // Clave pública del sitio de reCAPTCHA Enterprise configurada en la consola de Firebase
+      provider: new ReCaptchaV3Provider(
+        // Clave pública del sitio de reCAPTCHA v3 configurada en la consola de Firebase
         import.meta.env.VITE_RECAPTCHA_ENTERPRISE_KEY || "6Lc_mock_site_key_goes_here"
       ),
       isTokenAutoRefreshEnabled: true
