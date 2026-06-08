@@ -73,6 +73,20 @@ exports.processSignUp = functions.auth.user().onCreate(async (user) => {
       tenant_id: tenantId,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
+
+    // 2. Crear el documento de tenant por defecto si no existe
+    const tenantRef = admin.firestore().collection("tenants").doc(tenantId);
+    const tenantSnap = await tenantRef.get();
+    if (!tenantSnap.exists) {
+      console.log(`Creando documento de tenant por defecto para: ${tenantId}`);
+      await tenantRef.set({
+        name: tenantId.toUpperCase().replace(/-/g, " "),
+        whatsappNumber: "",
+        primaryColor: "#0b57d0",
+        logoUrl: null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
     
     return null;
   } catch (error) {
