@@ -7,13 +7,13 @@ const { demoEventEmitter } = require('../services/whatsappSender');
  * Simula el bot de WhatsApp extrayendo datos con la IA y guardando propiedades en la inmobiliaria 'demo'.
  */
 exports.processDemoMessage = onCall(async (request) => {
-  const { messageText, sessionId } = request.data;
+  const { messageText, sessionId, imageUrl } = request.data;
 
   // 1. Validar parámetros de entrada
-  if (!messageText || !sessionId) {
+  if (!sessionId || (messageText === undefined && !imageUrl)) {
     throw new HttpsError(
       'invalid-argument',
-      'Debes proporcionar "messageText" y "sessionId" para el procesamiento.'
+      'Debes proporcionar "messageText" (o "imageUrl") y "sessionId" para el procesamiento.'
     );
   }
 
