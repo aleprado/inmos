@@ -53,6 +53,12 @@ function App() {
           // Si el usuario estaba intentando entrar a Login, redirigir a Admin
           setRoute((prev) => {
             if (prev.view === 'login') {
+              // Hacemos el pushState de forma segura fuera del render usando setTimeout
+              setTimeout(() => {
+                if (window.location.pathname !== '/admin') {
+                  window.history.pushState(null, '', '/admin');
+                }
+              }, 0);
               return { ...prev, view: 'admin', tenantId: claims.tenant_id || prev.tenantId }
             }
             return { ...prev, tenantId: claims.tenant_id || prev.tenantId }
@@ -132,8 +138,7 @@ function App() {
 
   // Cambios manuales de ruta tras acciones (ej: éxito de login)
   const handleLoginSuccess = (user) => {
-    window.history.pushState(null, '', '/admin');
-    setRoute((prev) => ({ ...prev, view: 'admin' }));
+    // El useEffect de onAuthStateChanged se encargará de refrescar claims y redirigir
   }
 
   if (authLoading || tenantLoading) {
