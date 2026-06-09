@@ -76,8 +76,56 @@ exports.whatsappWebhook = onRequest(async (req, res) => {
             const tenantId = await getOperatorTenant(senderPhone);
             if (!tenantId) {
               console.log(`Spam o no autorizado: ${senderPhone}`);
+              try {
+                const { sendWhatsAppMessage } = require('../services/whatsappSender');
+                await sendWhatsAppMessage(
+                  senderPhone, 
+                  `⚠️ ¡Hola! El número *${senderPhone}* no está registrado como operador autorizado en Inmos. Por favor, solicita al administrador de la inmobiliaria que registre tu número exacto en la configuración del panel.`
+                );
+              } catch (err) {
+                console.error("Error al enviar mensaje de no autorizado:", err);
+              }
               res.sendStatus(200);
               return;
+            }
+
+            // Enviar un feedback inmediato al operador para que la espera de la IA no parezca colgada
+            try {
+              const { getSession, isSessionValid } = require('../services/sessionService');
+              const { sendWhatsAppMessage } = require('../services/whatsappSender');
+              
+              const session = await getSession(senderPhone);
+              const hasActiveSession = isSessionValid(session);
+              let feedbackText = null;
+              
+              const isAudio = mimeType && mimeType.startsWith('audio/');
+              
+              if (!hasActiveSession) {
+                if (isAudio) {
+                  feedbackText = "🤖 *¡Audio recibido!* Estoy transcribiendo y analizando los detalles de la propiedad. Aguarda unos segundos... ⏳";
+                } else if (messageText) {
+                  feedbackText = "🤖 *¡Mensaje recibido!* Estoy analizando la descripción para dar de alta la propiedad en el sistema. Aguarda unos segundos... ⏳";
+                }
+              } else {
+                const cleanedText = messageText ? messageText.trim().toLowerCase() : "";
+                const isCommand = cleanedText === "listo" || cleanedText === "omitir" || cleanedText === "saltar" || cleanedText === "terminar" || cleanedText === "finalizar";
+                
+                if (session.status === 'waiting_images') {
+                  if (isAudio) {
+                    feedbackText = "🤖 *¡Audio recibido!* Estoy transcribiendo y procesando los detalles adicionales... ⏳";
+                  } else if (messageText && !isCommand) {
+                    feedbackText = "🤖 *¡Entendido!* Estoy analizando el texto adicional para incorporarlo al borrador... ⏳";
+                  }
+                } else if (session.status === 'waiting_field' && messageText && !isCommand) {
+                  feedbackText = "🤖 Procesando respuesta... ⏳";
+                }
+              }
+              
+              if (feedbackText) {
+                await sendWhatsAppMessage(senderPhone, feedbackText);
+              }
+            } catch (err) {
+              console.error("Error al enviar mensaje de feedback rápido:", err);
             }
 
             // ENCOLAR LA TAREA ASÍNCRONA
