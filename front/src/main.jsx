@@ -13,11 +13,47 @@ import './index.css'
 import { applyTheme } from './utils/theme'
 
 function App() {
-  const [route, setRoute] = useState({
-    view: 'marketplace', // 'marketplace' | 'admin' | 'detail' | 'login'
-    propertyId: null,
-    tenantId: 'demo'
-  })
+  const [route, setRoute] = useState(() => {
+    // 1. Extraer tenant inicial sincrónicamente para evitar destellos
+    const hostname = window.location.hostname;
+    const urlParams = new URLSearchParams(window.location.search);
+    let initialTenant = urlParams.get('tenant') || null;
+
+    if (!initialTenant && hostname) {
+      const parts = hostname.split('.');
+      const isLocal = hostname.startsWith('localhost') || hostname === '127.0.0.1';
+      if (!isLocal && parts.length > 2 && parts[0] !== 'www') {
+        initialTenant = parts[0];
+      }
+    }
+
+    const path = window.location.pathname;
+    let initialView = 'marketplace';
+    let initialPropertyId = null;
+
+    if (path.startsWith('/admin') || path.startsWith('/review')) {
+      initialView = 'login'; // Asumimos login hasta que auth cargue
+    } else if (path.startsWith('/propiedad/')) {
+      initialView = 'detail';
+      initialPropertyId = path.split('/propiedad/')[1];
+    } else if (path !== '/' && path.length > 1) {
+      const cleanPath = path.substring(1);
+      if (cleanPath.length > 5) {
+        initialView = 'detail';
+        initialPropertyId = cleanPath;
+      }
+    } else if (path === '/' && !initialTenant) {
+      initialView = 'landing';
+    }
+
+    const finalTenant = initialTenant || (initialView === 'landing' ? null : 'demo');
+
+    return {
+      view: initialView,
+      propertyId: initialPropertyId,
+      tenantId: finalTenant
+    };
+  });
   
   const [currentUser, setCurrentUser] = useState(null)
   const [userClaims, setUserClaims] = useState({ admin: false, tenant_id: null })
@@ -53,16 +89,13 @@ function App() {
           // Si el usuario estaba intentando entrar a Login, redirigir a Admin
           setRoute((prev) => {
             if (prev.view === 'login') {
-              // Hacemos el pushState de forma segura fuera del render usando setTimeout
-              setTimeout(() => {
-                if (window.location.pathname !== '/admin') {
-                  window.history.pushState(null, '', '/admin');
-                }
-              }, 0);
-              return { ...prev, view: 'admin', tenantId: claims.tenant_id || prev.tenantId }
+              if (window.location.pathname !== '/admin') {
+                window.history.pushState(null, '', '/admin');
+              }
+              return { ...prev, view: 'admin', tenantId: claims.tenant_id || prev.tenantId };
             }
-            return { ...prev, tenantId: claims.tenant_id || prev.tenantId }
-          })
+            return { ...prev, tenantId: claims.tenant_id || prev.tenantId };
+          });
         } catch (error) {
           console.error("Error al obtener ID Token Claims:", error)
         }
