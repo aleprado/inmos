@@ -37,14 +37,28 @@ exports.processDemoMessage = onCall(async (request) => {
     
     demoEventEmitter.on('message', listener);
 
-    // 3. Invocar el flujo conversacional de IA utilizando el tenant 'demo'
-    await handleCoreMessageProcess({
-      messageText: messageText.trim(),
-      mediaId: null,
-      mimeType: null,
-      senderPhone: sessionId,
-      tenantId: 'demo'
-    });
+    // 3. Si es una imagen de ejemplo, insertarla directamente sin pasar por la IA
+    if (request.data.imageUrl) {
+      const { getSession } = require('../services/sessionService');
+      const { appendImageToProperty } = require('../services/propertyService');
+      const session = await getSession(sessionId);
+      
+      if (session && session.status === 'waiting_images') {
+        await appendImageToProperty(session.lastPropertyId, request.data.imageUrl);
+        replies.push("📸 *¡Foto de ejemplo agregada con éxito!* (Omitimos el análisis por IA). Sigue enviando fotos o escribe *'listo'* para continuar.");
+      } else {
+        replies.push("⚠️ Primero debes iniciar el registro con una descripción antes de mandar fotos.");
+      }
+    } else {
+      // 4. Invocar el flujo conversacional de IA utilizando el tenant 'demo'
+      await handleCoreMessageProcess({
+        messageText: messageText.trim(),
+        mediaId: null,
+        mimeType: null,
+        senderPhone: sessionId,
+        tenantId: 'demo'
+      });
+    }
 
     demoEventEmitter.off('message', listener);
 

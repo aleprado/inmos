@@ -742,11 +742,56 @@ _"Vendo departamento de 3 ambientes con 2 baños y cochera en Palermo, 82 m2, po
               
               {/* Input de Mensajes */}
               <form onSubmit={handleSendChatMessage} className="p-3 bg-[#f0f0f0] flex items-center gap-2 border-t border-slate-200 shrink-0">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (isBotTyping || !sessionId) return;
+                    setIsBotTyping(true);
+                    setChatMessages(prev => [...prev, {
+                      id: Date.now().toString(),
+                      text: "📷 [Enviando imagen de ejemplo...]",
+                      sender: 'user',
+                      createdAt: { seconds: Math.floor(Date.now() / 1000) }
+                    }]);
+                    try {
+                      const functions = getFunctions();
+                      const processDemoMessageFn = httpsCallable(functions, 'processDemoMessage');
+                      const response = await processDemoMessageFn({
+                        messageText: '',
+                        imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        sessionId: sessionId
+                      });
+                      if (response.data && response.data.replies) {
+                        const botMessages = response.data.replies.map((text, idx) => ({
+                          id: `bot_${Date.now()}_${idx}`,
+                          text: text,
+                          sender: 'bot',
+                          createdAt: { seconds: Math.floor(Date.now() / 1000) }
+                        }));
+                        setChatMessages(prev => [...prev, ...botMessages]);
+                      }
+                    } catch (error) {
+                      console.error("Error al enviar imagen de demo:", error);
+                      setChatMessages(prev => [...prev, {
+                        id: `err_${Date.now()}`,
+                        text: `❌ Error: ${error.message}`,
+                        sender: 'bot',
+                        createdAt: { seconds: Math.floor(Date.now() / 1000) }
+                      }]);
+                    }
+                    setIsBotTyping(false);
+                  }}
+                  title="Enviar foto de ejemplo"
+                  disabled={isBotTyping}
+                  className="w-10 h-10 bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-600 rounded-full flex items-center justify-center shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed shrink-0 cursor-pointer"
+                >
+                  <Grid className="h-5 w-5" />
+                </button>
                 <input
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Escribe un mensaje describiendo la propiedad..."
+                  placeholder="Ej: Vendo depto 3 amb en Palermo por USD 150.000, 80m2..."
                   disabled={isBotTyping}
                   className="flex-1 py-2.5 px-4 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 disabled:bg-slate-50 disabled:text-slate-400"
                 />
