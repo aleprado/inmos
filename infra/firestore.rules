@@ -29,10 +29,9 @@ service cloud.firestore {
       
       // Lectura: 
       // 1. Un usuario anónimo puede leer si el inmueble está aprobado (status == "approved")
-      //    Y la petición viene obligatoriamente desde nuestra web oficial validada por App Check (isValidApp()).
       // 2. Un operador autenticado puede leer cualquier propiedad (incluso pendientes o archivadas)
       //    que pertenezca a su propia inmobiliaria (tenant_id).
-      allow read: if (resource.data.status == "approved" && isValidApp())
+      allow read: if resource.data.status == "approved"
                   || belongsToTenant(resource.data.tenant_id);
 
       // Creación:
@@ -69,6 +68,15 @@ service cloud.firestore {
     match /tenants/{tenantId} {
       allow read: if true;
       allow write: if isAuthed() && isAdmin(tenantId);
+    }
+
+    // --- REGLAS DE SEGURIDAD PARA LA SIMULACIÓN DE CHATS (DEMO) ---
+    match /chats/{sessionId} {
+      allow read, write: if sessionId.startsWith('demo_session_');
+      
+      match /messages/{messageId} {
+        allow read, write: if sessionId.startsWith('demo_session_');
+      }
     }
   }
 }
