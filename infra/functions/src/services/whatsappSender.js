@@ -1,5 +1,7 @@
 const axios = require('axios');
 const { db, admin } = require('../config/firebase');
+const { EventEmitter } = require('events');
+const demoEventEmitter = new EventEmitter();
 
 // Idealmente desde env vars
 const WA_PHONE_NUMBER_ID = process.env.WA_PHONE_NUMBER_ID || 'fake-phone-id';
@@ -14,12 +16,8 @@ async function sendWhatsAppMessage(to, text) {
   try {
     // Interceptar mensajes dirigidos a la demo web
     if (to && to.startsWith('demo_session_')) {
-      console.log(`[Demo WA] Guardando respuesta del bot para la sesión ${to}: ${text}`);
-      await db.collection('chats').doc(to).collection('messages').add({
-        text: text,
-        sender: 'bot',
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+      console.log(`[Demo WA] Emitiendo respuesta del bot para la sesión ${to}: ${text}`);
+      demoEventEmitter.emit('message', { to, text });
       return;
     }
 
@@ -63,5 +61,6 @@ async function sendWhatsAppMessage(to, text) {
 }
 
 module.exports = {
-  sendWhatsAppMessage
+  sendWhatsAppMessage,
+  demoEventEmitter
 };

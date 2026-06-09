@@ -1,5 +1,6 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { handleCoreMessageProcess } = require('../tasks/processMessageTask');
+const { demoEventEmitter } = require('../services/whatsappSender');
 
 /**
  * Función HTTPS Callable para procesar mensajes de texto de prueba en la demo interactiva.
@@ -27,6 +28,15 @@ exports.processDemoMessage = onCall(async (request) => {
   try {
     console.log(`[Demo WA] Procesando mensaje web para la sesión: ${sessionId}`);
 
+    const replies = [];
+    const listener = (msg) => {
+      if (msg.to === sessionId) {
+        replies.push(msg.text);
+      }
+    };
+    
+    demoEventEmitter.on('message', listener);
+
     // 3. Invocar el flujo conversacional de IA utilizando el tenant 'demo'
     await handleCoreMessageProcess({
       messageText: messageText.trim(),
@@ -36,8 +46,11 @@ exports.processDemoMessage = onCall(async (request) => {
       tenantId: 'demo'
     });
 
+    demoEventEmitter.off('message', listener);
+
     return {
       success: true,
+      replies: replies,
       message: "Mensaje procesado correctamente."
     };
 

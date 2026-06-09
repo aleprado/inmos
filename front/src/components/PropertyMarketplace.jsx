@@ -100,29 +100,17 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
     }
   }, [tenantId]);
 
-  // 1.6 Escuchar mensajes de chat en tiempo real
+  // 1.6 Mensaje inicial del bot (solo para simulación local, evita llamadas a DB)
   useEffect(() => {
-    if (!sessionId) return;
-
-    const messagesRef = collection(db, 'chats', sessionId, 'messages');
-    const q = query(messagesRef, orderBy('createdAt', 'asc'));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = [];
-      snapshot.forEach((doc) => {
-        msgs.push({ id: doc.id, ...doc.data() });
-      });
-      setChatMessages(msgs);
-      
-      if (msgs.length > 0 && msgs[msgs.length - 1].sender === 'bot') {
-        setIsBotTyping(false);
-      }
-    }, (error) => {
-      console.error("Error cargando mensajes de la simulación:", error);
-    });
-
-    return () => unsubscribe();
-  }, [sessionId]);
+    if (tenantId === 'demo' && chatMessages.length === 0) {
+      setChatMessages([{
+        id: 'initial',
+        text: '¡Hola! Soy Inmos IA. Envíame la descripción de una propiedad (texto o audio) para probar cómo extraigo los datos y los publico.',
+        sender: 'bot',
+        createdAt: { seconds: Math.floor(Date.now() / 1000) }
+      }]);
+    }
+  }, [tenantId, chatMessages.length]);
 
   // 1.7 Hacer scroll al último mensaje
   useEffect(() => {
@@ -139,34 +127,47 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
     const messageText = chatInput.trim();
     setChatInput('');
     setIsBotTyping(true);
+    
+    // Agregamos mensaje del usuario localmente
+    setChatMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      text: messageText,
+      sender: 'user',
+      createdAt: { seconds: Math.floor(Date.now() / 1000) }
+    }]);
 
     try {
-      // Registrar localmente de inmediato para feedback visual instantáneo
-      const messagesRef = collection(db, 'chats', sessionId, 'messages');
-      await addDoc(messagesRef, {
-        text: messageText,
-        sender: 'user',
-        createdAt: serverTimestamp()
-      });
-
       const functions = getFunctions();
       const processDemoMessageFn = httpsCallable(functions, 'processDemoMessage');
       
-      await processDemoMessageFn({
+      const response = await processDemoMessageFn({
         messageText: messageText,
         sessionId: sessionId
       });
+      
+      // Procesamos las respuestas del bot
+      if (response.data && response.data.replies) {
+        const botMessages = response.data.replies.map((text, idx) => ({
+          id: `bot_${Date.now()}_${idx}`,
+          text: text,
+          sender: 'bot',
+          createdAt: { seconds: Math.floor(Date.now() / 1000) }
+        }));
+        
+        setChatMessages(prev => [...prev, ...botMessages]);
+      }
+      setIsBotTyping(false);
 
     } catch (error) {
       console.error("Error al procesar mensaje de demo:", error);
       setIsBotTyping(false);
       
-      const messagesRef = collection(db, 'chats', sessionId, 'messages');
-      await addDoc(messagesRef, {
+      setChatMessages(prev => [...prev, {
+        id: `err_${Date.now()}`,
         text: `❌ Error al conectar con el chatbot de demo: ${error.message || 'Error desconocido'}. Inténtalo de nuevo.`,
         sender: 'bot',
-        createdAt: serverTimestamp()
-      });
+        createdAt: { seconds: Math.floor(Date.now() / 1000) }
+      }]);
     }
   };
 
@@ -658,7 +659,7 @@ _"Vendo departamento de 3 ambientes con 2 baños y cochera en Palermo, 82 m2, po
           
           {/* Tooltip flotante explicativo más vibrante */}
           {!isChatOpen && (
-            <div className="fixed bottom-9 right-[5.5rem] bg-gradient-to-r from-slate-900 to-slate-800 text-white text-xs font-black py-2.5 px-4 rounded-2xl shadow-[0_10px_25px_rgba(16,185,129,0.2)] z-40 animate-bounce flex items-center gap-2 border border-emerald-500/30">
+            <div className="fixed bottom-9 right-[7.5rem] bg-gradient-to-r from-slate-900 to-slate-800 text-white text-xs font-black py-2.5 px-4 rounded-2xl shadow-[0_10px_25px_rgba(16,185,129,0.2)] z-40 animate-bounce flex items-center gap-2 border border-emerald-500/30">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
