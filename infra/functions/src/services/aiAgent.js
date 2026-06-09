@@ -47,8 +47,34 @@ async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = 
 
     parts.push({ text: `\n\nJSON Output:` });
     
-    const result = await aiModel.generateContent(parts);
-    const responseText = result.response.text();
+    // Función auxiliar para intentar con varios modelos si el preferido da 404
+    const { genAI } = require('../config/ai');
+    const tryModels = async (modelNames) => {
+      let lastError;
+      for (const modelName of modelNames) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent(parts);
+          console.log(`[AI] Modelo ${modelName} utilizado exitosamente.`);
+          return result.response.text();
+        } catch (error) {
+          console.warn(`[AI] Falló el modelo ${modelName}:`, error.message);
+          lastError = error;
+        }
+      }
+      throw lastError;
+    };
+
+    const modelsToTry = [
+      "gemini-1.5-flash", 
+      "gemini-1.5-pro", 
+      "gemini-1.5-flash-latest",
+      "gemini-1.5-pro-latest",
+      mediaBuffer ? "gemini-pro-vision" : "gemini-pro", // Fallback a v1.0
+      "gemini-pro"
+    ];
+
+    const responseText = await tryModels(modelsToTry);
     
     // Limpiar posible formato markdown (```json ... ```)
     const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -95,8 +121,32 @@ Estructura esperada:
 
 JSON Output:`;
 
-    const result = await aiModel.generateContent([{ text: prompt }]);
-    const responseText = result.response.text();
+    const { genAI } = require('../config/ai');
+    const tryModels = async (modelNames) => {
+      let lastError;
+      for (const modelName of modelNames) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent([{ text: prompt }]);
+          console.log(`[AI-Merge] Modelo ${modelName} utilizado exitosamente.`);
+          return result.response.text();
+        } catch (error) {
+          console.warn(`[AI-Merge] Falló el modelo ${modelName}:`, error.message);
+          lastError = error;
+        }
+      }
+      throw lastError;
+    };
+
+    const modelsToTry = [
+      "gemini-1.5-flash", 
+      "gemini-1.5-pro", 
+      "gemini-1.5-flash-latest",
+      "gemini-1.5-pro-latest",
+      "gemini-pro"
+    ];
+
+    const responseText = await tryModels(modelsToTry);
     const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(jsonString);
   } catch (error) {
@@ -129,8 +179,32 @@ Ejemplos:
 
 JSON Output:`;
 
-    const result = await aiModel.generateContent([{ text: prompt }]);
-    const responseText = result.response.text();
+    const { genAI } = require('../config/ai');
+    const tryModels = async (modelNames) => {
+      let lastError;
+      for (const modelName of modelNames) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent([{ text: prompt }]);
+          console.log(`[AI-Extract] Modelo ${modelName} utilizado exitosamente.`);
+          return result.response.text();
+        } catch (error) {
+          console.warn(`[AI-Extract] Falló el modelo ${modelName}:`, error.message);
+          lastError = error;
+        }
+      }
+      throw lastError;
+    };
+
+    const modelsToTry = [
+      "gemini-1.5-flash", 
+      "gemini-1.5-pro", 
+      "gemini-1.5-flash-latest",
+      "gemini-1.5-pro-latest",
+      "gemini-pro"
+    ];
+
+    const responseText = await tryModels(modelsToTry);
     const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(jsonString);
   } catch (error) {
