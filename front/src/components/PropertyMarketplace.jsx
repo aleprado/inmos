@@ -623,30 +623,49 @@ _"Vendo departamento de 3 ambientes con 2 baños y cochera en Palermo, 82 m2, po
       {/* CHAT EN VIVO WHATSAPP SIMULACIÓN IA */}
       {tenantId === 'demo' && (
         <>
-          {/* Botón flotante de WhatsApp */}
-          <button
-            onClick={() => setIsChatOpen(!isChatOpen)}
-            className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-full flex items-center justify-center shadow-2xl z-50 transition-all duration-300 cursor-pointer border border-emerald-400/20 group"
-            aria-label="Probar Bot de IA"
-          >
-            {isChatOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <div className="relative">
-                <MessageSquare className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
-                <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border border-white"></span>
-                </span>
-              </div>
+          {/* Contenedor del Botón y Animaciones (Más Choque Visual) */}
+          <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
+            {/* Ondas expansivas intensas */}
+            {!isChatOpen && (
+              <>
+                <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-30 duration-700"></div>
+                <div className="absolute -inset-3 rounded-full border-2 border-emerald-400 animate-pulse opacity-50"></div>
+              </>
             )}
-          </button>
+            
+            <button
+              onClick={() => setIsChatOpen(!isChatOpen)}
+              className={`relative z-50 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 cursor-pointer group ${
+                isChatOpen 
+                  ? 'bg-slate-800 text-white hover:bg-slate-700 hover:rotate-90' 
+                  : 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-white hover:scale-110 shadow-[0_0_30px_rgba(16,185,129,0.5)] border border-emerald-300/30'
+              }`}
+              aria-label="Probar Bot de IA"
+            >
+              {isChatOpen ? (
+                <X className="h-7 w-7" />
+              ) : (
+                <div className="relative">
+                  <MessageSquare className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white shadow-lg shadow-red-500/50"></span>
+                  </span>
+                </div>
+              )}
+            </button>
+          </div>
           
-          {/* Tooltip flotante explicativo */}
+          {/* Tooltip flotante explicativo más vibrante */}
           {!isChatOpen && (
-            <div className="fixed bottom-8 right-24 bg-slate-900 text-white text-xs font-bold py-2 px-3 rounded-xl shadow-xl z-40 animate-bounce flex items-center gap-1.5 border border-slate-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              ¡Prueba el bot de WhatsApp!
+            <div className="fixed bottom-9 right-[5.5rem] bg-gradient-to-r from-slate-900 to-slate-800 text-white text-xs font-black py-2.5 px-4 rounded-2xl shadow-[0_10px_25px_rgba(16,185,129,0.2)] z-40 animate-bounce flex items-center gap-2 border border-emerald-500/30">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+              </span>
+              ¡PRUEBA EL BOT DE WHATSAPP!
+              {/* Flecha lateral derecha */}
+              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-slate-800 rotate-45 border-t border-r border-emerald-500/30 z-[-1]"></div>
             </div>
           )}
 
