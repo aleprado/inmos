@@ -132,7 +132,8 @@ function App() {
 
   // Cambios manuales de ruta tras acciones (ej: éxito de login)
   const handleLoginSuccess = (user) => {
-    // El useEffect de onAuthStateChanged se encargará de refrescar claims y redirigir
+    window.history.pushState(null, '', '/admin');
+    setRoute((prev) => ({ ...prev, view: 'admin' }));
   }
 
   if (authLoading || tenantLoading) {

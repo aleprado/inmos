@@ -29,6 +29,28 @@ async function transcribeAudio(audioBuffer, mimeType) {
 }
 
 /**
+ * Calcula dinámicamente qué campos faltan según el tipo de propiedad.
+ */
+function calculateMissingFields(data) {
+  const missing = [];
+  const type = data.propertyType ? data.propertyType.toLowerCase() : '';
+  
+  if (data.area === null || data.area === undefined) missing.push('area');
+
+  // Solo casas, departamentos, oficinas y locales comerciales suelen requerir baños
+  if (type !== 'terreno' && type !== 'lote' && type !== 'cochera') {
+    if (data.bathrooms === null || data.bathrooms === undefined) missing.push('bathrooms');
+  }
+
+  // Solo casas y departamentos requieren ambientes/dormitorios
+  if (type === 'casa' || type === 'departamento' || type === 'depto') {
+    if (data.rooms === null || data.rooms === undefined) missing.push('rooms');
+  }
+
+  return missing;
+}
+
+/**
  * Tarea asíncrona que procesa el flujo conversacional y la persistencia de propiedades.
  * Implementa una máquina de estados para gestionar la carga progresiva de imágenes y datos.
  */
@@ -91,11 +113,8 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
           return;
         }
 
-        // Identificar qué campos clave están nulos en la base de datos
-        const missing = [];
-        if (propertyData.bathrooms === null || propertyData.bathrooms === undefined) missing.push('bathrooms');
-        if (propertyData.rooms === null || propertyData.rooms === undefined) missing.push('rooms');
-        if (propertyData.area === null || propertyData.area === undefined) missing.push('area');
+        // Identificar qué campos clave están nulos en la base de datos de forma dinámica
+        const missing = calculateMissingFields(propertyData);
 
         if (missing.length > 0) {
           const nextField = missing[0];
@@ -210,11 +229,8 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
   // Guardar en Firestore
   const propertyId = await saveProperty(parsedData, senderPhone, tenantId);
 
-  // Calcular qué campos clave quedaron vacíos
-  const missing = [];
-  if (parsedData.bathrooms === null || parsedData.bathrooms === undefined) missing.push('bathrooms');
-  if (parsedData.rooms === null || parsedData.rooms === undefined) missing.push('rooms');
-  if (parsedData.area === null || parsedData.area === undefined) missing.push('area');
+  // Calcular qué campos clave quedaron vacíos dinámicamente
+  const missing = calculateMissingFields(parsedData);
 
   // Inicializar sesión
   await createOrUpdateSession(senderPhone, propertyId, 'waiting_images', missing, null);

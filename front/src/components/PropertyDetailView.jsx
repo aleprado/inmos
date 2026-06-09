@@ -201,7 +201,7 @@ export default function PropertyDetailView({ propertyId, tenantId }) {
 
         {/* Botón Volver (si no es embebido) */}
         <a 
-          href="/" 
+          href={tenantId === 'demo' ? '/?tenant=demo' : `/?tenant=${tenantId}`}
           className="absolute top-4 left-4 bg-white/80 hover:bg-white text-slate-800 p-2.5 rounded-full backdrop-blur-md shadow-md transition"
         >
           <ArrowLeft className="h-5 w-5" />

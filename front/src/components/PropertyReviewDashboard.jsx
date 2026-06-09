@@ -488,10 +488,10 @@ Tus credenciales de ingreso para el panel de administración son:
             Exportar Catálogo
           </button>
           <a 
-            href="/" 
+            href={`/?tenant=${tenantId}`}
             className="text-xs bg-slate-800 text-slate-300 hover:bg-slate-750 font-bold px-4 py-3 rounded-2xl flex items-center justify-center transition border border-slate-750 shadow-sm"
           >
-            Ver Público
+            Ver mi catálogo
           </a>
           <button 
             onClick={handleLogout}

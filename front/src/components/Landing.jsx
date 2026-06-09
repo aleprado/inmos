@@ -237,6 +237,19 @@ export default function Landing({ setRoute }) {
         </div>
       </footer>
 
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/5491100000000?text=Hola%20Inmos%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20la%20plataforma"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 flex items-center justify-center group"
+        aria-label="Contactar por WhatsApp"
+      >
+        <MessageSquare className="h-7 w-7" />
+        <span className="absolute right-full mr-4 bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          ¿Dudas? Escríbenos
+        </span>
+      </a>
     </div>
   );
 }

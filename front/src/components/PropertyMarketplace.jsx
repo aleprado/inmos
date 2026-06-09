@@ -25,7 +25,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
   // Estados para el Chat Demo de WhatsApp (Simulación de IA)
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
+  const [chatInput, setChatInput] = useState('Vendo departamento 3 ambientes con cochera en Palermo, 82m2, al frente por USD 150.000');
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [sessionId, setSessionId] = useState('');
   const chatEndRef = useRef(null);
