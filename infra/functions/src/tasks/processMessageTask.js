@@ -245,8 +245,11 @@ exports.processMessage = onTaskDispatched(async (request) => {
     await handleCoreMessageProcess({ messageText, mediaId, mimeType, senderPhone, tenantId });
 
   } catch (error) {
-    console.error("Error en processMessageTask:", error);
-    await sendWhatsAppMessage(senderPhone, "❌ Ocurrió un error al procesar tu mensaje. Por favor, inténtalo más tarde.");
-    throw error;
+    console.error("Error crítico en processMessageTask:", error);
+    try {
+      await sendWhatsAppMessage(senderPhone, "❌ Ocurrió un error al procesar tu mensaje con Inteligencia Artificial. Por favor, asegúrate de que tus credenciales de API estén vigentes e inténtalo más tarde.");
+    } catch (sendErr) {
+      console.error("Error al enviar mensaje de error a WhatsApp:", sendErr);
+    }
   }
 });

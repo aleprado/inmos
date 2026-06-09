@@ -91,7 +91,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
   useEffect(() => {
     if (tenantId === 'demo') {
       let currentSessionId = sessionStorage.getItem('inmos_demo_session_id');
-      if (!currentSessionId) {
+      if (!currentSessionId || currentSessionId === 'undefined' || currentSessionId === 'null') {
         const randomStr = Math.random().toString(36).substring(2, 11);
         currentSessionId = `demo_session_${randomStr}`;
         sessionStorage.setItem('inmos_demo_session_id', currentSessionId);
