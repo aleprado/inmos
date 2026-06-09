@@ -66,9 +66,10 @@ async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = 
     };
 
     const modelsToTry = [
+      "gemini-1.5-flash-8b",
       "gemini-1.5-flash", 
-      "gemini-1.5-pro", 
       "gemini-1.5-flash-latest",
+      "gemini-1.5-pro", 
       "gemini-1.5-pro-latest",
       mediaBuffer ? "gemini-pro-vision" : "gemini-pro", // Fallback a v1.0
       "gemini-pro"
@@ -139,9 +140,10 @@ JSON Output:`;
     };
 
     const modelsToTry = [
+      "gemini-1.5-flash-8b",
       "gemini-1.5-flash", 
-      "gemini-1.5-pro", 
       "gemini-1.5-flash-latest",
+      "gemini-1.5-pro", 
       "gemini-1.5-pro-latest",
       "gemini-pro"
     ];
@@ -197,9 +199,10 @@ JSON Output:`;
     };
 
     const modelsToTry = [
+      "gemini-1.5-flash-8b",
       "gemini-1.5-flash", 
-      "gemini-1.5-pro", 
       "gemini-1.5-flash-latest",
+      "gemini-1.5-pro", 
       "gemini-1.5-pro-latest",
       "gemini-pro"
     ];
