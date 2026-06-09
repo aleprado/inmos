@@ -3,11 +3,11 @@ import { MessageSquare, Sparkles, Globe, QrCode, Eye, ArrowRight, LogIn } from '
 
 export default function Landing({ setRoute }) {
   const handleGoToLogin = () => {
-    setRoute({ view: 'login', propertyId: null, tenantId: 'demo' });
+    setRoute((prev) => ({ ...prev, view: 'login', propertyId: null }));
   };
 
   const handleGoToDemo = () => {
-    setRoute({ view: 'marketplace', propertyId: null, tenantId: 'demo' });
+    setRoute((prev) => ({ ...prev, view: 'marketplace', propertyId: null }));
   };
 
   return (
