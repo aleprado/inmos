@@ -76,9 +76,32 @@ async function getMediaBufferFromId(mediaId) {
   return await downloadMedia(url);
 }
 
+/**
+ * Elimina una imagen de Firebase Cloud Storage a partir de su URL pública.
+ * @param {string} publicUrl
+ */
+async function deleteImageFromStorage(publicUrl) {
+  try {
+    const bucket = storage.bucket();
+    const prefix = `https://storage.googleapis.com/${bucket.name}/`;
+    if (publicUrl.startsWith(prefix)) {
+      const fileName = publicUrl.replace(prefix, '');
+      const file = bucket.file(fileName);
+      const [exists] = await file.exists();
+      if (exists) {
+        await file.delete();
+        console.log(`Imagen eliminada del Storage: ${fileName}`);
+      }
+    }
+  } catch (error) {
+    console.error(`Error al eliminar imagen del Storage (${publicUrl}):`, error);
+  }
+}
+
 module.exports = {
   getMediaUrl,
   downloadMedia,
   uploadImageToStorage,
-  getMediaBufferFromId
+  getMediaBufferFromId,
+  deleteImageFromStorage
 };
