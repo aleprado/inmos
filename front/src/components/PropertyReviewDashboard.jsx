@@ -1109,11 +1109,6 @@ Tus credenciales de ingreso para el panel de administración son:
                   </button>
                 </div>
               </div>
-            ) : (            </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             ) : (
               /* --- FORMULARIO DE REGISTRO --- */
               <form onSubmit={handleAddOperator} className="p-6 space-y-4">
