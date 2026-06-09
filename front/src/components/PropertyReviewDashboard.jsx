@@ -262,6 +262,26 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
     }
   };
 
+  const getWhatsAppInviteLink = () => {
+    if (!createdOperatorData) return '';
+    const cleanPhone = createdOperatorData.phone.replace(/\+/g, '').replace(/\D/g, '');
+    const botPhone = tenantData?.whatsappNumber || '5491100000000';
+    
+    const message = `¡Hola ${createdOperatorData.name}! Te agregué como operador para ${tenantData?.name || 'Inmos'}.
+
+Para empezar a cargar propiedades usando Inteligencia Artificial, primero agenda este número de la plataforma y enviale un mensaje haciendo clic en el siguiente enlace:
+
+👉 https://wa.me/${botPhone}?text=Hola
+
+Tus credenciales de ingreso para el panel de administración son:
+📧 Usuario: ${createdOperatorData.email}
+🔑 Contraseña temporal: ${createdOperatorData.tempPassword}
+
+¡Bienvenido!`;
+
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+  };
+
   // Creación de Operador por Cloud Function Callable
   const handleAddOperator = async (e) => {
     e.preventDefault();
@@ -1066,17 +1086,33 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddOperatorModal(false);
-                    setCreatedOperatorData(null);
-                    setOperatorForm({ name: '', email: '', phone: '' });
-                  }}
-                  className="w-full bg-slate-700 hover:bg-slate-650 text-white font-bold py-3 rounded-xl text-xs transition"
-                >
-                  Cerrar Ventana
-                </button>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={getWhatsAppInviteLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/10"
+                  >
+                    <Phone className="h-4 w-4 shrink-0" />
+                    Enviar Invitación por WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddOperatorModal(false);
+                      setCreatedOperatorData(null);
+                      setOperatorForm({ name: '', email: '', phone: '' });
+                    }}
+                    className="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold py-3 rounded-xl text-xs transition border border-slate-700/50"
+                  >
+                    Cerrar Ventana
+                  </button>
+                </div>
+              </div>
+            ) : (            </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               /* --- FORMULARIO DE REGISTRO --- */
