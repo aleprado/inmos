@@ -102,9 +102,9 @@ exports.whatsappWebhook = onRequest(async (req, res) => {
               
               if (!hasActiveSession) {
                 if (isAudio) {
-                  feedbackText = "🤖 *¡Audio recibido!* Estoy transcribiendo y analizando los detalles de la propiedad. Aguarda unos segundos... ⏳";
+                  feedbackText = "¡Dale! Escucho el audio y ya mismo lo proceso... 🎙️⏳";
                 } else if (messageText) {
-                  feedbackText = "🤖 *¡Mensaje recibido!* Estoy analizando la descripción para dar de alta la propiedad en el sistema. Aguarda unos segundos... ⏳";
+                  feedbackText = "¡Dale! Ya leo el mensaje y empiezo a armar la ficha de la propiedad... 📝⏳";
                 }
               } else {
                 const cleanedText = messageText ? messageText.trim().toLowerCase() : "";
@@ -112,12 +112,12 @@ exports.whatsappWebhook = onRequest(async (req, res) => {
                 
                 if (session.status === 'waiting_images') {
                   if (isAudio) {
-                    feedbackText = "🤖 *¡Audio recibido!* Estoy transcribiendo y procesando los detalles adicionales... ⏳";
+                    feedbackText = "Buenísimo, escucho el audio para sumar esos detalles... 🎙️⏳";
                   } else if (messageText && !isCommand) {
-                    feedbackText = "🤖 *¡Entendido!* Estoy analizando el texto adicional para incorporarlo al borrador... ⏳";
+                    feedbackText = "Dale, ahí sumo esa información al borrador... ✍️⏳";
                   }
                 } else if (session.status === 'waiting_field' && messageText && !isCommand) {
-                  feedbackText = "🤖 Procesando respuesta... ⏳";
+                  feedbackText = "Dale, lo agrego... 👍⏳";
                 }
               }
               
