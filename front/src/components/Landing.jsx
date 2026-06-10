@@ -7,7 +7,7 @@ export default function Landing({ setRoute }) {
   };
 
   const handleGoToDemo = () => {
-    setRoute((prev) => ({ ...prev, view: 'marketplace', propertyId: null }));
+    setRoute((prev) => ({ ...prev, view: 'marketplace', propertyId: null, tenantId: 'demo' }));
   };
 
   return (
