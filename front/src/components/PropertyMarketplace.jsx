@@ -121,17 +121,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
     }
   }, [tenantId]);
 
-  // 1.6 Mensaje inicial del bot (solo para simulación local, evita llamadas a DB)
-  useEffect(() => {
-    if (tenantId === 'demo' && chatMessages.length === 0) {
-      setChatMessages([{
-        id: 'initial',
-        text: '¡Hola! Soy Inmos IA. Envíame la descripción de una propiedad (texto o audio) para probar cómo extraigo los datos y los publico.',
-        sender: 'bot',
-        createdAt: { seconds: Math.floor(Date.now() / 1000) }
-      }]);
-    }
-  }, [tenantId, chatMessages.length]);
+
 
 
 
