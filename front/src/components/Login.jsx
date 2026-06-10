@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { Key, Mail, ShieldAlert, ArrowRight } from 'lucide-react';
 import { auth } from '../firebase';
 
@@ -17,6 +17,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
 
     try {
+      await setPersistence(auth, browserSessionPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("Sesión iniciada correctamente:", userCredential.user.uid);
       if (onLoginSuccess) onLoginSuccess(userCredential.user);
