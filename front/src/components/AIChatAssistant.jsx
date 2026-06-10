@@ -37,7 +37,7 @@ _"Vendo departamento de 3 ambientes con 2 baños y cochera en Palermo, 82 m2, po
         setChatMessages([{
           id: 'welcome',
           sender: 'bot',
-          text: `🤖 *¡Hola!* Soy tu Asistente IA de Inmos.
+          text: `🤖 *¡Hola!* Soy tu Asistente de carga de Inmos.
           
 Dime los detalles de la propiedad que deseas cargar, o envíame una imagen.`,
           createdAt: null
@@ -214,7 +214,7 @@ Dime los detalles de la propiedad que deseas cargar, o envíame una imagen.`,
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isDemo ? 'bg-emerald-400' : 'bg-indigo-400'}`}></span>
             <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isDemo ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.8)]'}`}></span>
           </span>
-          {isDemo ? '¡PRUEBA EL BOT DE WHATSAPP!' : '¡ASISTENTE DE IA DISPONIBLE!'}
+          {isDemo ? '¡PRUEBA EL BOT DE WHATSAPP!' : '¡ASISTENTE DE CARGA DISPONIBLE!'}
           <div className={`absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-slate-800 rotate-45 border-t border-r z-[-1] ${isDemo ? 'border-emerald-500/30' : 'border-indigo-500/30'}`}></div>
         </div>
       )}
@@ -230,7 +230,7 @@ Dime los detalles de la propiedad que deseas cargar, o envíame una imagen.`,
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-transparent rounded-full"></span>
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-sm tracking-wide">Inmos IA Assistant</span>
+                <span className="font-extrabold text-sm tracking-wide">Asistente de carga</span>
                 <span className="text-[11px] text-white/80 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
                   En línea
@@ -264,7 +264,7 @@ Dime los detalles de la propiedad que deseas cargar, o envíame una imagen.`,
             
             {isBotTyping && (
               <div className="self-start bg-white text-slate-800 rounded-2xl rounded-tl-none p-3 max-w-[85%] shadow-sm text-sm border border-slate-100 flex items-center gap-1.5 animate-pulse">
-                <span className="text-xs text-slate-400">Inmos IA está procesando...</span>
+                <span className="text-xs text-slate-400">El asistente está procesando...</span>
                 <div className="flex gap-1 items-center h-4">
                   <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                   <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
