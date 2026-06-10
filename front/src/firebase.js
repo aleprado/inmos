@@ -22,6 +22,7 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+storage.maxUploadRetryTime = 0; // Desactivar reintentos para ahorrar costos en caso de fallo de red/CORS
 
 // Inicializar Firebase App Check para proteger contra scraping y peticiones maliciosas
 if (typeof window !== "undefined") {
