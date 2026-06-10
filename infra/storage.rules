@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /chat_uploads/{tenantId}/{allPaths=**} {
+      // Cualquiera puede ver la imagen una vez generada (útil para links públicos)
+      allow read: if true;
+      // Solo el operador autenticado del tenant o el entorno demo pueden subir
+      allow write: if (request.auth != null && request.auth.token.tenant_id == tenantId) || tenantId == 'demo';
+    }
+    
+    match /{allPaths=**} {
+      // Por defecto bloqueamos el resto a menos que estén autenticados
+      allow read, write: if request.auth != null;
+    }
+  }
+}
