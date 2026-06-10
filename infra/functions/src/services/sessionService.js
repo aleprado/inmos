@@ -1,6 +1,7 @@
 const { db, admin } = require('../config/firebase');
 
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutos
+const SESSION_TIMEOUT_MINUTES = parseInt(process.env.SESSION_TIMEOUT_MINUTES) || 30;
+const SESSION_TIMEOUT_MS = SESSION_TIMEOUT_MINUTES * 60 * 1000;
 
 /**
  * Obtiene la sesión activa para un número de teléfono
@@ -60,9 +61,20 @@ function isSessionValid(session) {
   return (now - lastActivityDate) < SESSION_TIMEOUT_MS;
 }
 
+/**
+ * Calcula los minutos transcurridos desde la última actividad
+ */
+function getMinutesSinceLastActivity(session) {
+  if (!session || !session.lastActivity) return 0;
+  const lastActivityDate = session.lastActivity.toDate ? session.lastActivity.toDate() : new Date(session.lastActivity);
+  const now = new Date();
+  return Math.floor((now - lastActivityDate) / 60000);
+}
+
 module.exports = {
   getSession,
   createOrUpdateSession,
   clearSession,
-  isSessionValid
+  isSessionValid,
+  getMinutesSinceLastActivity
 };

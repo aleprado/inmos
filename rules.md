@@ -15,3 +15,6 @@
 
 ## 4. Legibilidad
 - **Código auto-explicativo:** Priorizar nombres de variables y funciones descriptivos sobre comentarios extensos. El código debe leerse como un lenguaje natural en la medida de lo posible.
+
+## 5. Costos de Herramientas y Servicios
+- **Priorizar el Tier Gratuito:** Siempre priorizar mantener el costo de las herramientas al mínimo. Se debe buscar un balance entre ofrecer una experiencia de usuario (UX) óptima y mantenernos dentro del "free tier" (capa gratuita) de los servicios utilizados.

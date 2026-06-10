@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { Lock, Mail, ShieldAlert, ArrowRight } from 'lucide-react';
+import { Key, Mail, ShieldAlert, ArrowRight } from 'lucide-react';
 import { auth } from '../firebase';
 
 export default function Login({ onLoginSuccess }) {
@@ -145,7 +145,7 @@ export default function Login({ onLoginSuccess }) {
               </button>
             </div>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 h-4.5 w-4.5" />
+              <Key className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 h-4.5 w-4.5" />
               <input
                 type="password"
                 placeholder="••••••••••••"

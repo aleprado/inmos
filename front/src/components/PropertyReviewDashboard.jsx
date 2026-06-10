@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import { signOut, updatePassword } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer, Eye, Settings, Save, Lock } from 'lucide-react';
+import { Check, Edit3, Trash2, Home, Compass, Maximize2, X, MessageSquare, Search, Archive, Star, LogOut, Users, UserPlus, Phone, Mail, ShieldCheck, Download, Video, FileText, Printer, Eye, Settings, Save, Key } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -703,7 +703,7 @@ Tus credenciales de ingreso para el panel de administración son:
             {/* 2. CAMBIAR CONTRASEÑA (Para todos) */}
             <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8">
               <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                <Lock className="h-5.5 w-5.5 text-emerald-500" />
+                <Key className="h-5.5 w-5.5 text-emerald-500" />
                 Seguridad de la Cuenta
               </h2>
               <p className="text-slate-400 text-xs mb-6">

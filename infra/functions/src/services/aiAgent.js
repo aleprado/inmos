@@ -1,28 +1,31 @@
 const { aiModel } = require('../config/ai');
 
 const SYSTEM_PROMPT = `
-Eres un agente inmobiliario experto. Tu tarea es extraer información estructurada de un mensaje enviado por un corredor inmobiliario. 
-El mensaje puede contener texto, pero también puede venir acompañado de una nota de voz (audio) o una fotografía de la propiedad.
-Debes analizar todo el contenido provisto (texto, audio o imagen) y devolver estrictamente un objeto JSON con la siguiente estructura y nada más.
+Eres un asistente autónomo inmobiliario. Tu tarea es ayudar a un corredor a crear el borrador de una propiedad.
+El mensaje puede contener texto, audio o imágenes.
+Debes extraer la información y dirigir la conversación para pedir amigablemente los datos faltantes.
 
 Estructura JSON esperada:
 {
-  "operationType": "Venta" | "Alquiler" | "Alquiler Temporario" (Infiera del contexto si no es explícito),
-  "propertyType": "Departamento" | "Casa" | "Oficina" | "Local Comercial" | "Terreno",
-  "title": "Un título comercial atractivo corto (ej: Hermoso Depto 3 Amb en Palermo)",
-  "price": número entero (ej: 150000) o null si no se especifica,
-  "currency": "USD" | "ARS",
-  "rooms": número entero (cantidad de ambientes/dormitorios) o null,
-  "bathrooms": número entero o null,
-  "area": número entero (superficie en m2) o null,
-  "description": "Una descripción redactada para venta, mejorando el texto original",
-  "address": "La dirección o zona mencionada" o null si NO se menciona,
-  "missingLocation": boolean (true si no se menciona dirección, barrio, zona o ciudad en el mensaje original, false si hay alguna referencia de ubicación)
+  "propertyData": {
+    "operationType": "Venta" | "Alquiler" | "Alquiler Temporario",
+    "propertyType": "Departamento" | "Casa" | "Oficina" | "Local Comercial" | "Terreno",
+    "title": "Un título comercial atractivo corto (ej: Hermoso Depto 3 Amb en Palermo)",
+    "price": número entero (ej: 150000) o null,
+    "currency": "USD" | "ARS",
+    "rooms": número entero o null,
+    "bathrooms": número entero o null,
+    "area": número entero o null,
+    "description": "Una descripción redactada para venta, mejorando el texto original",
+    "address": "La dirección o zona" o null
+  },
+  "missingLocation": boolean (true si address es null o ambiguo),
+  "chatResponse": "Tu respuesta conversacional. Si faltan datos importantes (como el precio, la ubicación, ambientes o baños según el tipo de inmueble), pídelos amigablemente. Si no falta nada, confirma que está listo y pregunta si quiere subir fotos (si aún no lo hizo). Usa lenguaje natural, no parezcas un robot.",
+  "isComplete": boolean (true si tenemos todos los datos esenciales para este tipo de propiedad y no falta pedir nada)
 }
 
 REGLA CRÍTICA:
-Si el contenido provisto NO menciona una dirección, barrio, ciudad, o zona, DEBES obligatoriamente marcar "missingLocation": true. 
-Si menciona al menos un barrio o zona (ej: "en Palermo", "por el centro"), pon "missingLocation": false y extrae esa zona en "address".
+Si missingLocation es true, DEBES pedir la ubicación en tu chatResponse de forma amigable (idealmente sugiriendo que use el clip de Ubicación de WhatsApp).
 `;
 
 async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = null) {
@@ -93,32 +96,39 @@ async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = 
 /**
  * Combina los detalles existentes de una propiedad con información nueva usando Gemini
  */
-async function mergePropertyDetails(existingProperty, newText) {
+async function mergePropertyDetails(existingProperty, newText, timeWarning = false) {
   try {
-    const prompt = `
-Eres un asistente experto en el mercado inmobiliario. 
-Se te proporcionará el estado actual de los detalles de una propiedad en formato JSON y un nuevo mensaje enviado por el operador de la inmobiliaria.
-Tu tarea es analizar el nuevo mensaje e incorporar los nuevos detalles, correcciones o adiciones al JSON original.
+    let warningInstruction = timeWarning 
+      ? "\nATENCIÓN: Han pasado más de 10 minutos desde el último mensaje. En tu 'chatResponse', añade amigablemente una advertencia preguntando si este dato es para la misma propiedad, o si quiere enviar la palabra 'terminar' para empezar una nueva."
+      : "";
 
-JSON original:
+    const prompt = `
+Eres un asistente autónomo inmobiliario. 
+Tenemos un borrador activo con estos datos:
 ${JSON.stringify(existingProperty, null, 2)}
 
-Mensaje del operador:
+El corredor acaba de enviar este mensaje para agregar o corregir datos:
 "${newText}"
+${warningInstruction}
 
-Devuelve estrictamente el objeto JSON actualizado con la misma estructura y nada más. No inventes campos. Si el mensaje corrige un dato (ej: "no cuesta 150000, cuesta 140000"), cámbialo. Si agrega datos (ej: "tiene 2 baños"), añádelos.
-Estructura esperada:
+Analiza el nuevo mensaje y fusiona los datos. Si corrige algo, cámbialo. Si agrega, súmalo.
+Devuelve estrictamente el objeto JSON actualizado con el siguiente formato:
+
 {
-  "operationType": "Venta" | "Alquiler" | "Alquiler Temporario",
-  "propertyType": "Departamento" | "Casa" | "Oficina" | "Local Comercial" | "Terreno",
-  "title": "string",
-  "price": número entero o null,
-  "currency": "USD" | "ARS",
-  "rooms": número entero o null,
-  "bathrooms": número entero o null,
-  "area": número entero o null,
-  "description": "string",
-  "address": "string" o null
+  "propertyData": {
+    "operationType": "Venta" | "Alquiler" | "Alquiler Temporario",
+    "propertyType": "Departamento" | "Casa" | "Oficina" | "Local Comercial" | "Terreno",
+    "title": "string",
+    "price": número entero o null,
+    "currency": "USD" | "ARS",
+    "rooms": número entero o null,
+    "bathrooms": número entero o null,
+    "area": número entero o null,
+    "description": "string",
+    "address": "string" o null
+  },
+  "chatResponse": "Respuesta conversacional. Confirma qué dato actualizaste. Luego, revisa el JSON resultante: si siguen faltando datos clave (precio, ubicación, ambientes/baños según corresponda), pídelos. Si no falta nada, dile que está completo y puede seguir mandando fotos o escribir 'listo'.",
+  "isComplete": boolean
 }
 
 JSON Output:`;
@@ -159,68 +169,7 @@ JSON Output:`;
   }
 }
 
-/**
- * Extrae el valor de un único campo a partir del texto del usuario usando Gemini
- */
-async function extractSingleField(fieldName, text) {
-  try {
-    const prompt = `
-Tu tarea es extraer el valor para el campo '${fieldName}' a partir de la respuesta del usuario.
-El usuario está respondiendo a una pregunta sobre este campo en específico.
-
-Campo a extraer: '${fieldName}' (puede ser 'rooms', 'bathrooms' o 'area').
-Respuesta del usuario: "${text}"
-
-Debes devolver estrictamente un objeto JSON con el siguiente formato y nada más:
-{
-  "${fieldName}": número entero o null si no se puede determinar o si no es un número válido.
-}
-
-Ejemplos:
-- Si el campo es 'bathrooms' y la respuesta es 'tiene 2 baños', devuelve: { "bathrooms": 2 }
-- Si el campo es 'area' y la respuesta es 'son 80 metros', devuelve: { "area": 80 }
-- Si el texto es 'no sé', 'omitir', 'después', devuelve: { "${fieldName}": null }
-
-JSON Output:`;
-
-    const { genAI } = require('../config/ai');
-    const tryModels = async (modelNames) => {
-      let lastError;
-      for (const modelName of modelNames) {
-        try {
-          const model = genAI.getGenerativeModel({ model: modelName });
-          const result = await model.generateContent([{ text: prompt }]);
-          console.log(`[AI-Extract] Modelo ${modelName} utilizado exitosamente.`);
-          return result.response.text();
-        } catch (error) {
-          console.warn(`[AI-Extract] Falló el modelo ${modelName}:`, error.message);
-          lastError = error;
-        }
-      }
-      throw lastError;
-    };
-
-    const modelsToTry = [
-      "gemini-2.5-flash-lite",
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-1.5-flash-8b",
-      "gemini-1.5-flash", 
-      "gemini-1.5-pro", 
-      "gemini-pro"
-    ];
-
-    const responseText = await tryModels(modelsToTry);
-    const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(jsonString);
-  } catch (error) {
-    console.error(`Error en extractSingleField para ${fieldName}:`, error);
-    return { [fieldName]: null };
-  }
-}
-
 module.exports = {
   parsePropertyMessage,
-  mergePropertyDetails,
-  extractSingleField
+  mergePropertyDetails
 };
