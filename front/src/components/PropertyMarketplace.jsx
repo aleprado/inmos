@@ -28,7 +28,6 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
   }); 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sessionId, setSessionId] = useState('');
 
   // Clases CSS dinámicas para los paneles
