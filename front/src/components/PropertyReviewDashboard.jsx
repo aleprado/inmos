@@ -1058,18 +1058,18 @@ Tus credenciales de ingreso para el panel de administración son:
                   </p>
                 </div>
 
-                <div className="space-y-3 bg-slate-900/60 border border-slate-850 p-4.5 rounded-2xl text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block mb-0.5">Usuario (Email)</span>
-                    <span className="font-mono text-slate-200 select-all block break-all">{createdOperatorData.email}</span>
+                <div className="flex flex-col gap-4 bg-slate-900/60 border border-slate-850 p-5 rounded-2xl text-xs">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase">Usuario (Email)</span>
+                    <span className="font-mono text-slate-200 select-all break-all">{createdOperatorData.email}</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block mb-0.5">Teléfono</span>
-                    <span className="font-mono text-slate-200 select-all block">{createdOperatorData.phone}</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase">Teléfono</span>
+                    <span className="font-mono text-slate-200 select-all">{createdOperatorData.phone}</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">Contraseña Temporal</span>
-                    <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 border border-slate-800 rounded-xl">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase">Contraseña Temporal</span>
+                    <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 border border-slate-800 rounded-xl mt-1">
                       <span className="font-mono text-emerald-400 font-bold flex-1 select-all tracking-wider break-all">{createdOperatorData.tempPassword}</span>
                       <button
                         type="button"
@@ -1077,12 +1077,12 @@ Tus credenciales de ingreso para el panel de administración son:
                           navigator.clipboard.writeText(createdOperatorData.tempPassword);
                           toast.success("Contraseña copiada al portapapeles.");
                         }}
-                        className="bg-slate-850 hover:bg-slate-800 text-[10px] font-bold text-slate-300 px-2.5 py-1 rounded-lg border border-slate-800 active:scale-95 transition"
+                        className="bg-slate-850 hover:bg-slate-800 text-[10px] font-bold text-slate-300 px-2.5 py-1 rounded-lg border border-slate-800 active:scale-95 transition shrink-0"
                       >
                         Copiar
                       </button>
                     </div>
-                    <span className="text-[9px] text-amber-500 font-semibold mt-1.5 block">⚠️ Importante: Copia esta contraseña ahora. No volverá a mostrarse por seguridad.</span>
+                    <span className="text-[9px] text-amber-500 font-semibold mt-1">⚠️ Importante: Copia esta contraseña ahora. No volverá a mostrarse por seguridad.</span>
                   </div>
                 </div>
 
