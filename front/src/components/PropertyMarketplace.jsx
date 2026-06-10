@@ -20,7 +20,12 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
   const [rooms, setRooms] = useState('');
   
   // Modos de Vista: 'grid' (Solo Lista), 'map' (Solo Mapa), 'mixed' (Lista y Mapa)
-  const [viewMode, setViewMode] = useState(() => window.innerWidth >= 768 ? 'mixed' : 'grid'); 
+  const [viewMode, setViewMode] = useState(() => {
+    if (tenantData?.catalogLayout && tenantData.catalogLayout !== 'mixed') {
+      return tenantData.catalogLayout;
+    }
+    return window.innerWidth >= 768 ? 'mixed' : 'grid';
+  }); 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);

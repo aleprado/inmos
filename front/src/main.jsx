@@ -10,7 +10,7 @@ import { auth } from './firebase'
 import { useTenant } from './hooks/useTenant'
 import { ToastProvider } from './contexts/ToastContext'
 import './index.css'
-import { applyTheme } from './utils/theme'
+import { applyTheme, applyBackgroundTheme } from './utils/theme'
 
 function App() {
   const [route, setRoute] = useState(() => {
@@ -63,8 +63,27 @@ function App() {
 
   // Aplicar el tema dinámico del tenant
   useEffect(() => {
-    if (tenantData?.primaryColor) {
-      applyTheme(tenantData.primaryColor);
+    if (tenantData) {
+      if (tenantData.primaryColor) {
+        applyTheme(tenantData.primaryColor);
+      }
+
+      const root = document.documentElement;
+      
+      // Limpiar configuraciones previas de layout para evitar colisiones al cambiar tenants
+      root.classList.remove('dark', 'theme-custom');
+      root.style.removeProperty('--bg-custom');
+      root.style.removeProperty('--text-custom');
+      root.style.removeProperty('--text-muted-custom');
+      root.style.removeProperty('--border-custom');
+      root.style.removeProperty('--card-custom');
+
+      if (tenantData.themeMode === 'dark') {
+        root.classList.add('dark');
+      } else if (tenantData.themeMode === 'custom' && tenantData.backgroundColor) {
+        root.classList.add('theme-custom');
+        applyBackgroundTheme(tenantData.backgroundColor);
+      }
     }
   }, [tenantData]);
 

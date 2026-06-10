@@ -29,3 +29,64 @@
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* ========================================================
+   SMART CUSTOMIZATION THEMES
+   Override de colores globales para soporte instantáneo de Dark Mode y Temas Personalizados
+======================================================== */
+
+/* DARK MODE */
+html.dark body {
+  background-color: #020617; /* slate-950 */
+  color: #f1f5f9; /* slate-100 */
+}
+html.dark .bg-white,
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #f1f5f9 !important;
+  border-color: #1e293b !important; /* slate-800 */
+}
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700,
+html.dark .text-slate-850 {
+  color: #f1f5f9 !important;
+}
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important; /* slate-400 */
+}
+html.dark .border-slate-150,
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+  border-color: #1e293b !important;
+}
+
+/* THEME CUSTOM (Background Elegido por la Agencia) */
+html.theme-custom body {
+  background-color: var(--bg-custom);
+  color: var(--text-custom);
+}
+html.theme-custom .bg-white,
+html.theme-custom .bg-slate-50,
+html.theme-custom .bg-slate-100 {
+  background-color: var(--card-custom) !important;
+  color: var(--text-custom) !important;
+  border-color: var(--border-custom) !important;
+}
+html.theme-custom .text-slate-900,
+html.theme-custom .text-slate-800,
+html.theme-custom .text-slate-700,
+html.theme-custom .text-slate-850 {
+  color: var(--text-custom) !important;
+}
+html.theme-custom .text-slate-500,
+html.theme-custom .text-slate-400 {
+  color: var(--text-muted-custom) !important;
+}
+html.theme-custom .border-slate-150,
+html.theme-custom .border-slate-100,
+html.theme-custom .border-slate-200 {
+  border-color: var(--border-custom) !important;
+}

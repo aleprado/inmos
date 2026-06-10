@@ -30,19 +30,24 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
     name: tenantData?.name || '',
     whatsappNumber: tenantData?.whatsappNumber || '',
     primaryColor: tenantData?.primaryColor || '#0b57d0',
+    themeMode: tenantData?.themeMode || 'light',
+    backgroundColor: tenantData?.backgroundColor || '#f8fafc',
+    catalogLayout: tenantData?.catalogLayout || 'mixed',
     logoUrl: tenantData?.logoUrl || ''
   });
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [settingsSaving, setSettingsSaving] = useState(false);
 
-  // Sincronizar el estado con los datos cargados del tenant
   useEffect(() => {
     if (tenantData) {
       setTenantSettings({
         name: tenantData.name || '',
         whatsappNumber: tenantData.whatsappNumber || '',
         primaryColor: tenantData.primaryColor || '#0b57d0',
+        themeMode: tenantData.themeMode || 'light',
+        backgroundColor: tenantData.backgroundColor || '#f8fafc',
+        catalogLayout: tenantData.catalogLayout || 'mixed',
         logoUrl: tenantData.logoUrl || ''
       });
     }
@@ -67,6 +72,9 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
         name: tenantSettings.name,
         whatsappNumber: tenantSettings.whatsappNumber,
         primaryColor: tenantSettings.primaryColor,
+        themeMode: tenantSettings.themeMode,
+        backgroundColor: tenantSettings.backgroundColor,
+        catalogLayout: tenantSettings.catalogLayout,
         logoUrl: finalLogoUrl
       };
 
@@ -643,6 +651,59 @@ Tus credenciales de ingreso para el panel de administración son:
                         onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
                         className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
                       />
+                    </div>
+                  </div>
+
+                  {/* Tema Visual */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tema Visual</label>
+                    <div className="flex gap-3">
+                      <select
+                        value={tenantSettings.themeMode}
+                        onChange={(e) => setTenantSettings(prev => ({ ...prev, themeMode: e.target.value }))}
+                        className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500 w-full"
+                      >
+                        <option value="light">Claro (Fondo claro, texto oscuro)</option>
+                        <option value="dark">Oscuro (Fondo oscuro, texto claro)</option>
+                        <option value="custom">Personalizado (Elegir color de fondo)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Color de Fondo (Solo si es personalizado) */}
+                  {tenantSettings.themeMode === 'custom' && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Color de Fondo</label>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="color"
+                          value={tenantSettings.backgroundColor}
+                          onChange={(e) => setTenantSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
+                          className="h-10 w-12 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                        />
+                        <input 
+                          type="text"
+                          value={tenantSettings.backgroundColor}
+                          onChange={(e) => setTenantSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
+                          className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Layout del Catálogo */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Vista por Defecto del Catálogo</label>
+                    <div className="flex gap-3">
+                      <select
+                        value={tenantSettings.catalogLayout}
+                        onChange={(e) => setTenantSettings(prev => ({ ...prev, catalogLayout: e.target.value }))}
+                        className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500 w-full"
+                      >
+                        <option value="mixed">Mixta (Lista + Mapa)</option>
+                        <option value="grid">Solo Lista (Grid de tarjetas)</option>
+                        <option value="map">Solo Mapa</option>
+                      </select>
                     </div>
                   </div>
 
