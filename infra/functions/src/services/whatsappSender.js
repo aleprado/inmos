@@ -14,10 +14,11 @@ const WA_ACCESS_TOKEN = process.env.WA_ACCESS_TOKEN || 'fake-access-token';
  */
 async function sendWhatsAppMessage(to, text) {
   try {
-    // Interceptar mensajes dirigidos a la demo web
+    // Interceptar mensajes dirigidos a la demo web o clientes web conectados
+    demoEventEmitter.emit('message', { to, text });
+    
     if (to && to.startsWith('demo_session_')) {
-      console.log(`[Demo WA] Emitiendo respuesta del bot para la sesión ${to}: ${text}`);
-      demoEventEmitter.emit('message', { to, text });
+      console.log(`[Demo WA] Respuesta del bot para la sesión ${to}: ${text}`);
       return;
     }
 

@@ -4,6 +4,7 @@ import { Search, Home, MapPin, BedDouble, Ruler, ArrowRight, X, SlidersHorizonta
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../firebase';
 import Navbar from './Navbar';
+import AIChatAssistant from './AIChatAssistant';
 
 export default function PropertyMarketplace({ tenantId, tenantData }) {
   const [properties, setProperties] = useState([]);
@@ -22,13 +23,8 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
   const [viewMode, setViewMode] = useState(() => window.innerWidth >= 768 ? 'mixed' : 'grid'); 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Estados para el Chat Demo de WhatsApp (Simulación de IA)
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('Vendo departamento 3 ambientes con cochera en Palermo, 82m2, al frente por USD 150.000');
-  const [isBotTyping, setIsBotTyping] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [sessionId, setSessionId] = useState('');
-  const chatEndRef = useRef(null);
 
   // Clases CSS dinámicas para los paneles
   const getLeftPanelClass = () => {
@@ -87,7 +83,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
     return () => unsubscribe();
   }, [tenantId]);
 
-  // 1.5 Inicializar session ID para el chat de demostración
+  // 1.5 Inicializar session ID para el chat de demostración y manejar limpieza
   useEffect(() => {
     if (tenantId === 'demo') {
       let currentSessionId = sessionStorage.getItem('inmos_demo_session_id');
@@ -97,6 +93,27 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
         sessionStorage.setItem('inmos_demo_session_id', currentSessionId);
       }
       setSessionId(currentSessionId);
+      
+      // Cleanup hook: Finalizar sesión en Backend
+      const endDemoSession = () => {
+        try {
+          const functions = getFunctions();
+          const endSessionFn = httpsCallable(functions, 'endDemoSession');
+          endSessionFn({ sessionId: currentSessionId }).catch(console.error);
+        } catch (error) {
+          console.error("Error intentando finalizar sesión:", error);
+        }
+      };
+
+      // Si el usuario cierra o recarga la pestaña
+      window.addEventListener('beforeunload', endDemoSession);
+
+      return () => {
+        window.removeEventListener('beforeunload', endDemoSession);
+        // Si el usuario navega fuera del componente (ej. vuelve al landing page)
+        endDemoSession();
+        sessionStorage.removeItem('inmos_demo_session_id');
+      };
     }
   }, [tenantId]);
 
@@ -112,92 +129,7 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
     }
   }, [tenantId, chatMessages.length]);
 
-  // 1.7 Hacer scroll al último mensaje
-  useEffect(() => {
-    if (isChatOpen) {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages, isBotTyping, isChatOpen]);
 
-  // Enviar mensaje en el chat
-  const handleSendChatMessage = async (e) => {
-    if (e) e.preventDefault();
-    if (!chatInput.trim() || !sessionId) return;
-
-    const messageText = chatInput.trim();
-    setChatInput('');
-    setIsBotTyping(true);
-    
-    // Agregamos mensaje del usuario localmente
-    setChatMessages(prev => [...prev, {
-      id: Date.now().toString(),
-      text: messageText,
-      sender: 'user',
-      createdAt: { seconds: Math.floor(Date.now() / 1000) }
-    }]);
-
-    try {
-      const functions = getFunctions();
-      const processDemoMessageFn = httpsCallable(functions, 'processDemoMessage');
-      
-      const response = await processDemoMessageFn({
-        messageText: messageText,
-        sessionId: sessionId
-      });
-      
-      // Procesamos las respuestas del bot
-      if (response.data && response.data.replies) {
-        const botMessages = response.data.replies.map((text, idx) => ({
-          id: `bot_${Date.now()}_${idx}`,
-          text: text,
-          sender: 'bot',
-          createdAt: { seconds: Math.floor(Date.now() / 1000) }
-        }));
-        
-        setChatMessages(prev => [...prev, ...botMessages]);
-      }
-      setIsBotTyping(false);
-
-    } catch (error) {
-      console.error("Error al procesar mensaje de demo:", error);
-      setIsBotTyping(false);
-      
-      setChatMessages(prev => [...prev, {
-        id: `err_${Date.now()}`,
-        text: `❌ Error al conectar con el chatbot de demo: ${error.message || 'Error desconocido'}. Inténtalo de nuevo.`,
-        sender: 'bot',
-        createdAt: { seconds: Math.floor(Date.now() / 1000) }
-      }]);
-    }
-  };
-
-  // Formateador de texto estilo WhatsApp (*negrita* y saltos de línea)
-  const formatMessageText = (text) => {
-    if (!text) return '';
-    let formatted = text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-      
-    formatted = formatted.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
-    return <span dangerouslySetInnerHTML={{ __html: formatted.replace(/\n/g, '<br/>') }} />;
-  };
-
-  const welcomeMessage = {
-    id: 'welcome',
-    sender: 'bot',
-    text: `🤖 *¡Hola!* Bienvenido al demostrador interactivo de Inmos.
-
-Aquí puedes probar cómo funciona nuestro cargador de propiedades por IA (WhatsApp style).
-
-*Intenta escribiéndome una descripción de una propiedad en lenguaje natural*, por ejemplo:
-_"Vendo departamento de 3 ambientes con 2 baños y cochera en Palermo, 82 m2, por USD 170.000."_
-
-¡Yo procesaré el texto, y la propiedad aparecerá mágicamente en el mapa y el catálogo detrás de mí!`,
-    createdAt: null
-  };
-
-  const displayedMessages = chatMessages.length === 0 ? [welcomeMessage] : chatMessages;
 
   // 2. Filtrar propiedades
   useEffect(() => {
@@ -623,193 +555,7 @@ _"Vendo departamento de 3 ambientes con 2 baños y cochera en Palermo, 82 m2, po
 
       {/* CHAT EN VIVO WHATSAPP SIMULACIÓN IA */}
       {tenantId === 'demo' && (
-        <>
-          {/* Contenedor del Botón y Animaciones (Más Choque Visual) */}
-          <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
-            {/* Ondas expansivas intensas */}
-            {!isChatOpen && (
-              <>
-                <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-30 duration-700"></div>
-                <div className="absolute -inset-3 rounded-full border-2 border-emerald-400 animate-pulse opacity-50"></div>
-              </>
-            )}
-            
-            <button
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className={`relative z-50 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 cursor-pointer group ${
-                isChatOpen 
-                  ? 'bg-slate-800 text-white hover:bg-slate-700 hover:rotate-90' 
-                  : 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-white hover:scale-110 shadow-[0_0_30px_rgba(16,185,129,0.5)] border border-emerald-300/30'
-              }`}
-              aria-label="Probar Bot de IA"
-            >
-              {isChatOpen ? (
-                <X className="h-7 w-7" />
-              ) : (
-                <div className="relative">
-                  <MessageSquare className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white shadow-lg shadow-red-500/50"></span>
-                  </span>
-                </div>
-              )}
-            </button>
-          </div>
-          
-          {/* Tooltip flotante explicativo más vibrante */}
-          {!isChatOpen && (
-            <div className="fixed bottom-9 right-[7.5rem] bg-gradient-to-r from-slate-900 to-slate-800 text-white text-xs font-black py-2.5 px-4 rounded-2xl shadow-[0_10px_25px_rgba(16,185,129,0.2)] z-40 animate-bounce flex items-center gap-2 border border-emerald-500/30">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-              </span>
-              ¡PRUEBA EL BOT DE WHATSAPP!
-              {/* Flecha lateral derecha */}
-              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-slate-800 rotate-45 border-t border-r border-emerald-500/30 z-[-1]"></div>
-            </div>
-          )}
-
-          {/* Panel de Chat */}
-          {isChatOpen && (
-            <div className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[380px] sm:h-[550px] w-full h-full bg-[#efeae2] sm:rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-50 overflow-hidden">
-              
-              {/* Cabecera del chat (WhatsApp Style) */}
-              <div className="bg-[#075e54] text-white p-4 flex items-center justify-between shrink-0 shadow-md">
-                <div className="flex items-center gap-3">
-                  {/* Avatar */}
-                  <div className="relative w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-sm border border-emerald-400/30">
-                    🤖
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[#075e54] rounded-full"></span>
-                  </div>
-                  
-                  {/* Info */}
-                  <div className="flex flex-col">
-                    <span className="font-extrabold text-sm tracking-wide">Inmos IA Assistant</span>
-                    <span className="text-[11px] text-emerald-200 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                      En línea
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Cerrar */}
-                <button
-                  onClick={() => setIsChatOpen(false)}
-                  className="p-1 rounded-full hover:bg-emerald-700/50 text-emerald-100 transition"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              
-              {/* Historial de Mensajes */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col">
-                {displayedMessages.map((msg, idx) => (
-                  <div
-                    key={msg.id || idx}
-                    className={`max-w-[85%] rounded-2xl p-3 shadow-sm text-sm relative break-words ${
-                      msg.sender === 'user'
-                        ? 'self-end bg-[#d9fdd3] text-slate-800 rounded-tr-none'
-                        : 'self-start bg-white text-slate-800 rounded-tl-none border border-slate-100'
-                    }`}
-                  >
-                    <div className="leading-relaxed">
-                      {formatMessageText(msg.text)}
-                    </div>
-                    
-                    <span className="text-[9px] text-slate-400 mt-1 block text-right">
-                      {msg.createdAt 
-                        ? new Date(msg.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                ))}
-                
-                {/* Indicador de escritura del Bot */}
-                {isBotTyping && (
-                  <div className="self-start bg-white text-slate-800 rounded-2xl rounded-tl-none p-3 max-w-[85%] shadow-sm text-sm border border-slate-100 flex items-center gap-1.5 animate-pulse">
-                    <span className="text-xs text-slate-400">Inmos IA está procesando...</span>
-                    <div className="flex gap-1 items-center h-4">
-                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                      <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                    </div>
-                  </div>
-                )}
-                
-                <div ref={chatEndRef} />
-              </div>
-              
-              {/* Input de Mensajes */}
-              <form onSubmit={handleSendChatMessage} className="p-3 bg-[#f0f0f0] flex items-center gap-2 border-t border-slate-200 shrink-0">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (isBotTyping || !sessionId) return;
-                    setIsBotTyping(true);
-                    setChatMessages(prev => [...prev, {
-                      id: Date.now().toString(),
-                      text: "📷 [Enviando imagen de ejemplo...]",
-                      sender: 'user',
-                      createdAt: { seconds: Math.floor(Date.now() / 1000) }
-                    }]);
-                    try {
-                      const functions = getFunctions();
-                      const processDemoMessageFn = httpsCallable(functions, 'processDemoMessage');
-                      const response = await processDemoMessageFn({
-                        messageText: '',
-                        imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                        sessionId: sessionId
-                      });
-                      if (response.data && response.data.replies) {
-                        const botMessages = response.data.replies.map((text, idx) => ({
-                          id: `bot_${Date.now()}_${idx}`,
-                          text: text,
-                          sender: 'bot',
-                          createdAt: { seconds: Math.floor(Date.now() / 1000) }
-                        }));
-                        setChatMessages(prev => [...prev, ...botMessages]);
-                      }
-                    } catch (error) {
-                      console.error("Error al enviar imagen de demo:", error);
-                      setChatMessages(prev => [...prev, {
-                        id: `err_${Date.now()}`,
-                        text: `❌ Error: ${error.message}`,
-                        sender: 'bot',
-                        createdAt: { seconds: Math.floor(Date.now() / 1000) }
-                      }]);
-                    }
-                    setIsBotTyping(false);
-                  }}
-                  title="Enviar foto de ejemplo"
-                  disabled={isBotTyping}
-                  className="w-10 h-10 bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-600 rounded-full flex items-center justify-center shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed shrink-0 cursor-pointer"
-                >
-                  <Grid className="h-5 w-5" />
-                </button>
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Ej: Vendo depto 3 amb en Palermo por USD 150.000, 80m2..."
-                  disabled={isBotTyping}
-                  className="flex-1 py-2.5 px-4 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 disabled:bg-slate-50 disabled:text-slate-400"
-                />
-                <button
-                  type="submit"
-                  disabled={!chatInput.trim() || isBotTyping}
-                  className="w-10 h-10 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-full flex items-center justify-center shadow-md transition disabled:bg-slate-300 disabled:scale-100 disabled:cursor-not-allowed shrink-0 cursor-pointer"
-                >
-                  {isBotTyping ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </button>
-              </form>
-            </div>
-          )}
-        </>
+        <AIChatAssistant isDemo={true} tenantId={tenantId} sessionId={sessionId} />
       )}
     </div>
   );

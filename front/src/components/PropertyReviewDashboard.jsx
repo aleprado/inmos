@@ -10,6 +10,7 @@ import { db, auth, storage } from '../firebase';
 import PropertyEditModal from './PropertyEditModal';
 import PropertyFlyer from './PropertyFlyer';
 import SignageFlyer from './SignageFlyer';
+import AIChatAssistant from './AIChatAssistant';
 import { useToast } from '../contexts/ToastContext';
 
 export default function PropertyReviewDashboard({ tenantId, tenantData, userClaims, currentUser }) {
@@ -1203,6 +1204,12 @@ Tus credenciales de ingreso para el panel de administración son:
       {signageProperty && (
         <SignageFlyer property={signageProperty} tenantId={tenantId} />
       )}
+      {/* Asistente IA para Operadores (No Demo) */}
+      <AIChatAssistant 
+        isDemo={false} 
+        tenantId={tenantId} 
+        sessionId={currentUser?.uid || currentUser?.email || 'operador'} 
+      />
     </div>
   );
 }
