@@ -11,6 +11,7 @@ import PropertyEditModal from './PropertyEditModal';
 import PropertyFlyer from './PropertyFlyer';
 import SignageFlyer from './SignageFlyer';
 import AIChatAssistant from './AIChatAssistant';
+import { useInactivityTimer } from '../hooks/useInactivityTimer';
 import { useToast } from '../contexts/ToastContext';
 
 export default function PropertyReviewDashboard({ tenantId, tenantData, userClaims, currentUser }) {
@@ -20,6 +21,16 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
   const [operators, setOperators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [operatorsLoading, setOperatorsLoading] = useState(true);
+
+  // Temporizador de inactividad (para Operadores)
+  useInactivityTimer({
+    isEnabled: true,
+    timeoutMs: 30 * 60 * 1000, // 30 minutos de inactividad
+    onIdle: () => {
+      alert("Tu sesión ha caducado por inactividad. Por favor, vuelve a iniciar sesión.");
+      signOut(auth).catch(console.error);
+    }
+  });
   
   // Pestañas del Panel: 'pending' | 'approved' | 'archived' | 'operators' | 'settings'
   const [activeTab, setActiveTab] = useState('pending');

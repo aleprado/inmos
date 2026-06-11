@@ -5,6 +5,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../firebase';
 import Navbar from './Navbar';
 import AIChatAssistant from './AIChatAssistant';
+import { useInactivityTimer } from '../hooks/useInactivityTimer';
 
 export default function PropertyMarketplace({ tenantId, tenantData }) {
   const [properties, setProperties] = useState([]);
@@ -29,6 +30,29 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const [sessionId, setSessionId] = useState('');
+
+  // Temporizador de inactividad (solo para Demo)
+  useInactivityTimer({
+    isEnabled: tenantId === 'demo',
+    timeoutMs: 30 * 60 * 1000, // 30 minutos de inactividad
+    onIdle: () => {
+      const currentSessionId = sessionStorage.getItem('inmos_demo_session_id');
+      if (currentSessionId) {
+        alert("La sesión de prueba ha caducado por inactividad. Se limpiará el entorno.");
+        const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || "inmos-2c701";
+        const url = `https://us-central1-${projectId}.cloudfunctions.net/endDemoSession`;
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: { sessionId: currentSessionId } }),
+          keepalive: true
+        }).catch(console.error).finally(() => {
+          sessionStorage.removeItem('inmos_demo_session_id');
+          window.location.reload();
+        });
+      }
+    }
+  });
 
   // Clases CSS dinámicas para los paneles
   const getLeftPanelClass = () => {

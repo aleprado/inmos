@@ -71,11 +71,9 @@ exports.processDemoMessage = onCall(async (request) => {
       const { appendImageToProperty } = require('../services/propertyService');
       const session = await getSession(sessionId);
       
-      if (session && session.status === 'waiting_images') {
+      if (session && (session.status === 'active' || session.status === 'waiting_images')) {
         await appendImageToProperty(session.lastPropertyId, request.data.imageUrl);
-        replies.push("📸 *¡Foto de ejemplo agregada con éxito!* (Omitimos el análisis por IA). Sigue enviando fotos o escribe *'listo'* para continuar.");
-      } else if (session && session.status === 'active') {
-        replies.push("⚠️ Todavía estoy recopilando los datos básicos. Por favor, responde a mi pregunta anterior con texto antes de enviarme fotos.");
+        replies.push("📸 *¡Foto agregada con éxito!* ¿Algo más para agregar o ya estamos listos?");
       } else {
         replies.push("⚠️ Primero debes iniciar el registro escribiendo una descripción antes de mandar fotos.");
       }

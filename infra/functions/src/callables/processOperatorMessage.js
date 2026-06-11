@@ -61,9 +61,9 @@ exports.processOperatorMessage = onCall(async (request) => {
     
     if (imageUrl) {
       const session = await getSession(operatorPhone);
-      if (session && session.status === 'waiting_images') {
+      if (session && (session.status === 'active' || session.status === 'waiting_images')) {
         await appendImageToProperty(session.lastPropertyId, imageUrl);
-        replies.push("📸 *¡Foto guardada con éxito!* (Vía Web). Sigue enviando fotos o escribe *'listo'* para continuar.");
+        replies.push("📸 *¡Foto guardada con éxito!* (Vía Web). ¿Algo más para agregar o ya estamos listos?");
       } else {
         replies.push("⚠️ Primero debes iniciar el registro con una descripción antes de mandar fotos.");
       }
