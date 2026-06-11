@@ -82,6 +82,17 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
 
+  const handleWhatsAppClick = () => {
+    if (!propertyId || !property || property.status !== 'approved' || window.location.pathname.includes('review')) return;
+    
+    const inquiryKey = `inquiry_${propertyId}`;
+    if (!sessionStorage.getItem(inquiryKey)) {
+      sessionStorage.setItem(inquiryKey, 'true');
+      const docRef = doc(db, 'properties', propertyId);
+      updateDoc(docRef, { inquiries: increment(1) }).catch(err => console.error("No se pudo actualizar consultas:", err));
+    }
+  };
+
   // Obtener estilo estético del badge de operación
   const getOperationBadgeStyle = (op) => {
     switch (op) {
@@ -339,6 +350,7 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
             href={getWhatsAppLink()}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleWhatsAppClick}
             className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] text-xs uppercase tracking-wider text-center"
           >
             <MessageCircle className="h-4.5 w-4.5" />

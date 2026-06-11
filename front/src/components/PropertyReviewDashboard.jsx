@@ -951,12 +951,20 @@ Tus credenciales de ingreso para el panel de administración son:
                           <Star className="h-3.5 w-3.5 fill-current" />
                         </div>
                       )}
-                      {(prop.views > 0 || prop.status === 'approved') && (
-                        <div className="bg-slate-900/80 text-slate-300 border border-slate-750 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-md flex items-center gap-1.5 backdrop-blur-md" title="Vistas orgánicas">
-                          <Eye className="h-3.5 w-3.5 text-slate-400" />
-                          {prop.views || 0}
-                        </div>
-                      )}
+                      <div className="flex gap-1.5">
+                        {(prop.views > 0 || prop.status === 'approved') && (
+                          <div className="bg-slate-900/80 text-slate-300 border border-slate-750 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-md flex items-center gap-1.5 backdrop-blur-md" title="Vistas orgánicas">
+                            <Eye className="h-3.5 w-3.5 text-slate-400" />
+                            {prop.views || 0}
+                          </div>
+                        )}
+                        {prop.inquiries > 0 && (
+                          <div className="bg-emerald-900/80 text-emerald-300 border border-emerald-800 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-md flex items-center gap-1.5 backdrop-blur-md" title="Consultas (Clics en WhatsApp)">
+                            <MessageSquare className="h-3.5 w-3.5 text-emerald-400" />
+                            {prop.inquiries || 0}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

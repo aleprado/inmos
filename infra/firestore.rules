@@ -44,9 +44,17 @@ service cloud.firestore {
       // Edición y Eliminación:
       // 1. Solo operadores autenticados pertenecientes a la inmobiliaria propietaria del anuncio.
       // 2. El usuario no puede modificar el tenant_id original ni la fecha de creación.
-      allow update: if belongsToTenant(resource.data.tenant_id)
-                    && request.resource.data.tenant_id == resource.data.tenant_id
-                    && request.resource.data.createdAt == resource.data.createdAt;
+      allow update: if (belongsToTenant(resource.data.tenant_id)
+                        && request.resource.data.tenant_id == resource.data.tenant_id
+                        && request.resource.data.createdAt == resource.data.createdAt)
+                    || (
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
+                        && request.resource.data.views == resource.data.get('views', 0) + 1
+                    )
+                    || (
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inquiries'])
+                        && request.resource.data.inquiries == resource.data.get('inquiries', 0) + 1
+                    );
                     
       allow delete: if belongsToTenant(resource.data.tenant_id);
     }
