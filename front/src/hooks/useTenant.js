@@ -13,6 +13,20 @@ export function useTenant(tenantId) {
     }
 
     const fetchTenant = async () => {
+      // Evitar lectura a Firestore si es el entorno de demo (ahorra costos y elimina el warning)
+      if (tenantId === 'demo') {
+        setTenantData({
+          id: 'demo',
+          name: 'Inmos Demo',
+          whatsappNumber: '5491100000000',
+          primaryColor: '#0b57d0',
+          logoUrl: null,
+          catalogLayout: 'mixed'
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
         const docRef = doc(db, 'tenants', tenantId);
         const docSnap = await getDoc(docRef);
