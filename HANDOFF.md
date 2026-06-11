@@ -69,11 +69,29 @@ El proyecto es un monorepo que contiene tanto el código frontend como la infrae
 3. **Procesamiento de IA:** Un handler de la Task asíncrona (ej: `infra/functions/src/tasks/processPropertyAudio.js`) recibe la información, interactúa con LLMs (ej: Gemini) para extraer datos estructurados, sube imágenes a Storage y guarda la entidad en Firestore con estado `pending`.
 4. **Revisión:** El administrador entra al Dashboard en React, ve la propiedad pendiente, la edita si es necesario y la aprueba, haciéndola visible en la web pública.
 
-## 🛠️ Estado Actual y Próximos Pasos (Next Steps)
-Todo el código está desarrollado e integrado localmente. El proyecto está listo para el despliegue final en la nube.
-- [ ] **Despliegue de Infraestructura:** Ejecutar `terraform init` y `terraform apply` en la carpeta `/infra` luego de proveer el `GOOGLE_APPLICATION_CREDENTIALS`.
-- [ ] **Configuración Frontend:** Copiar el `firebaseConfig` resultante de Terraform y pegarlo en `front/src/firebase.js`.
-- [ ] **Secretos CI/CD:** Configurar los secretos en GitHub (`GCP_CREDENTIALS`, etc.) para que GitHub Actions pueda desplegar automáticamente tras el push.
+## 🛠️ Estado Actual y Últimos Desarrollos (Contexto Crítico)
+El proyecto se encuentra en un estado funcional avanzado con integraciones complejas de UI y Backend. **Si eres un nuevo agente analizando este repositorio, lee atentamente los siguientes puntos recientes:**
+
+1. **AI Chat Assistant Web (`AIChatAssistant.jsx`):**
+   - Se migró la funcionalidad del bot de WhatsApp al navegador. Los operadores autenticados pueden cargar propiedades chateando o subiendo imágenes directamente desde la web (`processOperatorMessage.js`).
+   - El entorno "Demo" (`inmos.app` público) también utiliza este componente, pero envía la data al endpoint `processDemoMessage.js`.
+
+2. **Personalización Multi-Tenant (White-label):**
+   - El `PropertyReviewDashboard` y `PropertyMarketplace` ahora leen configuraciones visuales del tenant (color principal, color de fondo, logo, diseño del catálogo 'grid/map/mixed') y las inyectan en el DOM (CSS vars).
+
+3. **Seguridad y Control de Costos (MUY IMPORTANTE):**
+   - **Rate Limiting por IP:** Para evitar que usuarios maliciosos agoten la cuota de Vertex AI / Gemini en el entorno Demo público, se implementó un Rate Limiter por IP en la Cloud Function `processDemoMessage`. El límite es de 20 interacciones por día por IP, respaldado en Firestore (`demo_rate_limits`).
+   - **Limpieza de Demo Segura (`keepalive`):** En lugar de un cronjob costoso, la limpieza de propiedades de la demo se dispara cuando el usuario cierra la pestaña (`beforeunload`). Para sortear la cancelación agresiva del navegador, se usa un `fetch` nativo con `keepalive: true` apuntando a la Callable `endDemoSession`.
+   - **Timeouts de Inactividad (`useInactivityTimer.js`):** El Frontend vigila inactividad pura (mouse/teclado). Si pasan 30 minutos, se finaliza la sesión de la Demo (limpiando backend) o se desloguea forzosamente al Operador.
+   - **Persistencia de Sesión de Operadores:** Firebase Auth está configurado explícitamente y globalmente con `browserSessionPersistence` en `firebase.js`. La sesión muere al cerrar el navegador.
+
+4. **Quirk de Firebase Storage con Terraform:**
+   - Terraform aprovisiona el bucket `inmos-2c701-inmos-media` nativamente en GCP. Debido a que la SDK Web de Firebase (`firebasestorage.googleapis.com`) no reconoce buckets genéricos por defecto (lanzando un error disfrazado de CORS), este bucket **debe estar enlazado manualmente a Firebase** mediante el menú "Importar Bucket" en la consola web de Firebase Storage.
+   - El frontend `.env` debe apuntar a `VITE_FIREBASE_STORAGE_BUCKET=inmos-2c701-inmos-media`.
+   - Las reglas de Storage están exportadas en `infra/storage.rules`.
+
+## 🚀 Próximos Pasos (Next Steps)
+- [ ] **Configuración Frontend en Hosting:** Asegurarse de que las variables de entorno inyectadas por el CI/CD (GitHub Secrets) coincidan con el `.env` local.
 - [ ] **Verificación de Meta Webhook:** Enlazar la URL pública de la Cloud Function del Webhook al dashboard de desarrolladores de Meta (WhatsApp Business API).
 
 ## ⚠️ Reglas a Respetar por el Agente (Ver `rules.md`)
