@@ -17,12 +17,40 @@ exports.processDemoMessage = onCall(async (request) => {
     );
   }
 
-  // 2. Validar formato de sesión de demo
+  // Validar formato de sesión de demo
   if (!sessionId.startsWith('demo_session_')) {
     throw new HttpsError(
       'invalid-argument',
       'El sessionId proporcionado no es válido para el entorno de demostración.'
     );
+  }
+
+  // 3. Limitación de ratio por IP para evitar gastos en IA (Max 20 interacciones por IP por día)
+  const clientIp = request.rawRequest.ip || request.rawRequest.headers['x-forwarded-for'] || 'unknown';
+  if (clientIp !== 'unknown') {
+    const { db } = require('../config/firebase');
+    const { FieldValue } = require('firebase-admin/firestore');
+    
+    // Formatear IP para que sea un ID de documento válido
+    const safeIp = clientIp.replace(/[\/\.\:]/g, '_');
+    const today = new Date().toISOString().split('T')[0];
+    const limitRef = db.collection('demo_rate_limits').doc(safeIp);
+    
+    const docSnap = await limitRef.get();
+    const data = docSnap.data();
+
+    if (!docSnap.exists || data.date !== today) {
+      await limitRef.set({ count: 1, date: today });
+    } else {
+      if (data.count >= 20) {
+        console.warn(`[Demo WA] Bloqueo por Rate Limit a la IP: ${clientIp}`);
+        throw new HttpsError(
+          'resource-exhausted',
+          'Has alcanzado el límite diario de pruebas en la demo (20 mensajes). Vuelve a intentarlo mañana.'
+        );
+      }
+      await limitRef.update({ count: FieldValue.increment(1) });
+    }
   }
 
   try {
