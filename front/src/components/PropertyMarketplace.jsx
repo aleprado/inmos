@@ -99,11 +99,26 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
       setSessionId(currentSessionId);
       
       // Cleanup hook: Finalizar sesión en Backend
-      const endDemoSession = () => {
+      const endDemoSession = (e) => {
         try {
-          const functions = getFunctions();
-          const endSessionFn = httpsCallable(functions, 'endDemoSession');
-          endSessionFn({ sessionId: currentSessionId }).catch(console.error);
+          // Si el evento es beforeunload, el navegador cancelará las peticiones normales (como httpsCallable)
+          // Usamos fetch nativo con keepalive: true para asegurar que la petición llegue al servidor
+          if (e && e.type === 'beforeunload') {
+            const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || "inmos-2c701";
+            const url = `https://us-central1-${projectId}.cloudfunctions.net/endDemoSession`;
+            
+            fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: { sessionId: currentSessionId } }),
+              keepalive: true
+            }).catch(console.error);
+          } else {
+            // Navegación normal de React (cambio de ruta interno)
+            const functions = getFunctions();
+            const endSessionFn = httpsCallable(functions, 'endDemoSession');
+            endSessionFn({ sessionId: currentSessionId }).catch(console.error);
+          }
         } catch (error) {
           console.error("Error intentando finalizar sesión:", error);
         }
