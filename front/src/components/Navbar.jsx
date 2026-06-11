@@ -9,16 +9,14 @@ export default function Navbar({ tenantData, children }) {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2 hover:opacity-80 transition">
           {tenantData?.logoUrl ? (
-            <img src={tenantData.logoUrl} alt={name} className="h-9 w-auto max-w-[120px] object-contain" />
+            <img src={tenantData.logoUrl} alt={name} className="h-9 w-9 rounded-xl object-cover shadow-sm" />
           ) : (
-            <>
-              <img src="/favicon.png" alt="Inmos Logo" className="h-9 w-9 rounded-xl object-cover shadow-sm" />
-              <div>
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-widest block -mb-0.5">Catálogo</span>
-                <span className="font-extrabold text-slate-800 text-base">{name.toUpperCase()}</span>
-              </div>
-            </>
+            <img src="/favicon.png" alt="Inmos Logo" className="h-9 w-9 rounded-xl object-cover shadow-sm" />
           )}
+          <div>
+            <span className="text-xs text-slate-400 font-bold uppercase tracking-widest block -mb-0.5">Catálogo</span>
+            <span className="font-extrabold text-slate-800 text-base line-clamp-1 max-w-[150px] sm:max-w-xs">{name.toUpperCase()}</span>
+          </div>
         </a>
         
         {/* Acciones del lado derecho (alternadores de vista, etc.) */}
