@@ -74,8 +74,10 @@ exports.processDemoMessage = onCall(async (request) => {
       if (session && session.status === 'waiting_images') {
         await appendImageToProperty(session.lastPropertyId, request.data.imageUrl);
         replies.push("📸 *¡Foto de ejemplo agregada con éxito!* (Omitimos el análisis por IA). Sigue enviando fotos o escribe *'listo'* para continuar.");
+      } else if (session && session.status === 'active') {
+        replies.push("⚠️ Todavía estoy recopilando los datos básicos. Por favor, responde a mi pregunta anterior con texto antes de enviarme fotos.");
       } else {
-        replies.push("⚠️ Primero debes iniciar el registro con una descripción antes de mandar fotos.");
+        replies.push("⚠️ Primero debes iniciar el registro escribiendo una descripción antes de mandar fotos.");
       }
     } else {
       // 4. Invocar el flujo conversacional de IA utilizando el tenant 'demo'
