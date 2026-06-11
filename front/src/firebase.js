@@ -1,7 +1,7 @@
 // Inicialización y configuración de Firebase en el cliente
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserSessionPersistence } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
@@ -21,6 +21,8 @@ const app = initializeApp(firebaseConfig);
 // Inicializar servicios principales
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+// Forzar globalmente la persistencia de sesión. Esto convertirá cualquier sesión local existente.
+setPersistence(auth, browserSessionPersistence).catch(console.error);
 export const storage = getStorage(app);
 storage.maxUploadRetryTime = 0; // Desactivar reintentos para ahorrar costos en caso de fallo de red/CORS
 
