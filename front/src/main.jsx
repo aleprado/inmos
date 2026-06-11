@@ -11,6 +11,7 @@ import { useTenant } from './hooks/useTenant'
 import { ToastProvider } from './contexts/ToastContext'
 import './index.css'
 import { applyTheme, applyBackgroundTheme } from './utils/theme'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 
 function App() {
   const [route, setRoute] = useState(() => {
@@ -135,6 +136,27 @@ function App() {
 
     return () => unsubscribe()
   }, [])
+
+  // Limpieza global de sesión Demo al cerrar pestaña (para no perder datos al navegar internamente)
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (route.tenantId === 'demo') {
+        const currentSessionId = sessionStorage.getItem('inmos_demo_session_id');
+        if (currentSessionId) {
+          const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || "inmos-2c701";
+          const url = `https://us-central1-${projectId}.cloudfunctions.net/endDemoSession`;
+          fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { sessionId: currentSessionId } }),
+            keepalive: true
+          }).catch(console.error);
+        }
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [route.tenantId]);
 
   // 2. Enrutador por URL en base al path y query parameters
   useEffect(() => {

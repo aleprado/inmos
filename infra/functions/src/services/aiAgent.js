@@ -112,6 +112,7 @@ El corredor acaba de enviar este mensaje para agregar o corregir datos:
 ${warningInstruction}
 
 Analiza el nuevo mensaje y fusiona los datos. Si corrige algo, cámbialo. Si agrega, súmalo.
+ATENCIÓN: Si el mensaje indica claramente que el corredor quiere "crear una nueva propiedad", "empezar de cero" o cambiar a otro inmueble distinto, NO sobreescribas los datos actuales. En su lugar, indícale amigablemente en el 'chatResponse' que para empezar una nueva propiedad primero debe enviar la palabra exacta "terminar" para cerrar y guardar la actual.
 Devuelve estrictamente el objeto JSON actualizado con el siguiente formato:
 
 {

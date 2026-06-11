@@ -148,14 +148,11 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
         }
       };
 
-      // Si el usuario cierra o recarga la pestaña
+      // Solo escuchar el cierre real de la pestaña del navegador
       window.addEventListener('beforeunload', endDemoSession);
 
       return () => {
         window.removeEventListener('beforeunload', endDemoSession);
-        // Si el usuario navega fuera del componente (ej. vuelve al landing page)
-        endDemoSession();
-        sessionStorage.removeItem('inmos_demo_session_id');
       };
     }
   }, [tenantId]);
