@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { updateMetaTags } from '../utils/seo';
 import { useToast } from '../contexts/ToastContext';
 
-export default function PropertyDetailView({ propertyId, tenantId }) {
+export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
   const toast = useToast();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -202,7 +202,16 @@ export default function PropertyDetailView({ propertyId, tenantId }) {
         {/* Botón Volver (si no es embebido) */}
         <a 
           href={tenantId === 'demo' ? '/?tenant=demo' : `/?tenant=${tenantId}`}
-          className="absolute top-4 left-4 bg-white/80 hover:bg-white text-slate-800 p-2.5 rounded-full backdrop-blur-md shadow-md transition"
+          onClick={(e) => {
+            e.preventDefault();
+            window.history.pushState(null, '', tenantId === 'demo' ? '/?tenant=demo' : `/?tenant=${tenantId}`);
+            if (setRoute) {
+              setRoute(prev => ({ ...prev, view: 'marketplace', propertyId: null }));
+            } else {
+              window.location.href = tenantId === 'demo' ? '/?tenant=demo' : `/?tenant=${tenantId}`;
+            }
+          }}
+          className="absolute top-4 left-4 bg-white/80 hover:bg-white text-slate-800 p-2.5 rounded-full backdrop-blur-md shadow-md transition cursor-pointer"
         >
           <ArrowLeft className="h-5 w-5" />
         </a>

@@ -7,7 +7,7 @@ import Navbar from './Navbar';
 import AIChatAssistant from './AIChatAssistant';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
 
-export default function PropertyMarketplace({ tenantId, tenantData }) {
+export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) {
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -412,6 +412,15 @@ export default function PropertyMarketplace({ tenantId, tenantData }) {
                   <a
                     href={`/propiedad/${prop.id}`}
                     key={prop.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.history.pushState(null, '', `/propiedad/${prop.id}`);
+                      if (setRoute) {
+                        setRoute(prev => ({ ...prev, view: 'detail', propertyId: prop.id }));
+                      } else {
+                        window.location.href = `/propiedad/${prop.id}`;
+                      }
+                    }}
                     className="bg-white border border-slate-150 rounded-2xl overflow-hidden flex flex-col hover:border-brand-500/30 hover:shadow-md transition group"
                   >
                     {/* Foto */}

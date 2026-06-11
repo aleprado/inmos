@@ -240,10 +240,10 @@ function App() {
           />
         )
       case 'detail':
-        return <PropertyDetailView propertyId={route.propertyId} tenantId={route.tenantId} tenantData={tenantData} />
+        return <PropertyDetailView propertyId={route.propertyId} tenantId={route.tenantId} tenantData={tenantData} setRoute={setRoute} />
       case 'marketplace':
       default:
-        return <PropertyMarketplace tenantId={route.tenantId} tenantData={tenantData} />
+        return <PropertyMarketplace tenantId={route.tenantId} tenantData={tenantData} setRoute={setRoute} />
     }
   }
 
