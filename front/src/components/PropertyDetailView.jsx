@@ -165,7 +165,7 @@ export default function PropertyDetailView({ propertyId, tenantId, tenantData, s
       
       {/* SPLASH SCREEN PREMIUM */}
       {showSplash && (
-        <div className={`absolute inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${splashFadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className={`fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${splashFadeOut ? 'opacity-0 -translate-y-8 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
           <div className="relative flex flex-col items-center justify-center animate-in zoom-in-95 duration-1000">
             <div className="absolute inset-0 bg-brand-500/20 blur-[80px] rounded-full"></div>
             {tenantData?.logoUrl ? (
