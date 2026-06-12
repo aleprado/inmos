@@ -18,8 +18,13 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
     area: property?.area || '',
     virtualTourUrl: property?.virtualTourUrl || '',
     address: property?.address || '',
+    latitude: property?.latitude || null,
+    longitude: property?.longitude || null,
     featured: property?.featured || false
   });
+
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
 
   const [images, setImages] = useState(property?.images || []);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -74,20 +79,17 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
     try {
       const docRef = doc(db, 'properties', property.id);
       
-      let latitude = property.latitude || null;
-      let longitude = property.longitude || null;
+      let latitude = formData.latitude;
+      let longitude = formData.longitude;
 
-      // Si la dirección cambió, intentamos geocodificarla en el cliente
-      if (formData.address !== property.address) {
+      // Si la dirección cambió y no ajustaron el pin manualmente, intentamos geocodificar
+      if (formData.address !== property.address && formData.latitude === property?.latitude && formData.longitude === property?.longitude) {
         try {
           const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.address + ', Argentina')}&format=json&limit=1`);
           const data = await response.json();
           if (data && data.length > 0) {
             latitude = parseFloat(data[0].lat);
             longitude = parseFloat(data[0].lon);
-          } else {
-            latitude = null;
-            longitude = null;
           }
         } catch (err) {
           console.error("Error geocodificando en cliente:", err);
@@ -158,6 +160,95 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
   const handleDragEnd = () => {
     setDraggedItemIndex(null);
   };
+
+  const handleGeocode = async () => {
+    if (!formData.address) return;
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.address + ', Argentina')}&format=json&limit=1`);
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setFormData(prev => ({ ...prev, latitude: lat, longitude: lon }));
+        
+        if (mapRef.current) {
+          mapRef.current.setView([lat, lon], 16);
+          if (!markerRef.current) {
+            const pinIcon = window.L.divIcon({
+              html: `<div style="background-color: #0b57d0; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4);"></div>`,
+              className: 'custom-leaflet-pin',
+              iconSize: [16, 16],
+              iconAnchor: [8, 8]
+            });
+            markerRef.current = window.L.marker([lat, lon], { icon: pinIcon, draggable: true }).addTo(mapRef.current);
+            markerRef.current.on('dragend', function () {
+              const latlng = markerRef.current.getLatLng();
+              setFormData(prev => ({ ...prev, latitude: latlng.lat, longitude: latlng.lng }));
+            });
+          } else {
+            markerRef.current.setLatLng([lat, lon]);
+          }
+        }
+      } else {
+        alert("No se encontró la ubicación. Por favor, sé más específico.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Inicializar mapa de edición
+  React.useEffect(() => {
+    const initMap = () => {
+      if (!document.getElementById('edit-map-container') || !window.L || mapRef.current) return;
+
+      const initialLat = formData.latitude || -34.6037; // Default: Buenos Aires
+      const initialLon = formData.longitude || -58.3816;
+      const zoom = formData.latitude ? 16 : 11;
+
+      const map = window.L.map('edit-map-container').setView([initialLat, initialLon], zoom);
+
+      window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        subdomains: 'abcd',
+        maxZoom: 20
+      }).addTo(map);
+
+      mapRef.current = map;
+
+      const pinIcon = window.L.divIcon({
+        html: `<div style="background-color: #0b57d0; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4);"></div>`,
+        className: 'custom-leaflet-pin',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+
+      if (formData.latitude && formData.longitude) {
+        markerRef.current = window.L.marker([formData.latitude, formData.longitude], { icon: pinIcon, draggable: true }).addTo(map);
+        markerRef.current.on('dragend', function () {
+          const latlng = markerRef.current.getLatLng();
+          setFormData(prev => ({ ...prev, latitude: latlng.lat, longitude: latlng.lng }));
+        });
+      }
+
+      map.on('click', function(e) {
+        if (!markerRef.current) {
+          markerRef.current = window.L.marker(e.latlng, { icon: pinIcon, draggable: true }).addTo(map);
+          markerRef.current.on('dragend', function () {
+            const latlng = markerRef.current.getLatLng();
+            setFormData(prev => ({ ...prev, latitude: latlng.lat, longitude: latlng.lng }));
+          });
+        } else {
+          markerRef.current.setLatLng(e.latlng);
+        }
+        setFormData(prev => ({ ...prev, latitude: e.latlng.lat, longitude: e.latlng.lng }));
+      });
+    };
+
+    // Pequeño delay para asegurar que el modal y su DOM están listos
+    const timer = setTimeout(initMap, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   // ----- Drag and Drop File Uploading Handlers -----
   const handleFileDragEnter = (e) => {
@@ -232,17 +323,38 @@ export default function PropertyEditModal({ property, onClose, onUpdated }) {
                   />
                 </div>
 
-                {/* Dirección */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Dirección / Ubicación</label>
-                  <input 
-                    type="text" 
-                    name="address" 
-                    value={formData.address} 
-                    onChange={handleChange}
-                    placeholder="ej: Av. Cabildo 1500, Belgrano, CABA"
-                    className="w-full bg-white text-slate-900 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
-                  />
+                {/* Dirección y Mapa */}
+                <div className="col-span-1 md:col-span-2 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Dirección / Ubicación (Calle y Ciudad)</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        name="address" 
+                        value={formData.address} 
+                        onChange={handleChange}
+                        placeholder="Ej: Av. San Martín 1234, Mendoza"
+                        className="flex-1 bg-white text-slate-900 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGeocode}
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-sm transition border border-slate-300"
+                      >
+                        Buscar
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                      <span>Ajuste Preciso en Mapa</span>
+                      <span className="text-[9px] text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">Haz clic o arrastra el pin</span>
+                    </label>
+                    <div className="w-full h-48 bg-slate-100 rounded-2xl border border-slate-300 overflow-hidden relative z-0">
+                      <div id="edit-map-container" className="absolute inset-0 z-0"></div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Fila: Operación y Tipo */}
