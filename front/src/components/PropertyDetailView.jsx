@@ -128,10 +128,18 @@ export default function PropertyDetailView({ propertyId, tenantId, tenantData, s
     if (!property) return '#';
     const message = `Hola, estoy interesado en el/la ${property.propertyType || 'propiedad'} en ${property.operationType || 'operación'} ubicado/a en "${property.address || property.title}" que vi en el catálogo (Ref: ${property.id}). ¿Sigue disponible?`;
     
-    // 1. Prioridad: Teléfono asociado a la propiedad (quien la cargó)
-    // 2. Teléfono oficial de la agencia (tenantData)
-    // 3. Fallback genérico
-    let rawPhone = property.metadata?.sender || property.whatsappNumber || tenantData?.whatsappNumber || "5491100000000";
+    // 1. Teléfono asignado explícitamente a la propiedad
+    let rawPhone = property.whatsappNumber;
+    
+    // 2. Si no tiene, y fue cargado por WhatsApp (el sender es un teléfono y NO un ID web)
+    if (!rawPhone && property.metadata?.sender && !String(property.metadata.sender).startsWith('web_')) {
+      rawPhone = property.metadata.sender;
+    }
+
+    // 3. Fallback al teléfono de la agencia o uno genérico
+    if (!rawPhone) {
+      rawPhone = tenantData?.whatsappNumber || "5491100000000";
+    }
     
     // Limpiar todo caracter no numérico (+, espacios, guiones, paréntesis)
     let phone = String(rawPhone).replace(/\D/g, '');
