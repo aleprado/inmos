@@ -12,6 +12,32 @@ export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) 
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Splash Screen State
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashFadeOut, setSplashFadeOut] = useState(false);
+
+  useEffect(() => {
+    // Si ya lo vio en esta sesión, no lo mostramos de nuevo
+    if (sessionStorage.getItem(`splash_shown_${tenantId}`)) {
+      setShowSplash(false);
+      return;
+    }
+
+    const timer1 = setTimeout(() => {
+      setSplashFadeOut(true);
+    }, 1500);
+
+    const timer2 = setTimeout(() => {
+      setShowSplash(false);
+      sessionStorage.setItem(`splash_shown_${tenantId}`, 'true');
+    }, 2100);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [tenantId]);
+
   // Estados de Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [operationType, setOperationType] = useState('');
@@ -315,6 +341,29 @@ export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
       
+      {/* SPLASH SCREEN PREMIUM */}
+      {showSplash && (
+        <div className={`fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${splashFadeOut ? 'opacity-0 -translate-y-8 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
+          <div className="relative flex flex-col items-center justify-center animate-in zoom-in-95 duration-1000">
+            <div className="absolute inset-0 bg-brand-500/20 blur-[80px] rounded-full"></div>
+            {tenantData?.logoUrl ? (
+              <img src={tenantData.logoUrl} alt="Logo" className="w-24 h-24 object-contain mb-6 drop-shadow-2xl bg-white p-3 rounded-[2rem] relative z-10" />
+            ) : (
+              <img src="/favicon.png" alt="Logo" className="w-24 h-24 object-cover mb-6 rounded-[2rem] drop-shadow-2xl relative z-10" />
+            )}
+            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight relative z-10 flex gap-2 items-center">
+              <span>Catálogo</span>
+              <span className="text-brand-400">{tenantData?.name ? tenantData.name.toUpperCase() : 'INMOS'}</span>
+            </h1>
+            <div className="mt-10 flex gap-3 relative z-10">
+              <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* HEADER DE MARCA BLANCA */}
       <Navbar tenantData={tenantData}>
         {/* Alternador de Vistas */}
