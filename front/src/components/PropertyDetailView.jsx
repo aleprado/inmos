@@ -160,58 +160,6 @@ export default function PropertyDetailView({ propertyId, tenantId, tenantData, s
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white pb-24 animate-pulse">
-        {/* Skeleton Hero */}
-        <div className="relative h-[48vh] md:h-[65vh] w-full bg-slate-200"></div>
-        {/* Skeleton Content */}
-        <div className="max-w-3xl mx-auto px-6 pt-6 space-y-4">
-          <div className="flex gap-2">
-            <div className="h-6 w-20 bg-slate-200 rounded-full"></div>
-            <div className="h-6 w-24 bg-slate-200 rounded-full"></div>
-          </div>
-          <div className="h-10 bg-slate-200 w-3/4 rounded-xl mt-4"></div>
-          <div className="h-12 bg-slate-200 w-1/3 rounded-xl"></div>
-          <div className="flex items-center gap-3 border-b border-slate-100 pb-6 mb-6">
-            <div className="h-8 w-8 bg-slate-200 rounded-full shrink-0"></div>
-            <div className="h-4 bg-slate-200 w-1/2 rounded"></div>
-          </div>
-          <div className="grid grid-cols-3 gap-3 mb-8">
-            <div className="h-24 bg-slate-200 rounded-2xl"></div>
-            <div className="h-24 bg-slate-200 rounded-2xl"></div>
-            <div className="h-24 bg-slate-200 rounded-2xl"></div>
-          </div>
-          <div className="space-y-2">
-            <div className="h-4 bg-slate-200 w-full rounded"></div>
-            <div className="h-4 bg-slate-200 w-full rounded"></div>
-            <div className="h-4 bg-slate-200 w-3/4 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!property) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
-        <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center text-red-500 mb-4 animate-bounce">
-          <ShieldAlert className="h-8 w-8" />
-        </div>
-        <h1 className="text-xl font-bold text-slate-800">Publicación no disponible</h1>
-        <p className="text-slate-500 text-sm max-w-sm mt-2 leading-relaxed">
-          Esta publicación no se encuentra activa, está bajo revisión o el enlace es incorrecto. Por favor, escanea un código QR activo.
-        </p>
-        <a 
-          href="/" 
-          className="mt-6 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition"
-        >
-          Ir al catálogo público
-        </a>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans pb-24 flex flex-col relative overflow-hidden">
       
@@ -240,8 +188,28 @@ export default function PropertyDetailView({ propertyId, tenantId, tenantData, s
         </div>
       )}
 
-      {/* 1. Hero Image Carousel (Full Screen Width) */}
-      <div className="relative h-[48vh] md:h-[65vh] w-full bg-slate-950 group">
+      {loading ? (
+        <div className="hidden">Cargando...</div>
+      ) : !property ? (
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+          <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center text-red-500 mb-4 animate-bounce">
+            <ShieldAlert className="h-8 w-8" />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800">Publicación no disponible</h1>
+          <p className="text-slate-500 text-sm max-w-sm mt-2 leading-relaxed">
+            Esta publicación no se encuentra activa, está bajo revisión o el enlace es incorrecto. Por favor, escanea un código QR activo.
+          </p>
+          <a 
+            href="/" 
+            className="mt-6 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition"
+          >
+            Ir al catálogo público
+          </a>
+        </div>
+      ) : (
+        <>
+          {/* 1. Hero Image Carousel (Full Screen Width) */}
+          <div className="relative h-[48vh] md:h-[65vh] w-full bg-slate-950 group">
         {property.images && property.images.length > 0 ? (
           <>
             <img 
@@ -489,6 +457,8 @@ export default function PropertyDetailView({ propertyId, tenantId, tenantData, s
             {activeImageIndex + 1} / {property.images.length}
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
