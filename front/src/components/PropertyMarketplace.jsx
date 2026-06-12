@@ -17,26 +17,29 @@ export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) 
   const [splashFadeOut, setSplashFadeOut] = useState(false);
 
   useEffect(() => {
-    // Si ya lo vio en esta sesión, no lo mostramos de nuevo
-    if (sessionStorage.getItem(`splash_shown_${tenantId}`)) {
-      setShowSplash(false);
+    // Si está cargando datos, mantenemos el splash
+    if (loading) {
+      setShowSplash(true);
+      setSplashFadeOut(false);
       return;
     }
 
+    // Cuando termina de cargar, iniciamos el fadeOut.
+    // Damos un pequeño retraso (ej. 800ms) para garantizar que el efecto premium
+    // se aprecie y no sea solo un parpadeo si el internet es muy rápido.
     const timer1 = setTimeout(() => {
       setSplashFadeOut(true);
-    }, 1500);
+    }, 800);
 
     const timer2 = setTimeout(() => {
       setShowSplash(false);
-      sessionStorage.setItem(`splash_shown_${tenantId}`, 'true');
-    }, 2100);
+    }, 1400);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [tenantId]);
+  }, [loading]);
 
   // Estados de Filtros
   const [searchTerm, setSearchTerm] = useState('');
@@ -433,22 +436,8 @@ export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) 
           {/* Listado de Propiedades con Scroll Interno */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {loading ? (
-              <div className={getGridColumnsClass()}>
-                {[1, 2, 3, 4].map(n => (
-                  <div key={n} className="bg-white border border-slate-150 rounded-2xl overflow-hidden flex flex-col h-64 animate-pulse">
-                    <div className="h-36 bg-slate-200 w-full" />
-                    <div className="p-4 flex-1 flex flex-col space-y-3">
-                      <div className="h-3 bg-slate-200 w-1/4 rounded-full" />
-                      <div className="h-4 bg-slate-200 w-3/4 rounded-full" />
-                      <div className="h-3 bg-slate-200 w-1/2 rounded-full mt-1" />
-                      <div className="flex justify-between items-end mt-auto pt-2">
-                        <div className="h-5 bg-slate-200 w-1/3 rounded-full" />
-                        <div className="h-3 bg-slate-200 w-1/4 rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              // El Splash Screen animado a pantalla completa cubrirá esto mientras cargue.
+              <div className="hidden">Cargando...</div>
             ) : filteredProperties.length === 0 ? (
               <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 text-center max-w-sm mx-auto mt-6">
                 <Info className="h-8 w-8 text-slate-400 mx-auto mb-2" />
