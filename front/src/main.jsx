@@ -216,9 +216,10 @@ function App() {
   }
 
   if (authLoading || tenantLoading) {
+    // Retornamos un fondo oscuro liso sin spinner para que enganche 
+    // perfectamente con el Splash Screen del catálogo sin parpadeos extraños.
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-brand-500"></div>
       </div>
     )
   }
