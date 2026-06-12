@@ -665,42 +665,7 @@ Tus credenciales de ingreso para el panel de administración son:
                     </div>
                   </div>
 
-                  {/* Tema Visual */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tema Visual</label>
-                    <div className="flex gap-3">
-                      <select
-                        value={tenantSettings.themeMode}
-                        onChange={(e) => setTenantSettings(prev => ({ ...prev, themeMode: e.target.value }))}
-                        className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500 w-full"
-                      >
-                        <option value="light">Claro (Fondo claro, texto oscuro)</option>
-                        <option value="dark">Oscuro (Fondo oscuro, texto claro)</option>
-                        <option value="custom">Personalizado (Elegir color de fondo)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Color de Fondo (Solo si es personalizado) */}
-                  {tenantSettings.themeMode === 'custom' && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Color de Fondo</label>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="color"
-                          value={tenantSettings.backgroundColor}
-                          onChange={(e) => setTenantSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
-                          className="h-10 w-12 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
-                        />
-                        <input 
-                          type="text"
-                          value={tenantSettings.backgroundColor}
-                          onChange={(e) => setTenantSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
-                          className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
-                        />
-                      </div>
-                    </div>
-                  )}
+                  {/* Removed visual theme mode to stick with the default light theme for now. Primary color remains. */}
 
                   {/* Layout del Catálogo */}
                   <div>

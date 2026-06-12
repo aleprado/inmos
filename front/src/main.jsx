@@ -79,12 +79,8 @@ function App() {
       root.style.removeProperty('--border-custom');
       root.style.removeProperty('--card-custom');
 
-      if (tenantData.themeMode === 'dark') {
-        root.classList.add('dark');
-      } else if (tenantData.themeMode === 'custom' && tenantData.backgroundColor) {
-        root.classList.add('theme-custom');
-        applyBackgroundTheme(tenantData.backgroundColor);
-      }
+      // Eliminado el soporte para dark mode y custom background temporalmente
+      // para forzar el tema claro por defecto.
     }
   }, [tenantData]);
 
