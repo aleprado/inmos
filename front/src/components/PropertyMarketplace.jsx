@@ -375,24 +375,24 @@ export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) 
         <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-0.5 border border-slate-200">
           <button
             onClick={() => setViewMode('grid')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition ${viewMode === 'grid' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition ${viewMode === 'grid' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
           >
-            <Grid className="h-3.5 w-3.5" />
-            Lista
+            <Grid className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <span className="hidden sm:inline">Lista</span>
           </button>
           <button
             onClick={() => setViewMode('map')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition ${viewMode === 'map' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition ${viewMode === 'map' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
           >
-            <MapIcon className="h-3.5 w-3.5" />
-            Mapa
+            <MapIcon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <span className="hidden sm:inline">Mapa</span>
           </button>
           <button
             onClick={() => setViewMode('mixed')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition ${viewMode === 'mixed' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition ${viewMode === 'mixed' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
           >
-            <Columns className="h-3.5 w-3.5" />
-            Mixta
+            <Columns className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <span className="hidden sm:inline">Mixta</span>
           </button>
         </div>
       </Navbar>
