@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { updateMetaTags } from '../utils/seo';
 import { useToast } from '../contexts/ToastContext';
 
-export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
+export default function PropertyDetailView({ propertyId, tenantId, tenantData, setRoute }) {
   const toast = useToast();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
