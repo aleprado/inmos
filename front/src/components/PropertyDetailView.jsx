@@ -126,12 +126,25 @@ export default function PropertyDetailView({ propertyId, tenantId, tenantData, s
   // Enlace de WhatsApp predefinido para consultas de clientes
   const getWhatsAppLink = () => {
     if (!property) return '#';
-    const message = `Hola, estoy interesado en el/la ${property.propertyType || 'propiedad'} en ${property.operationType || 'operación'} ubicado/a en "${property.address || property.title}" que vi mediante el código QR (Ref: ${property.id}). ¿Sigue disponible?`;
-    let phone = property.metadata?.sender || property.whatsappNumber || "5491100000000";
-    // Si es un número de Argentina de 11 dígitos (ej: 542342...), insertamos el '9' móvil para ruteo correcto de WhatsApp
+    const message = `Hola, estoy interesado en el/la ${property.propertyType || 'propiedad'} en ${property.operationType || 'operación'} ubicado/a en "${property.address || property.title}" que vi en el catálogo (Ref: ${property.id}). ¿Sigue disponible?`;
+    
+    // 1. Prioridad: Teléfono asociado a la propiedad (quien la cargó)
+    // 2. Teléfono oficial de la agencia (tenantData)
+    // 3. Fallback genérico
+    let rawPhone = property.metadata?.sender || property.whatsappNumber || tenantData?.whatsappNumber || "5491100000000";
+    
+    // Limpiar todo caracter no numérico (+, espacios, guiones, paréntesis)
+    let phone = String(rawPhone).replace(/\D/g, '');
+
+    // Si es un número de Argentina de 11 dígitos (ej: 54112345678) que no tiene el '9' móvil, se lo agregamos
     if (phone.startsWith('54') && !phone.startsWith('549') && phone.length === 11) {
       phone = '549' + phone.substring(2);
     }
+    
+    if (!phone) {
+      phone = "5491100000000"; // fallback de seguridad si quedó vacío
+    }
+
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
 
