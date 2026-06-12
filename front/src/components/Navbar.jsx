@@ -14,8 +14,8 @@ export default function Navbar({ tenantData, children }) {
             <img src="/favicon.png" alt="Inmos Logo" className="h-9 w-9 rounded-xl object-cover shadow-sm" />
           )}
           <div>
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-widest block -mb-0.5">Catálogo</span>
-            <span className="font-extrabold text-slate-800 text-base line-clamp-1 max-w-[150px] sm:max-w-xs">{name.toUpperCase()}</span>
+            <span className="hidden sm:block text-xs text-slate-400 font-bold uppercase tracking-widest -mb-0.5">Catálogo</span>
+            <span className="font-extrabold text-slate-800 text-sm sm:text-base line-clamp-1 max-w-[100px] sm:max-w-xs leading-tight">{name.toUpperCase()}</span>
           </div>
         </a>
         

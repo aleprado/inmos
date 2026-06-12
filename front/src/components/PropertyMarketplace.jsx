@@ -354,10 +354,12 @@ export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) 
             ) : (
               <img src="/favicon.png" alt="Logo" className="w-24 h-24 object-cover mb-6 rounded-[2rem] drop-shadow-2xl relative z-10" />
             )}
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight relative z-10 flex gap-2 items-center">
-              <span>Catálogo</span>
-              <span className="text-brand-400">{tenantData?.name ? tenantData.name.toUpperCase() : 'INMOS'}</span>
-            </h1>
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <span className="text-slate-400 text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-2">Catálogo</span>
+              <h1 className="text-3xl sm:text-4xl font-black text-brand-400 tracking-tight leading-none px-4">
+                {tenantData?.name ? tenantData.name.toUpperCase() : 'INMOS'}
+              </h1>
+            </div>
             <div className="mt-10 flex gap-3 relative z-10">
               <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
               <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>

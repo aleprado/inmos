@@ -177,39 +177,39 @@ Dime los detalles de la propiedad que deseas cargar, o envíame una imagen.`,
   return (
     <>
       {/* Botón flotante */}
-      <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center justify-center">
         {!isChatOpen && (
           <>
             <div className={`absolute inset-0 rounded-full animate-ping opacity-30 duration-700 ${isDemo ? 'bg-emerald-500' : 'bg-indigo-500'}`}></div>
-            <div className={`absolute -inset-3 rounded-full border-2 animate-pulse opacity-50 ${isDemo ? 'border-emerald-400' : 'border-indigo-400'}`}></div>
+            <div className={`absolute -inset-2 sm:-inset-3 rounded-full border-2 animate-pulse opacity-50 ${isDemo ? 'border-emerald-400' : 'border-indigo-400'}`}></div>
           </>
         )}
         
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className={`relative z-50 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 cursor-pointer group ${
+          className={`relative z-50 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 cursor-pointer group ${
             isChatOpen 
               ? 'bg-slate-800 text-white hover:bg-slate-700 hover:rotate-90' 
               : `bg-gradient-to-tr ${isDemo ? 'from-emerald-500 to-teal-400 border-emerald-300/30' : 'from-indigo-600 to-blue-500 border-indigo-400/30'} text-white hover:scale-110 shadow-lg`
           }`}
         >
           {isChatOpen ? (
-            <X className="h-7 w-7" />
+            <X className="h-6 w-6 sm:h-7 sm:w-7" />
           ) : (
             <div className="relative">
-              <MessageSquare className="h-8 w-8 group-hover:scale-110 transition-transform duration-200" />
-              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+              <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform duration-200" />
+              <span className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 flex h-3 w-3 sm:h-4 sm:w-4">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white shadow-lg shadow-red-500/50"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 sm:h-4 sm:w-4 bg-red-500 border-2 border-white shadow-lg shadow-red-500/50"></span>
               </span>
             </div>
           )}
         </button>
       </div>
       
-      {/* Tooltip flotante */}
+      {/* Tooltip flotante (solo en desktop) */}
       {!isChatOpen && (
-        <div className={`fixed bottom-9 right-[7.5rem] bg-gradient-to-r from-slate-900 to-slate-800 text-white text-xs font-black py-2.5 px-4 rounded-2xl shadow-xl z-40 animate-bounce flex items-center gap-2 border ${isDemo ? 'border-emerald-500/30' : 'border-indigo-500/30'}`}>
+        <div className={`hidden sm:flex fixed bottom-9 right-[7.5rem] bg-gradient-to-r from-slate-900 to-slate-800 text-white text-xs font-black py-2.5 px-4 rounded-2xl shadow-xl z-40 animate-bounce items-center gap-2 border ${isDemo ? 'border-emerald-500/30' : 'border-indigo-500/30'}`}>
           <span className="relative flex h-2.5 w-2.5">
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isDemo ? 'bg-emerald-400' : 'bg-indigo-400'}`}></span>
             <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isDemo ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.8)]'}`}></span>
