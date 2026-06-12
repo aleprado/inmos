@@ -12,6 +12,10 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
   
+  // Splash Screen State
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashFadeOut, setSplashFadeOut] = useState(false);
+  
   const mapRef = useRef(null);
   const markerRef = useRef(null);
 
@@ -62,6 +66,17 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
 
     fetchProperty();
   }, [propertyId]);
+
+  // Manejar el ciclo de vida del Splash Screen
+  useEffect(() => {
+    if (!loading) {
+      // Iniciar el fade out cuando ya no estemos cargando
+      const timer1 = setTimeout(() => setSplashFadeOut(true), 500);
+      // Quitar el splash del DOM después de que termine la animación
+      const timer2 = setTimeout(() => setShowSplash(false), 1000);
+      return () => { clearTimeout(timer1); clearTimeout(timer2); };
+    }
+  }, [loading]);
 
   const handleNextImage = () => {
     if (!property || !property.images) return;
@@ -198,8 +213,33 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans pb-24">
+    <div className="min-h-screen bg-white text-slate-900 font-sans pb-24 flex flex-col relative overflow-hidden">
       
+      {/* SPLASH SCREEN PREMIUM */}
+      {showSplash && (
+        <div className={`absolute inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${splashFadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="relative flex flex-col items-center justify-center animate-in zoom-in-95 duration-1000">
+            <div className="absolute inset-0 bg-brand-500/20 blur-[80px] rounded-full"></div>
+            {tenantData?.logoUrl ? (
+              <img src={tenantData.logoUrl} alt="Logo" className="w-24 h-24 object-contain mb-6 drop-shadow-2xl bg-white p-3 rounded-[2rem] relative z-10" />
+            ) : (
+              <img src="/favicon.png" alt="Logo" className="w-24 h-24 object-cover mb-6 rounded-[2rem] drop-shadow-2xl relative z-10" />
+            )}
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <span className="text-slate-400 text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-2">Catálogo</span>
+              <h1 className="text-3xl sm:text-4xl font-black text-brand-400 tracking-tight leading-none px-4">
+                {tenantData?.name ? tenantData.name.toUpperCase() : 'INMOS'}
+              </h1>
+            </div>
+            <div className="mt-10 flex gap-3 relative z-10">
+              <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="h-3 w-3 bg-brand-500 rounded-full animate-bounce"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 1. Hero Image Carousel (Full Screen Width) */}
       <div className="relative h-[48vh] md:h-[65vh] w-full bg-slate-950 group">
         {property.images && property.images.length > 0 ? (

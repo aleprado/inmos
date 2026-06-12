@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Search, Home, MapPin, BedDouble, Ruler, ArrowRight, X, SlidersHorizontal, Info, Map as MapIcon, Grid, Columns, MessageSquare, Send, Loader2 } from 'lucide-react';
+import { Search, Home, MapPin, BedDouble, Ruler, ArrowRight, X, SlidersHorizontal, Info, Map as MapIcon, Grid, Columns, MessageSquare, Send, Loader2, Star } from 'lucide-react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../firebase';
 import Navbar from './Navbar';
@@ -480,6 +480,11 @@ export default function PropertyMarketplace({ tenantId, tenantData, setRoute }) 
                       <span className={`absolute top-2.5 left-2.5 border text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider backdrop-blur-md ${getOperationBadgeStyle(prop.operationType)}`}>
                         {prop.operationType || 'Consulta'}
                       </span>
+                      {prop.featured && (
+                        <div className="absolute top-2.5 right-2.5 bg-yellow-500 text-white p-1.5 rounded-full shadow-lg border border-yellow-400 backdrop-blur-md">
+                          <Star className="h-3 w-3 fill-white" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Contenido */}
