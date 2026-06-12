@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { MessageCircle, MapPin, BedDouble, Ruler, Share2, ShieldAlert, ArrowLeft, ArrowRight, Eye, Bath, Video } from 'lucide-react';
 import { db } from '../firebase';
@@ -11,6 +11,9 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
+  
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
 
   useEffect(() => {
     if (!propertyId) {
@@ -69,6 +72,41 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
     if (!property || !property.images) return;
     setActiveImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
   };
+
+  // Inicializar mapa de Leaflet si la propiedad tiene coordenadas
+  useEffect(() => {
+    if (!property || !property.latitude || !property.longitude || !document.getElementById('detail-map-container') || !window.L) return;
+
+    if (!mapRef.current) {
+      const map = window.L.map('detail-map-container', {
+        zoomControl: true,
+        scrollWheelZoom: false, // Desactivar zoom con scroll para no interferir con la navegación de la página
+        dragging: !window.L.Browser.mobile // Desactivar dragging en móviles
+      }).setView([property.latitude, property.longitude], 15);
+
+      window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20
+      }).addTo(map);
+
+      mapRef.current = map;
+
+      const pinIcon = window.L.divIcon({
+        html: `<div style="background-color: #0b57d0; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4);"></div>`,
+        className: 'custom-leaflet-pin',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+
+      markerRef.current = window.L.marker([property.latitude, property.longitude], { icon: pinIcon }).addTo(map);
+    } else {
+      mapRef.current.setView([property.latitude, property.longitude], 15);
+      if (markerRef.current) {
+        markerRef.current.setLatLng([property.latitude, property.longitude]);
+      }
+    }
+  }, [property]);
 
   // Enlace de WhatsApp predefinido para consultas de clientes
   const getWhatsAppLink = () => {
@@ -318,6 +356,20 @@ export default function PropertyDetailView({ propertyId, tenantId, setRoute }) {
             {property.description || "Esta publicación no cuenta con descripción detallada en este momento."}
           </p>
         </div>
+
+        {/* Mapa de Ubicación */}
+        {property.latitude && property.longitude && (
+          <div className="space-y-3 pb-8">
+            <h2 className="text-base font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 text-brand-500" />
+              Ubicación Geográfica
+            </h2>
+            <div 
+              id="detail-map-container" 
+              className="w-full h-[250px] sm:h-[350px] bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-md relative z-0"
+            ></div>
+          </div>
+        )}
 
         {/* Recorrido Virtual 360 */}
         {property.virtualTourUrl && (
