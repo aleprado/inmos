@@ -39,13 +39,9 @@ async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = 
     }
 
     if (mediaBuffer && mimeType) {
-      parts.push({
-        inlineData: {
-          data: mediaBuffer.toString("base64"),
-          mimeType: mimeType
-        }
-      });
-      parts.push({ text: `\n\nAnaliza el archivo multimedia adjunto para completar la información.` });
+      // Optimizamos costos y latencia: ya no le enviamos la imagen a Gemini para análisis visual.
+      // Las imágenes se subirán directamente a Storage y se adjuntarán al borrador.
+      console.log("[AI] Omitiendo análisis visual de imagen para ahorrar tokens/latencia.");
     }
 
     parts.push({ text: `\n\nJSON Output:` });
