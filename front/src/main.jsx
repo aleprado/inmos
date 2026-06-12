@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import PropertyReviewDashboard from './components/PropertyReviewDashboard'
 import PropertyDetailView from './components/PropertyDetailView'
 import PropertyMarketplace from './components/PropertyMarketplace'
+import PrivacyPolicy from './components/PrivacyPolicy'
 import Login from './components/Login'
 import Landing from './components/Landing'
 import { auth } from './firebase'
@@ -191,6 +192,8 @@ function App() {
         view = 'detail'
         propertyId = cleanPath
       }
+    } else if (path === '/politica-de-privacidad') {
+      view = 'privacy'
     } else if (path === '/' && !currentTenant) {
       // Si estamos en la raíz y no hay ningún subdominio/parámetro de tenant, cargamos landing page
       view = 'landing'
@@ -236,6 +239,8 @@ function App() {
             currentUser={currentUser}
           />
         )
+      case 'privacy':
+        return <PrivacyPolicy />
       case 'detail':
         return <PropertyDetailView propertyId={route.propertyId} tenantId={route.tenantId} tenantData={tenantData} setRoute={setRoute} />
       case 'marketplace':
