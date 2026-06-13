@@ -285,7 +285,7 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
   const getWhatsAppInviteLink = () => {
     if (!createdOperatorData) return '';
     const cleanPhone = createdOperatorData.phone.replace(/\+/g, '').replace(/\D/g, '');
-    const botPhone = tenantData?.whatsappNumber || '5491100000000';
+    const botPhone = '5492364459744'; // Número oficial del bot asistente Inmos
     
     const message = `¡Hola ${createdOperatorData.name}! Te agregué como operador para ${tenantData?.name || 'Inmos'}.
 
@@ -802,13 +802,24 @@ Tus credenciales de ingreso para el panel de administración son:
                   Listado de asesores inmobiliarios autorizados para publicar propiedades en tu inmobiliaria a través de WhatsApp.
                 </p>
               </div>
-              <button
-                onClick={() => setShowAddOperatorModal(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition shadow-lg shadow-emerald-600/10 self-start"
-              >
-                <UserPlus className="h-4 w-4" />
-                Registrar Operador
-              </button>
+              <div className="flex gap-3 self-start">
+                <a
+                  href="https://wa.me/5492364459744?text=Hola"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition shadow-lg border border-emerald-900/50"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Chat con Inmos App
+                </a>
+                <button
+                  onClick={() => setShowAddOperatorModal(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition shadow-lg shadow-emerald-600/10"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Registrar Operador
+                </button>
+              </div>
             </div>
 
             {operatorsLoading ? (
