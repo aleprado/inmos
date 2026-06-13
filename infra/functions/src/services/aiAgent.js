@@ -1,4 +1,4 @@
-const { aiModel } = require('../config/ai');
+const { aiAgentModel } = require('../config/ai');
 
 const SYSTEM_PROMPT = `
 Eres un asistente autónomo inmobiliario. Tu tarea es ayudar a un corredor a crear el borrador de una propiedad.
@@ -47,12 +47,8 @@ async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = 
     parts.push({ text: `\n\nJSON Output:` });
     
     // Usar estrictamente un solo modelo multimodal rápido y moderno para no quemar intentos en caso de error
-    const { genAI } = require('../config/ai');
-    const modelName = "gemini-2.5-flash";
-    const model = genAI.getGenerativeModel({ model: modelName });
-    
-    const result = await model.generateContent(parts);
-    console.log(`[AI] Modelo ${modelName} utilizado exitosamente.`);
+    const result = await aiAgentModel.generateContent(parts);
+    console.log(`[AI] Modelo utilizado exitosamente.`);
     const responseText = result.response.text();
     
     // Limpiar posible formato markdown (```json ... ```)
@@ -108,12 +104,8 @@ Devuelve estrictamente el objeto JSON actualizado con el siguiente formato:
 
 JSON Output:`;
 
-    const { genAI } = require('../config/ai');
-    const modelName = "gemini-2.5-flash";
-    const model = genAI.getGenerativeModel({ model: modelName });
-    
-    const result = await model.generateContent([{ text: prompt }]);
-    console.log(`[AI-Merge] Modelo ${modelName} utilizado exitosamente.`);
+    const result = await aiAgentModel.generateContent([{ text: prompt }]);
+    console.log(`[AI-Merge] Modelo utilizado exitosamente.`);
     const responseText = result.response.text();
     const jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(jsonString);

@@ -4,7 +4,7 @@ const { saveProperty, getOperatorTenant, getPropertyById, updateProperty, append
 const { getSession, createOrUpdateSession, clearSession, isSessionValid, getMinutesSinceLastActivity } = require('../services/sessionService');
 const { sendWhatsAppMessage } = require('../services/whatsappSender');
 const { getMediaBufferFromId, uploadImageToStorage } = require('../services/whatsappMedia');
-const { aiModel } = require('../config/ai');
+const { aiTranscriptionModel } = require('../config/ai');
 
 /**
  * Transcribe un archivo de audio a texto usando Gemini
@@ -12,7 +12,7 @@ const { aiModel } = require('../config/ai');
 async function transcribeAudio(audioBuffer, mimeType) {
   try {
     const prompt = "Transcribe el siguiente audio de WhatsApp exactamente. No agregues comentarios, explicaciones, introducciones ni formato adicional. Si no hay voz inteligible, devuelve vacío.";
-    const result = await aiModel.generateContent([
+    const result = await aiTranscriptionModel.generateContent([
       { text: prompt },
       {
         inlineData: {
