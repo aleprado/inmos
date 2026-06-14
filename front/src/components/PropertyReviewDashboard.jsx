@@ -115,7 +115,7 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
 
   // Estado para el modal de registro de nuevo operador
   const [showAddOperatorModal, setShowAddOperatorModal] = useState(false);
-  const [operatorForm, setOperatorForm] = useState({ name: '', email: '', phone: '' });
+  const [operatorForm, setOperatorForm] = useState({ name: '', email: '', phone: '+54 9 ' });
   const [operatorSubmitting, setOperatorSubmitting] = useState(false);
   const [operatorError, setOperatorError] = useState('');
   
@@ -1158,7 +1158,7 @@ Tus credenciales de ingreso para el panel de administración son:
                     onClick={() => {
                       setShowAddOperatorModal(false);
                       setCreatedOperatorData(null);
-                      setOperatorForm({ name: '', email: '', phone: '' });
+                      setOperatorForm({ name: '', email: '', phone: '+54 9 ' });
                     }}
                     className="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold py-3 rounded-xl text-xs transition border border-slate-700/50"
                   >
