@@ -18,7 +18,7 @@ export function useTenant(tenantId) {
         setTenantData({
           id: 'demo',
           name: 'Inmos Demo',
-          whatsappNumber: '5491100000000',
+          whatsappNumber: '5492364459744',
           primaryColor: '#0b57d0',
           logoUrl: null,
           catalogLayout: 'mixed'
@@ -39,7 +39,7 @@ export function useTenant(tenantId) {
           setTenantData({
             id: tenantId,
             name: tenantId.toUpperCase(),
-            whatsappNumber: '5491100000000',
+            whatsappNumber: '5492364459744',
             primaryColor: '#0b57d0',
             logoUrl: null
           });
@@ -49,7 +49,7 @@ export function useTenant(tenantId) {
         setTenantData({
           id: tenantId,
           name: tenantId.toUpperCase(),
-          whatsappNumber: '5491100000000',
+          whatsappNumber: '5492364459744',
           primaryColor: '#0b57d0',
           logoUrl: null
         });

@@ -12,7 +12,7 @@ export default function Landing({ setRoute }) {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-hidden flex flex-col justify-between selection:bg-brand-500 selection:text-white">
-      
+
       {/* Decorative background blobs */}
       <div className="absolute top-0 left-1/4 h-[500px] w-[500px] bg-brand-900/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] bg-emerald-950/10 rounded-full blur-[100px] pointer-events-none" />
@@ -27,8 +27,8 @@ export default function Landing({ setRoute }) {
               <span className="font-extrabold text-white text-base tracking-tight">INMOS</span>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={handleGoToLogin}
             className="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-bold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 transition btn-premium shadow-sm"
           >
@@ -40,25 +40,25 @@ export default function Landing({ setRoute }) {
 
       {/* HERO SECTION */}
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 md:py-20 lg:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
-        
+
         {/* Left column (CTA / Pitch) */}
         <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-950/40 border border-brand-900/40 text-brand-400 text-xs font-bold font-mono tracking-wider">
             <Sparkles className="h-4.5 w-4.5 text-brand-400 animate-pulse" />
             SaaS Inmobiliario Inteligente
           </div>
-          
+
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
             Gestiona tu inmobiliaria <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-brand-500 to-emerald-400">
               desde WhatsApp con IA
             </span>
           </h1>
-          
+
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto lg:mx-0">
             Sube propiedades enviando audios, fotos y videos por WhatsApp. Nuestra Inteligencia Artificial procesa la información y publica tu catálogo premium de marca blanca al instante. Sin fricciones, sin cargar planillas.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
             <button
               onClick={handleGoToLogin}
@@ -75,11 +75,11 @@ export default function Landing({ setRoute }) {
             </button>
           </div>
         </div>
-        
+
         {/* Right column (Visual Mock-up) */}
         <div className="lg:col-span-5 flex justify-center">
           <div className="w-full max-w-[420px] dark-glassmorphism rounded-3xl p-5 shadow-2xl relative overflow-hidden">
-            
+
             {/* Mock Header */}
             <div className="flex items-center gap-2 border-b border-slate-800/80 pb-4 mb-4">
               <div className="h-8.5 w-8.5 bg-emerald-600 rounded-full flex items-center justify-center text-white font-black text-xs">
@@ -176,7 +176,7 @@ export default function Landing({ setRoute }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            
+
             {/* Feature 1 */}
             <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-brand-500/30 transition duration-300">
               <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
@@ -184,7 +184,7 @@ export default function Landing({ setRoute }) {
               </div>
               <h3 className="font-bold text-sm text-slate-200">Carga por WhatsApp</h3>
               <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
-                Envía un audio describiendo la propiedad, adjunta fotos/videos y deja que nuestra IA procese los datos automáticamente.
+                Envía un texto o audio describiendo la propiedad, adjunta fotos y deja que nuestra IA procese los datos automáticamente.
               </p>
             </div>
 
@@ -195,7 +195,7 @@ export default function Landing({ setRoute }) {
               </div>
               <h3 className="font-bold text-sm text-slate-200">Catálogo Premium</h3>
               <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
-                Sitio web de marca blanca optimizado para móviles con filtros, mapas interactivos y diseño visual adaptado a tus colores corporativos.
+                Sitio web optimizado para móviles con filtros, mapas interactivos. Configurable con tu logo, nombre y colores de tu marca.
               </p>
             </div>
 
@@ -206,18 +206,29 @@ export default function Landing({ setRoute }) {
               </div>
               <h3 className="font-bold text-sm text-slate-200">Flyers y Carteles QR</h3>
               <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
-                Genera folletos PDF en formato A4 comercial y carteles masivos de vidriera con código QR directo con un solo clic.
+                Genera folletos PDF en formato A4 comercial y código QR para carteleria con un solo clic.
               </p>
             </div>
 
             {/* Feature 4 */}
             <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-brand-500/30 transition duration-300">
               <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
+                <Network className="h-5 w-5 text-brand-400" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-200">Dominio Propio</h3>
+              <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
+                Te entragamos tu propio dominio http://{inmobiliaria}.inmos.app.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-brand-500/30 transition duration-300">
+              <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
                 <Eye className="h-5 w-5 text-brand-400" />
               </div>
               <h3 className="font-bold text-sm text-slate-200">Métricas de Rendimiento</h3>
               <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
-                Monitorea el total de vistas orgánicas de cada propiedad desde tu panel de administración para medir el ROI real de tu catálogo.
+                Monitorea el total de vistas y consultas de cada propiedad desde tu panel de administración para medir el ROI real de tu catálogo.
               </p>
             </div>
 
@@ -239,7 +250,7 @@ export default function Landing({ setRoute }) {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/5491100000000?text=Hola%20Inmos%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20la%20plataforma"
+        href="https://wa.me/5492364459744?text=Hola%20Inmos%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20la%20plataforma"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 flex items-center justify-center group"
