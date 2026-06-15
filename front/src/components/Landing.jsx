@@ -217,7 +217,7 @@ export default function Landing({ setRoute }) {
               </div>
               <h3 className="font-bold text-sm text-slate-200">Dominio Propio</h3>
               <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
-                Te entragamos tu propio dominio http://{inmobiliaria}.inmos.app.
+                Te entregamos tu propio dominio http://tuinmobiliaria.inmos.app.
               </p>
             </div>
 
