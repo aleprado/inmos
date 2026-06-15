@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Sparkles, Globe, QrCode, Eye, ArrowRight, LogIn } from 'lucide-react';
+import { MessageSquare, Sparkles, Globe, QrCode, Eye, ArrowRight, LogIn, Network } from 'lucide-react';
 
 export default function Landing({ setRoute }) {
   const handleGoToLogin = () => {
