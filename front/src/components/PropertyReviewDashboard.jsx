@@ -118,6 +118,7 @@ export default function PropertyReviewDashboard({ tenantId, tenantData, userClai
   const [operatorForm, setOperatorForm] = useState({ name: '', email: '', phone: '+54 9 ' });
   const [operatorSubmitting, setOperatorSubmitting] = useState(false);
   const [operatorError, setOperatorError] = useState('');
+  const [isDeleting, setIsDeleting] = useState(null);
   
   // Estados para contraseñas y éxito de operadores
   const [createdOperatorData, setCreatedOperatorData] = useState(null);
@@ -367,6 +368,7 @@ Tus credenciales de ingreso para el panel de administración son:
   // Eliminar Operador de Firestore / Revocar acceso
   const handleDeleteOperator = async (phone) => {
     if (!window.confirm("¿Seguro que deseas revocar el acceso a este operador? Se eliminará de la base de datos y de Firebase Auth, y ya no podrá enviar publicaciones por WhatsApp.")) return;
+    setIsDeleting(phone);
     try {
       const functions = getFunctions();
       const deleteOperatorFn = httpsCallable(functions, 'deleteOperator');
@@ -376,6 +378,8 @@ Tus credenciales de ingreso para el panel de administración son:
     } catch (error) {
       console.error("Error al revocar acceso de operador:", error);
       toast.error(error.message || "Error al revocar acceso.");
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -873,9 +877,15 @@ Tus credenciales de ingreso para el panel de administración son:
                         <td className="py-4 px-4 text-center">
                           <button
                             onClick={() => handleDeleteOperator(op.phone)}
-                            className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg font-bold text-[10px] tracking-wide transition uppercase"
+                            disabled={isDeleting === op.phone}
+                            className={`p-2 rounded-lg transition-colors ${isDeleting === op.phone ? 'text-slate-500 bg-slate-800' : 'text-red-400 hover:text-red-300 hover:bg-red-900/30'}`}
+                            title="Eliminar acceso"
                           >
-                            Revocar Acceso
+                            {isDeleting === op.phone ? (
+                              <div className="h-4 w-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
                           </button>
                         </td>
                       </tr>

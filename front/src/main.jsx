@@ -215,10 +215,22 @@ function App() {
   }
 
   if (authLoading || tenantLoading) {
-    // Retornamos un fondo oscuro liso sin spinner para que enganche 
-    // perfectamente con el Splash Screen del catálogo sin parpadeos extraños.
+    // Retornamos un fondo oscuro con un sutil spinner animado para dar feedback de carga rápida
+    // y conectar bien con el Splash Screen del catálogo sin parpadeos bruscos.
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden">
+        {/* Glow de fondo */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-20">
+          <div className="w-64 h-64 bg-brand-500 rounded-full blur-[100px]"></div>
+        </div>
+        
+        {/* Spinner UI */}
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="h-12 w-12 border-t-2 border-b-2 border-brand-500 rounded-full animate-spin mb-6"></div>
+          <div className="text-slate-400 text-xs tracking-[0.2em] font-semibold uppercase animate-pulse">
+            Cargando Plataforma
+          </div>
+        </div>
       </div>
     )
   }
