@@ -74,17 +74,17 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
           
           {/* Badge de Operación */}
           <div className={`absolute left-10 flex gap-3 ${isSocial ? 'bottom-8' : 'bottom-6'}`}>
-            <span className={`bg-brand-600 text-white font-bold uppercase tracking-wider shadow-xl ${isSocial ? 'px-6 py-3 rounded-full text-lg' : 'px-5 py-2 rounded-full text-sm'}`}>
+            <div className={`bg-brand-600 text-white font-bold uppercase tracking-wider shadow-xl flex items-center justify-center leading-none ${isSocial ? 'px-8 h-14 rounded-full text-lg' : 'px-5 py-2 rounded-full text-sm'}`}>
               {property.operationType || 'Venta'}
-            </span>
-            <span className={`bg-white text-slate-900 font-bold uppercase tracking-wider shadow-xl ${isSocial ? 'px-6 py-3 rounded-full text-lg' : 'px-5 py-2 rounded-full text-sm'}`}>
+            </div>
+            <div className={`bg-white text-slate-900 font-bold uppercase tracking-wider shadow-xl flex items-center justify-center leading-none ${isSocial ? 'px-8 h-14 rounded-full text-lg' : 'px-5 py-2 rounded-full text-sm'}`}>
               {property.propertyType || 'Inmueble'}
-            </span>
+            </div>
           </div>
         </div>
 
         {/* Contenido (Mitad Inferior) */}
-        <div className={`flex-1 flex flex-col justify-between ${isSocial ? 'px-12 py-10' : 'px-10 py-10'}`}>
+        <div className={`flex-1 flex flex-col ${isSocial ? 'justify-center px-14 py-8' : 'justify-between px-10 py-10'}`}>
           
           {/* Título y Precio */}
           <div>
