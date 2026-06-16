@@ -2,9 +2,14 @@ import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { BedDouble, Bath, Ruler, MapPin } from 'lucide-react';
 
-// Estilos diseñados para una hoja A4 a 96DPI (794px x 1123px)
-export default function PropertyFlyer({ property, tenantId }) {
+// Estilos diseñados para una hoja A4 a 96DPI (794px x 1123px) o Cuadrado para Redes (1080x1080)
+export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
   if (!property) return null;
+
+  const isSocial = type === 'social';
+  const width = isSocial ? '1080px' : '794px';
+  const height = isSocial ? '1080px' : '1123px';
+  const elementId = isSocial ? `social-${property.id}` : `flyer-${property.id}`;
 
   // URL pública de la propiedad (asume que la app está en la raíz)
   const publicUrl = `${window.location.origin}/?p=${property.id}`;
@@ -13,14 +18,14 @@ export default function PropertyFlyer({ property, tenantId }) {
   return (
     <div className="absolute top-[-9999px] left-[-9999px]">
       <div 
-        id={`flyer-${property.id}`} 
+        id={elementId} 
         className="bg-white font-sans text-slate-900 flex flex-col relative overflow-hidden"
-        style={{ width: '794px', height: '1123px', padding: '0' }}
+        style={{ width, height, padding: '0' }}
       >
         {/* Cabecera / Marca */}
         <div className="bg-slate-900 text-white px-10 py-6 flex justify-between items-center z-10 shrink-0">
           <div className="font-black text-2xl tracking-tighter uppercase">{tenantId}</div>
-          <div className="text-brand-400 font-bold tracking-widest text-sm uppercase">Folleto de Propiedad</div>
+          <div className="text-brand-400 font-bold tracking-widest text-sm uppercase">{isSocial ? 'Nueva Propiedad' : 'Folleto de Propiedad'}</div>
         </div>
 
         {/* Imagen Principal (Ocupa la mitad superior) */}

@@ -426,26 +426,37 @@ Tus credenciales de ingreso para el panel de administración son:
     }
   };
 
-  // Generar y descargar Flyer PDF
-  const handleGeneratePdf = async (prop) => {
+  // Generar Flyer PDF o Imagen para Redes
+  const handleGeneratePdf = async (prop, type = 'pdf') => {
     setGeneratingPdf(prop.id);
-    setFlyerProperty(prop);
+    setFlyerProperty({ data: prop, type });
     
     setTimeout(async () => {
       try {
-        const element = document.getElementById(`flyer-${prop.id}`);
+        const isSocial = type === 'social';
+        const elementId = isSocial ? `social-${prop.id}` : `flyer-${prop.id}`;
+        const element = document.getElementById(elementId);
         if (!element) throw new Error("Elemento Flyer no encontrado en el DOM");
 
         const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-        pdf.save(`Inmos_Flyer_${prop.title?.replace(/\s+/g, '_') || prop.id}.pdf`);
-        toast.success("Folleto PDF generado exitosamente.");
+        
+        if (isSocial) {
+          const link = document.createElement('a');
+          link.href = imgData;
+          link.download = `Inmos_Redes_${prop.title?.replace(/\s+/g, '_') || prop.id}.jpg`;
+          link.click();
+          toast.success("Imagen para redes generada exitosamente.");
+        } else {
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+          pdf.save(`Inmos_Flyer_${prop.title?.replace(/\s+/g, '_') || prop.id}.pdf`);
+          toast.success("Folleto PDF generado exitosamente.");
+        }
         
       } catch (error) {
-        console.error("Error al generar el PDF:", error);
-        toast.error("Hubo un error al generar el Flyer PDF. Revisa tu conexión.");
+        console.error("Error al generar:", error);
+        toast.error("Hubo un error al generar el archivo. Revisa tu conexión.");
       } finally {
         setGeneratingPdf(null);
         setFlyerProperty(null);
@@ -1028,7 +1039,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         </button>
 
                         <button 
-                          onClick={() => handleGeneratePdf(prop)}
+                          onClick={() => handleGeneratePdf(prop, 'pdf')}
                           disabled={generatingPdf === prop.id || generatingSignage === prop.id}
                           className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-rose-500/20"
                           title="Descargar Folleto Comercial (A4)"
@@ -1039,6 +1050,16 @@ Tus credenciales de ingreso para el panel de administración son:
                             <FileText className="h-3.5 w-3.5" />
                           )}
                           Folleto
+                        </button>
+                        
+                        <button 
+                          onClick={() => handleGeneratePdf(prop, 'social')}
+                          disabled={generatingPdf === prop.id || generatingSignage === prop.id}
+                          className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-amber-500/20"
+                          title="Descargar Imagen Cuadrada para Redes (1080x1080)"
+                        >
+                          <Star className="h-3.5 w-3.5" />
+                          Redes
                         </button>
 
                         <button 
@@ -1273,8 +1294,8 @@ Tus credenciales de ingreso para el panel de administración son:
       )}
 
       {/* Renderizado invisible del Flyer para PDF */}
-      {flyerProperty && (
-        <PropertyFlyer property={flyerProperty} tenantId={tenantId} />
+      {flyerProperty && flyerProperty.data && (
+        <PropertyFlyer property={flyerProperty.data} tenantId={tenantId} type={flyerProperty.type} />
       )}
 
       {/* Renderizado invisible del Cartel de Calle para PDF */}

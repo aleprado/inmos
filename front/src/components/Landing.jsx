@@ -204,9 +204,9 @@ export default function Landing({ setRoute }) {
               <div className="h-10 w-10 bg-brand-950/60 rounded-xl flex items-center justify-center border border-brand-900/40 mb-4">
                 <QrCode className="h-5 w-5 text-brand-400" />
               </div>
-              <h3 className="font-bold text-sm text-slate-200">Flyers y Carteles QR</h3>
+              <h3 className="font-bold text-sm text-slate-200">Flyers y Posts para Redes</h3>
               <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
-                Genera folletos PDF en formato A4 comercial y código QR para carteleria con un solo clic.
+                Genera folletos PDF en formato A4 comercial, imágenes cuadradas para publicar en redes sociales y código QR para cartelería con un solo clic.
               </p>
             </div>
 
