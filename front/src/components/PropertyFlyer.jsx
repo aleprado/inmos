@@ -15,7 +15,7 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
   const publicUrl = `${window.location.origin}/?p=${property.id}`;
   const price = property.price ? `${property.currency || 'USD'} ${property.price.toLocaleString()}` : 'Consultar Precio';
 
-  // Lógica de Collage Dinámico (Máximo 3 imágenes) con hack anti-deformación para html2canvas
+  // Lógica de Collage Dinámico (Máximo 3 imágenes)
   const renderImages = () => {
     const imgs = property.images || [];
     if (imgs.length === 0) {
@@ -26,22 +26,10 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
       );
     }
 
-    const imgStyle = {
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      minWidth: '100%',
-      minHeight: '100%',
-      width: 'auto',
-      height: 'auto',
-      maxWidth: 'none'
-    };
-
     if (!isSocial || imgs.length === 1) {
       return (
         <div className="w-full h-full relative overflow-hidden">
-          <img src={imgs[0]} style={imgStyle} crossOrigin="anonymous" alt="Propiedad" />
+          <img src={imgs[0]} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" alt="Propiedad" />
         </div>
       );
     }
@@ -50,10 +38,10 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
       return (
         <div className="flex w-full h-full bg-white">
           <div className="w-[70%] h-full relative overflow-hidden border-r-[8px] border-white">
-            <img src={imgs[0]} style={imgStyle} crossOrigin="anonymous" alt="Principal" />
+            <img src={imgs[0]} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" alt="Principal" />
           </div>
           <div className="w-[30%] h-full relative overflow-hidden">
-            <img src={imgs[1]} style={imgStyle} crossOrigin="anonymous" alt="Secundaria" />
+            <img src={imgs[1]} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" alt="Secundaria" />
           </div>
         </div>
       );
@@ -63,14 +51,14 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
     return (
       <div className="flex w-full h-full bg-white">
         <div className="w-[70%] h-full relative overflow-hidden border-r-[8px] border-white">
-          <img src={imgs[0]} style={imgStyle} crossOrigin="anonymous" alt="Principal" />
+          <img src={imgs[0]} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" alt="Principal" />
         </div>
         <div className="w-[30%] h-full flex flex-col">
           <div className="h-1/2 w-full relative overflow-hidden border-b-[8px] border-white">
-            <img src={imgs[1]} style={imgStyle} crossOrigin="anonymous" alt="Secundaria 1" />
+            <img src={imgs[1]} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" alt="Secundaria 1" />
           </div>
           <div className="h-1/2 w-full relative overflow-hidden">
-            <img src={imgs[2]} style={imgStyle} crossOrigin="anonymous" alt="Secundaria 2" />
+            <img src={imgs[2]} className="absolute inset-0 w-full h-full object-cover" crossOrigin="anonymous" alt="Secundaria 2" />
           </div>
         </div>
       </div>
@@ -93,7 +81,7 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
         </div>
 
         {/* Imagen Principal o Collage Dinámico */}
-        <div className={`relative w-full bg-slate-100 shrink-0 ${isSocial ? 'h-[500px]' : 'h-[480px]'}`}>
+        <div className={`relative w-full bg-slate-100 shrink-0 ${isSocial ? 'h-[420px]' : 'h-[480px]'}`}>
           {renderImages()}
         </div>
 

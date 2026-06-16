@@ -492,7 +492,7 @@ Tus credenciales de ingreso para el panel de administración son:
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans p-6 md:p-12">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-6 md:p-12">
       
       {/* Header */}
       <header className="max-w-7xl mx-auto mb-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -514,22 +514,22 @@ Tus credenciales de ingreso para el panel de administración son:
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
             Panel Corporativo
           </h1>
-          <p className="text-slate-400 mt-1 text-sm">
-            Logueado como: <span className="text-slate-200 font-medium">{currentUser?.email}</span>
+          <p className="text-slate-500 mt-1 text-sm">
+            Logueado como: <span className="text-slate-800 font-medium">{currentUser?.email}</span>
           </p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
           <button 
             onClick={handleExport}
-            className="text-xs bg-slate-800 text-slate-300 hover:bg-slate-750 font-bold px-4 py-3 rounded-2xl flex items-center justify-center gap-2 transition border border-slate-750 shadow-sm"
+            className="text-xs bg-white text-slate-700 hover:bg-slate-100 font-bold px-4 py-3 rounded-2xl flex items-center justify-center gap-2 transition border border-slate-200 shadow-sm"
           >
             <Download className="h-4 w-4" />
             Exportar Catálogo
           </button>
           <a 
             href={`/?tenant=${tenantId}`}
-            className="text-xs bg-slate-800 text-slate-300 hover:bg-slate-750 font-bold px-4 py-3 rounded-2xl flex items-center justify-center transition border border-slate-750 shadow-sm"
+            className="text-xs bg-white text-slate-700 hover:bg-slate-100 font-bold px-4 py-3 rounded-2xl flex items-center justify-center transition border border-slate-200 shadow-sm"
           >
             Ver mi catálogo
           </a>
@@ -544,9 +544,9 @@ Tus credenciales de ingreso para el panel de administración son:
       </header>
 
       {/* Controles de Pestañas y Búsqueda */}
-      <div className="max-w-7xl mx-auto mb-8 bg-slate-800/40 border border-slate-700/45 p-4 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto mb-8 bg-white/40 border border-slate-200/45 p-4 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Pestañas de Navegación */}
-        <div className="flex flex-wrap bg-slate-900 p-1.5 rounded-2xl border border-slate-800 gap-1 sm:gap-0">
+        <div className="flex flex-wrap bg-slate-50 p-1.5 rounded-2xl border border-slate-200 gap-1 sm:gap-0">
           {[
             { id: 'pending', label: 'Pendientes', count: properties.filter(p => p.status === 'pending').length },
             { id: 'approved', label: 'Aprobadas', count: properties.filter(p => p.status === 'approved').length },
@@ -555,10 +555,10 @@ Tus credenciales de ingreso para el panel de administración son:
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === tab.id ? 'bg-brand-500 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === tab.id ? 'bg-brand-500 text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
             >
               {tab.label}
-              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono ${activeTab === tab.id ? 'bg-brand-600 text-white' : 'bg-slate-850 text-slate-350'}`}>
+              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono ${activeTab === tab.id ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
                 {tab.count}
               </span>
             </button>
@@ -568,11 +568,11 @@ Tus credenciales de ingreso para el panel de administración son:
           {userClaims.admin && (
             <button
               onClick={() => setActiveTab('operators')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === 'operators' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === 'operators' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
             >
               <Users className="h-4 w-4" />
               Operadores
-              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono ${activeTab === 'operators' ? 'bg-emerald-700 text-white' : 'bg-slate-850 text-slate-350'}`}>
+              <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono ${activeTab === 'operators' ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600'}`}>
                 {operators.length}
               </span>
             </button>
@@ -581,7 +581,7 @@ Tus credenciales de ingreso para el panel de administración son:
           {/* Pestaña de Configuración y Perfil (Visible para todos) */}
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === 'settings' ? 'bg-indigo-650 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition ${activeTab === 'settings' ? 'bg-indigo-650 text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
           >
             <Settings className="h-4 w-4" />
             {userClaims.admin ? 'Configuración' : 'Mi Perfil'}
@@ -597,7 +597,7 @@ Tus credenciales de ingreso para el panel de administración son:
               placeholder="Busca propiedades..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-850 rounded-2xl text-xs text-slate-200 focus:outline-none focus:border-brand-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-850 rounded-2xl text-xs text-slate-800 focus:outline-none focus:border-brand-500"
             />
           </div>
         )}
@@ -609,38 +609,38 @@ Tus credenciales de ingreso para el panel de administración son:
           <div className="space-y-8 max-w-2xl mx-auto">
             {/* 1. CONFIGURACIÓN DE MARCA BLANCA (Solo Admin) */}
             {userClaims.admin && (
-              <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8">
+              <div className="bg-white/20 border border-slate-200 rounded-3xl p-6 md:p-8">
                 <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
                   <Settings className="h-5.5 w-5.5 text-indigo-500" />
                   Configuración de Marca Blanca
                 </h2>
-                <p className="text-slate-400 text-xs mb-6">
+                <p className="text-slate-500 text-xs mb-6">
                   Personaliza el logotipo, nombre, color de marca y datos de contacto de tu portal público.
                 </p>
 
                 <form onSubmit={handleSaveSettings} className="space-y-6">
                   {/* Nombre */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nombre de la Inmobiliaria</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nombre de la Inmobiliaria</label>
                     <input 
                       type="text"
                       required
                       value={tenantSettings.name}
                       onChange={(e) => setTenantSettings(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
                       placeholder="Ej: López Propiedades"
                     />
                   </div>
 
                   {/* WhatsApp de Contacto */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">WhatsApp de Contacto Oficial</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">WhatsApp de Contacto Oficial</label>
                     <input 
                       type="text"
                       required
                       value={tenantSettings.whatsappNumber}
                       onChange={(e) => setTenantSettings(prev => ({ ...prev, whatsappNumber: e.target.value }))}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
                       placeholder="Ej: 5491165432100"
                     />
                     <span className="text-[10px] text-slate-500 mt-1 block">Con código de país y código móvil (Ej: 549...). Se usará como contacto por defecto.</span>
@@ -648,7 +648,7 @@ Tus credenciales de ingreso para el panel de administración son:
 
                   {/* Color de Marca */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Color Primario (Tema)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Color Primario (Tema)</label>
                     <div className="flex flex-wrap items-center gap-3 mb-3">
                       {[
                         { hex: '#0b57d0', name: 'Azul Inmos' },
@@ -674,13 +674,13 @@ Tus credenciales de ingreso para el panel de administración son:
                         type="color"
                         value={tenantSettings.primaryColor}
                         onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                        className="h-10 w-12 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                        className="h-10 w-12 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer p-1"
                       />
                       <input 
                         type="text"
                         value={tenantSettings.primaryColor}
                         onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                        className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
                       />
                     </div>
                   </div>
@@ -689,12 +689,12 @@ Tus credenciales de ingreso para el panel de administración son:
 
                   {/* Layout del Catálogo */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Vista por Defecto del Catálogo</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Vista por Defecto del Catálogo</label>
                     <div className="flex gap-3">
                       <select
                         value={tenantSettings.catalogLayout}
                         onChange={(e) => setTenantSettings(prev => ({ ...prev, catalogLayout: e.target.value }))}
-                        className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500 w-full"
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500 w-full"
                       >
                         <option value="mixed">Mixta (Lista + Mapa)</option>
                         <option value="grid">Solo Lista (Grid de tarjetas)</option>
@@ -705,9 +705,9 @@ Tus credenciales de ingreso para el panel de administración son:
 
                   {/* Logotipo */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Logotipo de la Inmobiliaria</label>
-                    <div className="flex items-center gap-5 bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
-                      <div className="h-16 w-32 border border-slate-800 bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Logotipo de la Inmobiliaria</label>
+                    <div className="flex items-center gap-5 bg-slate-50/40 border border-slate-200 p-4 rounded-2xl">
+                      <div className="h-16 w-32 border border-slate-200 bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
                         {logoPreview || tenantSettings.logoUrl ? (
                           <img src={logoPreview || tenantSettings.logoUrl} alt="Logo preview" className="max-h-full max-w-full object-contain" />
                         ) : (
@@ -730,7 +730,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         />
                         <label 
                           htmlFor="logo-upload-input"
-                          className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition inline-block mb-1.5"
+                          className="cursor-pointer bg-white hover:bg-slate-700 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition inline-block mb-1.5"
                         >
                           Seleccionar Archivo
                         </label>
@@ -740,7 +740,7 @@ Tus credenciales de ingreso para el panel de administración son:
                   </div>
 
                   {/* Botón de Guardado */}
-                  <div className="pt-4 border-t border-slate-800 flex justify-end">
+                  <div className="pt-4 border-t border-slate-200 flex justify-end">
                     <button
                       type="submit"
                       disabled={settingsSaving}
@@ -759,35 +759,35 @@ Tus credenciales de ingreso para el panel de administración son:
             )}
 
             {/* 2. CAMBIAR CONTRASEÑA (Para todos) */}
-            <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8">
+            <div className="bg-white/20 border border-slate-200 rounded-3xl p-6 md:p-8">
               <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
                 <Key className="h-5.5 w-5.5 text-emerald-500" />
                 Seguridad de la Cuenta
               </h2>
-              <p className="text-slate-400 text-xs mb-6">
+              <p className="text-slate-500 text-xs mb-6">
                 Actualiza tu contraseña para mantener la seguridad de tu panel de operador.
               </p>
 
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nueva Contraseña</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nueva Contraseña</label>
                   <input 
                     type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
                     placeholder="Mínimo 6 caracteres"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Confirmar Nueva Contraseña</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Confirmar Nueva Contraseña</label>
                   <input 
                     type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
                     placeholder="Repite la contraseña"
                   />
                 </div>
@@ -811,14 +811,14 @@ Tus credenciales de ingreso para el panel de administración son:
         ) : activeTab === 'operators' ? (
           
           /* --- SECCIÓN GESTIÓN DE OPERADORES --- */
-          <div className="bg-slate-800/20 border border-slate-800 rounded-3xl p-6 md:p-8">
+          <div className="bg-white/20 border border-slate-200 rounded-3xl p-6 md:p-8">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
               <div>
-                <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                   <Users className="h-5.5 w-5.5 text-emerald-500" />
                   Operadores Autorizados
                 </h2>
-                <p className="text-slate-400 text-xs mt-1">
+                <p className="text-slate-500 text-xs mt-1">
                   Listado de asesores inmobiliarios autorizados para publicar propiedades en tu inmobiliaria a través de WhatsApp.
                 </p>
               </div>
@@ -827,7 +827,7 @@ Tus credenciales de ingreso para el panel de administración son:
                   href="https://wa.me/5492364459744?text=Hola"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition shadow-lg border border-emerald-900/50"
+                  className="bg-white hover:bg-slate-700 text-emerald-400 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition shadow-lg border border-emerald-900/50"
                 >
                   <MessageSquare className="h-4 w-4" />
                   Chat con Inmos App
@@ -853,10 +853,10 @@ Tus credenciales de ingreso para el panel de administración son:
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
               </div>
             ) : operators.length === 0 ? (
-              <div className="bg-slate-900/40 rounded-2xl border border-slate-850 p-8 text-center max-w-sm mx-auto">
+              <div className="bg-slate-50/40 rounded-2xl border border-slate-850 p-8 text-center max-w-sm mx-auto">
                 <Users className="h-10 w-10 text-slate-600 mx-auto mb-3" />
-                <h3 className="font-bold text-slate-200 text-sm">Sin operadores registrados</h3>
-                <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                <h3 className="font-bold text-slate-800 text-sm">Sin operadores registrados</h3>
+                <p className="text-slate-500 text-xs mt-1.5 leading-relaxed">
                   Registra operadores con su número de WhatsApp para comenzar a recibir sus publicaciones.
                 </p>
               </div>
@@ -864,7 +864,7 @@ Tus credenciales de ingreso para el panel de administración son:
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-800 text-slate-500 uppercase font-bold tracking-wider">
+                    <tr className="border-b border-slate-200 text-slate-500 uppercase font-bold tracking-wider">
                       <th className="py-4 px-4">Operador</th>
                       <th className="py-4 px-4">WhatsApp Autorizado</th>
                       <th className="py-4 px-4">Email de Acceso</th>
@@ -873,13 +873,13 @@ Tus credenciales de ingreso para el panel de administración son:
                   </thead>
                   <tbody className="divide-y divide-slate-850/60">
                     {operators.map((op) => (
-                      <tr key={op.phone} className="hover:bg-slate-850/20 transition-colors">
-                        <td className="py-4 px-4 font-bold text-slate-100">{op.nombre || op.name || 'Asesor Sin Nombre'}</td>
-                        <td className="py-4 px-4 font-mono text-slate-300 flex items-center gap-1.5">
+                      <tr key={op.phone} className="hover:bg-slate-100/20 transition-colors">
+                        <td className="py-4 px-4 font-bold text-slate-900">{op.nombre || op.name || 'Asesor Sin Nombre'}</td>
+                        <td className="py-4 px-4 font-mono text-slate-700 flex items-center gap-1.5">
                           <Phone className="h-3.5 w-3.5 text-slate-500" />
                           {op.phone}
                         </td>
-                        <td className="py-4 px-4 text-slate-400 font-mono">
+                        <td className="py-4 px-4 text-slate-500 font-mono">
                           <span className="flex items-center gap-1.5">
                             <Mail className="h-3.5 w-3.5 text-slate-500" />
                             {op.email || 'No configurado'}
@@ -889,7 +889,7 @@ Tus credenciales de ingreso para el panel de administración son:
                           <button
                             onClick={() => handleDeleteOperator(op.phone)}
                             disabled={isDeleting === op.phone}
-                            className={`p-2 rounded-lg transition-colors ${isDeleting === op.phone ? 'text-slate-500 bg-slate-800' : 'text-red-400 hover:text-red-300 hover:bg-red-900/30'}`}
+                            className={`p-2 rounded-lg transition-colors ${isDeleting === op.phone ? 'text-slate-500 bg-white' : 'text-red-400 hover:text-red-300 hover:bg-red-900/30'}`}
                             title="Eliminar acceso"
                           >
                             {isDeleting === op.phone ? (
@@ -914,12 +914,12 @@ Tus credenciales de ingreso para el panel de administración son:
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-brand-500"></div>
             </div>
           ) : filteredProperties.length === 0 ? (
-            <div className="bg-slate-800/20 border border-slate-700/20 rounded-3xl p-12 text-center max-w-md mx-auto mt-6">
-              <div className="h-14 w-14 bg-slate-800/80 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-700">
+            <div className="bg-white/20 border border-slate-200/20 rounded-3xl p-12 text-center max-w-md mx-auto mt-6">
+              <div className="h-14 w-14 bg-white/80 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-200">
                 <Home className="h-7 w-7 text-slate-500" />
               </div>
-              <h3 className="font-bold text-slate-200 text-base">No hay propiedades aquí</h3>
-              <p className="text-slate-400 mt-2 text-xs leading-relaxed">
+              <h3 className="font-bold text-slate-800 text-base">No hay propiedades aquí</h3>
+              <p className="text-slate-500 mt-2 text-xs leading-relaxed">
                 No se encontraron propiedades en el estado "{activeTab}" que coincidan con la búsqueda.
               </p>
             </div>
@@ -928,7 +928,7 @@ Tus credenciales de ingreso para el panel de administración son:
               {filteredProperties.map((prop) => (
                 <div 
                   key={prop.id} 
-                  className="bg-slate-800/40 border border-slate-800 rounded-3xl overflow-hidden flex flex-col hover:border-slate-700 transition-all duration-300 group"
+                  className="bg-white/40 border border-slate-200 rounded-3xl overflow-hidden flex flex-col hover:border-slate-200 transition-all duration-300 group"
                 >
                   <div className="relative h-48 bg-slate-950 overflow-hidden shrink-0">
                     {prop.images && prop.images.length > 0 ? (
@@ -945,10 +945,10 @@ Tus credenciales de ingreso para el panel de administración son:
                     )}
 
                     <div className="absolute top-4 left-4 flex flex-col gap-1.5">
-                      <span className="bg-slate-900/80 text-brand-400 border border-brand-900/30 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider backdrop-blur-md">
+                      <span className="bg-slate-50/80 text-brand-400 border border-brand-900/30 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider backdrop-blur-md">
                         {prop.operationType || 'Operación'}
                       </span>
-                      <span className="bg-slate-900/80 text-slate-300 border border-slate-750 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider backdrop-blur-md">
+                      <span className="bg-slate-50/80 text-slate-700 border border-slate-200 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider backdrop-blur-md">
                         {prop.propertyType || 'Tipo'}
                       </span>
                     </div>
@@ -961,8 +961,8 @@ Tus credenciales de ingreso para el panel de administración son:
                       )}
                       <div className="flex gap-1.5">
                         {(prop.views > 0 || prop.status === 'approved') && (
-                          <div className="bg-slate-900/80 text-slate-300 border border-slate-750 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-md flex items-center gap-1.5 backdrop-blur-md" title="Vistas orgánicas">
-                            <Eye className="h-3.5 w-3.5 text-slate-400" />
+                          <div className="bg-slate-50/80 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-md flex items-center gap-1.5 backdrop-blur-md" title="Vistas orgánicas">
+                            <Eye className="h-3.5 w-3.5 text-slate-500" />
                             {prop.views || 0}
                           </div>
                         )}
@@ -978,7 +978,7 @@ Tus credenciales de ingreso para el panel de administración son:
 
                   <div className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start gap-2 mb-1.5">
-                      <h3 className="font-extrabold text-base text-slate-100 line-clamp-1">
+                      <h3 className="font-extrabold text-base text-slate-900 line-clamp-1">
                         {prop.title || "Nueva propiedad sin revisar"}
                       </h3>
                       <div className="text-brand-500 font-extrabold text-base whitespace-nowrap">
@@ -986,12 +986,12 @@ Tus credenciales de ingreso para el panel de administración son:
                       </div>
                     </div>
 
-                    <p className="text-slate-400 text-xs flex items-center gap-1.5 mb-4">
+                    <p className="text-slate-500 text-xs flex items-center gap-1.5 mb-4">
                       <Compass className="h-3.5 w-3.5 text-slate-500" />
                       {prop.address || "Dirección no completada"}
                     </p>
 
-                    <div className="grid grid-cols-3 gap-2.5 mb-4 bg-slate-900/40 border border-slate-850 p-2.5 rounded-xl text-[11px] text-slate-300">
+                    <div className="grid grid-cols-3 gap-2.5 mb-4 bg-slate-50/40 border border-slate-850 p-2.5 rounded-xl text-[11px] text-slate-700">
                       <div>
                         <span className="block text-slate-500 text-[9px] uppercase font-semibold">Dormitorios</span>
                         <span className="font-bold">{prop.rooms || '—'}</span>
@@ -1006,21 +1006,21 @@ Tus credenciales de ingreso para el panel de administración son:
                       </div>
                     </div>
 
-                    <p className="text-slate-350 text-xs line-clamp-2 mb-5 flex-1 leading-relaxed">
+                    <p className="text-slate-600 text-xs line-clamp-2 mb-5 flex-1 leading-relaxed">
                       {prop.description || "Sin descripción asignada por el bot."}
                     </p>
 
                     {prop.metadata && (
-                      <div className="border-t border-slate-800/80 pt-3.5 mb-4 flex items-center gap-2 text-slate-400 text-[10px]">
+                      <div className="border-t border-slate-200/80 pt-3.5 mb-4 flex items-center gap-2 text-slate-500 text-[10px]">
                         <MessageSquare className="h-3.5 w-3.5 text-brand-500" />
-                        <span>Cargado por: <strong className="text-slate-300">{prop.metadata.sender}</strong></span>
+                        <span>Cargado por: <strong className="text-slate-700">{prop.metadata.sender}</strong></span>
                       </div>
                     )}
 
                     <div className="mb-5">
                       <button 
                         onClick={() => handleRequestVirtualTour(prop)}
-                        className={`w-full py-2 rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition border ${prop.virtualTourUrl ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 cursor-default' : prop.virtualTourRequested ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-slate-800 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 text-slate-400 border-slate-700'}`}
+                        className={`w-full py-2 rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition border ${prop.virtualTourUrl ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 cursor-default' : prop.virtualTourRequested ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-white hover:bg-indigo-600 hover:text-white hover:border-indigo-500 text-slate-500 border-slate-200'}`}
                         disabled={!!prop.virtualTourUrl}
                       >
                         <Video className="h-3.5 w-3.5" />
@@ -1032,7 +1032,7 @@ Tus credenciales de ingreso para el panel de administración son:
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handleOpenEditModal(prop)}
-                          className="flex-1 bg-slate-800 hover:bg-slate-750 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition"
+                          className="flex-1 bg-white hover:bg-slate-100 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition"
                         >
                           <Edit3 className="h-3.5 w-3.5" />
                           Editar
@@ -1091,7 +1091,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         {activeTab === 'approved' && (
                           <button 
                             onClick={() => handleArchive(prop.id)}
-                            className="flex-1 bg-slate-750 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition"
+                            className="flex-1 bg-slate-100 hover:bg-slate-700 text-slate-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition"
                           >
                             <Archive className="h-3.5 w-3.5" />
                             Archivar
@@ -1129,9 +1129,9 @@ Tus credenciales de ingreso para el panel de administración son:
       {/* Modal de Registro de Nuevo Operador (Solo visible para admins) */}
       {showAddOperatorModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 bg-slate-900 border-b border-slate-700 flex justify-between items-center">
-              <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <UserPlus className="h-4.5 w-4.5 text-emerald-500" />
                 Registrar Operador
               </h2>
@@ -1141,7 +1141,7 @@ Tus credenciales de ingreso para el panel de administración son:
                   setOperatorError('');
                   setCreatedOperatorData(null);
                 }}
-                className="text-slate-400 hover:text-slate-200 p-1.5 rounded-full hover:bg-slate-800 transition"
+                className="text-slate-500 hover:text-slate-800 p-1.5 rounded-full hover:bg-white transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1152,23 +1152,23 @@ Tus credenciales de ingreso para el panel de administración son:
               <div className="p-6 space-y-5">
                 <div className="bg-emerald-500/10 border border-emerald-500/15 text-emerald-400 text-xs p-4 rounded-2xl flex flex-col gap-2">
                   <span className="font-bold text-sm">✓ Operador registrado con éxito</span>
-                  <p className="text-slate-300 leading-normal text-[11px]">
+                  <p className="text-slate-700 leading-normal text-[11px]">
                     El operador se ha creado correctamente. Comparte las siguientes credenciales para que pueda ingresar al panel:
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-4 bg-slate-900/60 border border-slate-850 p-5 rounded-2xl text-xs">
+                <div className="flex flex-col gap-4 bg-slate-50/60 border border-slate-850 p-5 rounded-2xl text-xs">
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-slate-500 font-bold uppercase">Usuario (Email)</span>
-                    <span className="font-mono text-slate-200 select-all break-all">{createdOperatorData.email}</span>
+                    <span className="font-mono text-slate-800 select-all break-all">{createdOperatorData.email}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-slate-500 font-bold uppercase">Teléfono</span>
-                    <span className="font-mono text-slate-200 select-all">{createdOperatorData.phone}</span>
+                    <span className="font-mono text-slate-800 select-all">{createdOperatorData.phone}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-slate-500 font-bold uppercase">Contraseña Temporal</span>
-                    <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 border border-slate-800 rounded-xl mt-1">
+                    <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 border border-slate-200 rounded-xl mt-1">
                       <span className="font-mono text-emerald-400 font-bold flex-1 select-all tracking-wider break-all">{createdOperatorData.tempPassword}</span>
                       <button
                         type="button"
@@ -1176,7 +1176,7 @@ Tus credenciales de ingreso para el panel de administración son:
                           navigator.clipboard.writeText(createdOperatorData.tempPassword);
                           toast.success("Contraseña copiada al portapapeles.");
                         }}
-                        className="bg-slate-850 hover:bg-slate-800 text-[10px] font-bold text-slate-300 px-2.5 py-1 rounded-lg border border-slate-800 active:scale-95 transition shrink-0"
+                        className="bg-slate-100 hover:bg-white text-[10px] font-bold text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 active:scale-95 transition shrink-0"
                       >
                         Copiar
                       </button>
@@ -1202,7 +1202,7 @@ Tus credenciales de ingreso para el panel de administración son:
                       setCreatedOperatorData(null);
                       setOperatorForm({ name: '', email: '', phone: '+54 9 ' });
                     }}
-                    className="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold py-3 rounded-xl text-xs transition border border-slate-700/50"
+                    className="w-full bg-white hover:bg-slate-100 text-slate-700 font-bold py-3 rounded-xl text-xs transition border border-slate-200/50"
                   >
                     Cerrar Ventana
                   </button>
@@ -1219,41 +1219,41 @@ Tus credenciales de ingreso para el panel de administración son:
                 )}
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nombre del operador</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombre del operador</label>
                   <input 
                     type="text" 
                     value={operatorForm.name} 
                     onChange={(e) => setOperatorForm({...operatorForm, name: e.target.value})}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none"
                     placeholder="ej: Juan Gómez"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Usuario de acceso (Email)</label>
-                  <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl overflow-hidden focus-within:border-emerald-500 transition">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Usuario de acceso (Email)</label>
+                  <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden focus-within:border-emerald-500 transition">
                     <input 
                       type="text" 
                       value={operatorForm.email} 
                       onChange={(e) => setOperatorForm({...operatorForm, email: e.target.value})}
-                      className="flex-1 bg-transparent px-3.5 py-2 text-xs text-slate-200 focus:outline-none border-0"
+                      className="flex-1 bg-transparent px-3.5 py-2 text-xs text-slate-800 focus:outline-none border-0"
                       placeholder="ej: juan.gomez"
                       required
                     />
-                    <span className="bg-slate-800 text-slate-400 text-xs px-3.5 py-2 border-l border-slate-700 font-mono font-bold select-none shrink-0">
+                    <span className="bg-white text-slate-500 text-xs px-3.5 py-2 border-l border-slate-200 font-mono font-bold select-none shrink-0">
                       @{tenantId}.com
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Teléfono de WhatsApp</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Teléfono de WhatsApp</label>
                   <input 
                     type="text" 
                     value={operatorForm.phone} 
                     onChange={(e) => setOperatorForm({...operatorForm, phone: e.target.value})}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none"
                     placeholder="ej: 91155556666"
                     required
                   />
