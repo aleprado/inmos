@@ -15,6 +15,44 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
   const publicUrl = `${window.location.origin}/?p=${property.id}`;
   const price = property.price ? `${property.currency || 'USD'} ${property.price.toLocaleString()}` : 'Consultar Precio';
 
+  // Lógica de Collage Dinámico (Máximo 3 imágenes)
+  const renderImages = () => {
+    const imgs = property.images || [];
+    if (imgs.length === 0) {
+      return (
+        <div className="w-full h-full flex items-center justify-center text-slate-300 text-xl font-bold bg-slate-100">
+          Sin imagen disponible
+        </div>
+      );
+    }
+
+    if (!isSocial || imgs.length === 1) {
+      return (
+        <img src={imgs[0]} alt="Principal" className="w-full h-full object-cover" crossOrigin="anonymous" />
+      );
+    }
+
+    if (imgs.length === 2) {
+      return (
+        <div className="flex w-full h-full bg-white">
+          <img src={imgs[0]} alt="Principal" className="w-[70%] h-full object-cover border-r-[8px] border-white" crossOrigin="anonymous" />
+          <img src={imgs[1]} alt="Secundaria 1" className="w-[30%] h-full object-cover" crossOrigin="anonymous" />
+        </div>
+      );
+    }
+
+    // 3 o más imágenes (tomamos solo las primeras 3)
+    return (
+      <div className="flex w-full h-full bg-white">
+        <img src={imgs[0]} alt="Principal" className="w-[70%] h-full object-cover border-r-[8px] border-white" crossOrigin="anonymous" />
+        <div className="w-[30%] h-full flex flex-col">
+          <img src={imgs[1]} alt="Secundaria 1" className="h-1/2 w-full object-cover border-b-[8px] border-white" crossOrigin="anonymous" />
+          <img src={imgs[2]} alt="Secundaria 2" className="h-1/2 w-full object-cover" crossOrigin="anonymous" />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="absolute top-[-9999px] left-[-9999px]">
       <div 
@@ -23,104 +61,101 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
         style={{ width, height, padding: '0' }}
       >
         {/* Cabecera / Marca */}
-        <div className="bg-slate-900 text-white px-10 py-6 flex justify-between items-center z-10 shrink-0">
-          <div className="font-black text-2xl tracking-tighter uppercase">{tenantId}</div>
-          <div className="text-brand-400 font-bold tracking-widest text-sm uppercase">{isSocial ? 'Nueva Propiedad' : 'Folleto de Propiedad'}</div>
+        <div className={`bg-slate-900 text-white flex justify-between items-center z-10 shrink-0 ${isSocial ? 'px-12 py-8' : 'px-10 py-6'}`}>
+          <div className={`font-black tracking-tighter uppercase ${isSocial ? 'text-4xl' : 'text-2xl'}`}>{tenantId}</div>
+          <div className={`text-brand-400 font-bold tracking-widest uppercase ${isSocial ? 'text-lg' : 'text-sm'}`}>
+            {isSocial ? 'Nueva Propiedad' : 'Folleto de Propiedad'}
+          </div>
         </div>
 
-        {/* Imagen Principal (Ocupa la mitad superior) */}
-        <div className="relative h-[480px] w-full bg-slate-100 shrink-0">
-          {property.images && property.images.length > 0 ? (
-            <img 
-              src={property.images[0]} 
-              alt="Property" 
-              className="w-full h-full object-cover"
-              crossOrigin="anonymous" // Importante para html2canvas
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-300 text-xl font-bold">
-              Sin imagen disponible
-            </div>
-          )}
+        {/* Imagen Principal o Collage Dinámico */}
+        <div className={`relative w-full bg-slate-100 shrink-0 ${isSocial ? 'h-[500px]' : 'h-[480px]'}`}>
+          {renderImages()}
           
           {/* Badge de Operación */}
-          <div className="absolute bottom-6 left-10 flex gap-3">
-            <span className="bg-brand-600 text-white px-5 py-2 rounded-full font-bold uppercase text-sm tracking-wider shadow-xl">
+          <div className={`absolute left-10 flex gap-3 ${isSocial ? 'bottom-8' : 'bottom-6'}`}>
+            <span className={`bg-brand-600 text-white font-bold uppercase tracking-wider shadow-xl ${isSocial ? 'px-6 py-3 rounded-full text-lg' : 'px-5 py-2 rounded-full text-sm'}`}>
               {property.operationType || 'Venta'}
             </span>
-            <span className="bg-white text-slate-900 px-5 py-2 rounded-full font-bold uppercase text-sm tracking-wider shadow-xl">
+            <span className={`bg-white text-slate-900 font-bold uppercase tracking-wider shadow-xl ${isSocial ? 'px-6 py-3 rounded-full text-lg' : 'px-5 py-2 rounded-full text-sm'}`}>
               {property.propertyType || 'Inmueble'}
             </span>
           </div>
         </div>
 
         {/* Contenido (Mitad Inferior) */}
-        <div className="flex-1 px-10 py-10 flex flex-col justify-between">
+        <div className={`flex-1 flex flex-col justify-between ${isSocial ? 'px-12 py-10' : 'px-10 py-10'}`}>
           
           {/* Título y Precio */}
           <div>
-            <h1 className="text-4xl font-black leading-tight text-slate-900 mb-2">{property.title}</h1>
+            <h1 className={`font-black leading-tight text-slate-900 ${isSocial ? 'text-5xl mb-4' : 'text-4xl mb-2'}`}>
+              {property.title}
+            </h1>
             {property.address && (
-              <div className="flex items-center gap-2 text-slate-500 text-lg mb-6">
-                <MapPin className="h-5 w-5" />
+              <div className={`flex items-center gap-2 text-slate-500 ${isSocial ? 'text-2xl mb-8' : 'text-lg mb-6'}`}>
+                <MapPin className={isSocial ? 'h-7 w-7' : 'h-5 w-5'} />
                 <span>{property.address}</span>
               </div>
             )}
             
-            <div className="text-5xl font-black text-brand-500 mb-10">
+            <div className={`font-black text-brand-500 ${isSocial ? 'text-6xl mb-12' : 'text-5xl mb-10'}`}>
               {price}
             </div>
 
             {/* Atributos */}
-            <div className="flex gap-6 mb-10 border-y border-slate-200 py-6">
-              <div className="flex items-center gap-3 w-1/3">
-                <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600">
-                  <BedDouble className="h-6 w-6" />
+            <div className={`flex border-y border-slate-200 ${isSocial ? 'gap-8 mb-4 py-10' : 'gap-6 mb-10 py-6'}`}>
+              <div className="flex items-center gap-4 w-1/3">
+                <div className={`bg-slate-100 rounded-full flex items-center justify-center text-slate-600 ${isSocial ? 'h-20 w-20' : 'h-12 w-12'}`}>
+                  <BedDouble className={isSocial ? 'h-10 w-10' : 'h-6 w-6'} />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-500 font-bold uppercase">Dormitorios</div>
-                  <div className="text-xl font-black text-slate-900">{property.rooms || '-'}</div>
+                  <div className={`text-slate-500 font-bold uppercase ${isSocial ? 'text-xl' : 'text-xs'}`}>Dormitorios</div>
+                  <div className={`font-black text-slate-900 ${isSocial ? 'text-4xl' : 'text-xl'}`}>{property.rooms || '-'}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 w-1/3">
-                <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600">
-                  <Bath className="h-6 w-6" />
+              <div className="flex items-center gap-4 w-1/3">
+                <div className={`bg-slate-100 rounded-full flex items-center justify-center text-slate-600 ${isSocial ? 'h-20 w-20' : 'h-12 w-12'}`}>
+                  <Bath className={isSocial ? 'h-10 w-10' : 'h-6 w-6'} />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-500 font-bold uppercase">Baños</div>
-                  <div className="text-xl font-black text-slate-900">{property.bathrooms || '-'}</div>
+                  <div className={`text-slate-500 font-bold uppercase ${isSocial ? 'text-xl' : 'text-xs'}`}>Baños</div>
+                  <div className={`font-black text-slate-900 ${isSocial ? 'text-4xl' : 'text-xl'}`}>{property.bathrooms || '-'}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 w-1/3">
-                <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600">
-                  <Ruler className="h-6 w-6" />
+              <div className="flex items-center gap-4 w-1/3">
+                <div className={`bg-slate-100 rounded-full flex items-center justify-center text-slate-600 ${isSocial ? 'h-20 w-20' : 'h-12 w-12'}`}>
+                  <Ruler className={isSocial ? 'h-10 w-10' : 'h-6 w-6'} />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-500 font-bold uppercase">Superficie</div>
-                  <div className="text-xl font-black text-slate-900">{property.area ? `${property.area} m²` : '-'}</div>
+                  <div className={`text-slate-500 font-bold uppercase ${isSocial ? 'text-xl' : 'text-xs'}`}>Superficie</div>
+                  <div className={`font-black text-slate-900 ${isSocial ? 'text-4xl' : 'text-xl'}`}>{property.area ? `${property.area} m²` : '-'}</div>
                 </div>
               </div>
             </div>
 
-            {/* Descripción (Trunca si es muy larga para el A4) */}
-            <div className="text-slate-600 text-lg leading-relaxed line-clamp-5">
-              {property.description}
-            </div>
+            {/* Descripción (Oculta en formato redes para dejar espacio y limpieza visual) */}
+            {!isSocial && (
+              <div className="text-slate-600 text-lg leading-relaxed line-clamp-5">
+                {property.description}
+              </div>
+            )}
           </div>
 
-          {/* Footer del Flyer: Código QR y Contacto */}
-          <div className="mt-8 bg-slate-50 border border-slate-200 p-6 rounded-3xl flex items-center gap-8 shrink-0">
-            <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
-              <QRCodeSVG value={publicUrl} size={120} level="H" includeMargin={false} />
+          {/* Footer del Flyer: Código QR y Contacto (Oculto en redes) */}
+          {!isSocial && (
+            <div className="mt-8 bg-slate-50 border border-slate-200 p-6 rounded-3xl flex items-center gap-8 shrink-0">
+              <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                <QRCodeSVG value={publicUrl} size={120} level="H" includeMargin={false} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 mb-2">Escanea para ver más</h3>
+                <p className="text-slate-500 text-lg leading-snug">
+                  Usa la cámara de tu celular para escanear el código QR y ver todas las fotos, el recorrido virtual y contactar a la inmobiliaria directamente.
+                </p>
+                <div className="mt-4 font-mono text-xs text-slate-400">Ref: {property.id}</div>
+              </div>
             </div>
-            <div>
-              <h3 className="text-2xl font-black text-slate-900 mb-2">Escanea para ver más</h3>
-              <p className="text-slate-500 text-lg leading-snug">
-                Usa la cámara de tu celular para escanear el código QR y ver todas las fotos, el recorrido virtual y contactar a la inmobiliaria directamente.
-              </p>
-              <div className="mt-4 font-mono text-xs text-slate-400">Ref: {property.id}</div>
-            </div>
-          </div>
+          )}
 
         </div>
       </div>
