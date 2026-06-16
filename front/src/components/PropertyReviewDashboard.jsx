@@ -617,7 +617,7 @@ Tus credenciales de ingreso para el panel de administración son:
             {/* 1. CONFIGURACIÓN DE MARCA BLANCA (Solo Admin) */}
             {userClaims.admin && (
               <div className="bg-white/20 border border-slate-200 rounded-3xl p-6 md:p-8">
-                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
                   <Settings className="h-5.5 w-5.5 text-indigo-500" />
                   Configuración de Marca Blanca
                 </h2>
@@ -634,7 +634,7 @@ Tus credenciales de ingreso para el panel de administración son:
                       required
                       value={tenantSettings.name}
                       onChange={(e) => setTenantSettings(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-900 focus:outline-none focus:border-brand-500"
                       placeholder="Ej: López Propiedades"
                     />
                   </div>
@@ -647,7 +647,7 @@ Tus credenciales de ingreso para el panel de administración son:
                       required
                       value={tenantSettings.whatsappNumber}
                       onChange={(e) => setTenantSettings(prev => ({ ...prev, whatsappNumber: e.target.value }))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-900 focus:outline-none focus:border-brand-500"
                       placeholder="Ej: 5491165432100"
                     />
                     <span className="text-[10px] text-slate-500 mt-1 block">Con código de país y código móvil (Ej: 549...). Se usará como contacto por defecto.</span>
@@ -687,7 +687,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         type="text"
                         value={tenantSettings.primaryColor}
                         onChange={(e) => setTenantSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-white w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 w-28 uppercase font-mono text-center focus:outline-none focus:border-brand-500"
                       />
                     </div>
                   </div>
@@ -701,7 +701,7 @@ Tus credenciales de ingreso para el panel de administración son:
                       <select
                         value={tenantSettings.catalogLayout}
                         onChange={(e) => setTenantSettings(prev => ({ ...prev, catalogLayout: e.target.value }))}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500 w-full"
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-900 focus:outline-none focus:border-brand-500 w-full"
                       >
                         <option value="mixed">Mixta (Lista + Mapa)</option>
                         <option value="grid">Solo Lista (Grid de tarjetas)</option>
@@ -737,7 +737,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         />
                         <label 
                           htmlFor="logo-upload-input"
-                          className="cursor-pointer bg-white hover:bg-slate-700 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition inline-block mb-1.5"
+                          className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3.5 rounded-xl text-xs transition inline-block mb-1.5 border border-slate-300"
                         >
                           Seleccionar Archivo
                         </label>
@@ -767,7 +767,7 @@ Tus credenciales de ingreso para el panel de administración son:
 
             {/* 2. CAMBIAR CONTRASEÑA (Para todos) */}
             <div className="bg-white/20 border border-slate-200 rounded-3xl p-6 md:p-8">
-              <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
                 <Key className="h-5.5 w-5.5 text-emerald-500" />
                 Seguridad de la Cuenta
               </h2>
@@ -783,7 +783,7 @@ Tus credenciales de ingreso para el panel de administración son:
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-900 focus:outline-none focus:border-brand-500"
                     placeholder="Mínimo 6 caracteres"
                   />
                 </div>
@@ -794,7 +794,7 @@ Tus credenciales de ingreso para el panel de administración son:
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-900 focus:outline-none focus:border-brand-500"
                     placeholder="Repite la contraseña"
                   />
                 </div>
