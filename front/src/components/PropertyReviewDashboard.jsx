@@ -490,6 +490,11 @@ Tus credenciales de ingreso para el panel de administración son:
                 <ShieldCheck className="h-3 w-3" /> Admin
               </span>
             )}
+            {tenantData?.plan === 'pro' && (
+              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] px-2 py-0.5 rounded font-extrabold tracking-wider uppercase flex items-center gap-1 shadow-[0_0_8px_rgba(245,158,11,0.3)]">
+                <Star className="h-3 w-3 fill-amber-300" /> PRO
+              </span>
+            )}
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
             Panel Corporativo
@@ -813,7 +818,13 @@ Tus credenciales de ingreso para el panel de administración son:
                   Chat con Inmos App
                 </a>
                 <button
-                  onClick={() => setShowAddOperatorModal(true)}
+                  onClick={() => {
+                    if (tenantData?.plan !== 'pro' && operators.length >= 2) {
+                      toast.error('El plan Básico permite hasta 2 operadores. Actualice a PRO para añadir más.', { duration: 5000 });
+                      return;
+                    }
+                    setShowAddOperatorModal(true);
+                  }}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition shadow-lg shadow-emerald-600/10"
                 >
                   <UserPlus className="h-4 w-4" />

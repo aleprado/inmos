@@ -70,7 +70,7 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
       await createOrUpdateSession(senderPhone, propertyId, 'active', [], null);
       
       if (!processedText) {
-        await sendWhatsAppMessage(senderPhone, "📸 *¡Foto guardada con éxito!* ¿Algo más para agregar o ya estamos listos?");
+        await sendWhatsAppMessage(senderPhone, "📸 *¡Foto guardada con éxito!* ¿Algo más para agregar o ya estamos listos?", [{ id: 'finalizar', title: 'Finalizar Carga' }]);
         return;
       }
     }
@@ -99,7 +99,7 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
         
         // Si la IA marca isComplete y no hay warning, sugerimos finalizar
         let responseMsg = aiResponse.chatResponse || "📝 *¡Detalles actualizados!*";
-        await sendWhatsAppMessage(senderPhone, responseMsg);
+        await sendWhatsAppMessage(senderPhone, responseMsg, [{ id: 'finalizar', title: 'Finalizar Carga' }]);
         return;
       }
     }
@@ -142,7 +142,7 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
      responseMsg += `\n\n*(Ref: ${propertyId})*`;
   }
   
-  await sendWhatsAppMessage(senderPhone, responseMsg);
+  await sendWhatsAppMessage(senderPhone, responseMsg, [{ id: 'finalizar', title: 'Finalizar Carga' }]);
 }
 
 // Exportar la función core para ser reutilizada por la demo callable

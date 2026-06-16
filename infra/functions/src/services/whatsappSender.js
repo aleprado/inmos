@@ -11,8 +11,9 @@ const WA_ACCESS_TOKEN = process.env.WA_ACCESS_TOKEN || 'fake-access-token';
  * Envía un mensaje de texto vía WhatsApp Cloud API
  * @param {string} to Número de destino (con código de país)
  * @param {string} text Mensaje a enviar
+ * @param {Array} buttons Opcional. Array de objetos {id, title} (máx 3 botones)
  */
-async function sendWhatsAppMessage(to, text) {
+async function sendWhatsAppMessage(to, text, buttons = null) {
   try {
     // Interceptar mensajes dirigidos a la demo web o clientes web conectados
     demoEventEmitter.emit('message', { to, text });
@@ -40,12 +41,31 @@ async function sendWhatsAppMessage(to, text) {
 
     const url = `https://graph.facebook.com/v17.0/${WA_PHONE_NUMBER_ID}/messages`;
     
-    const payload = {
-      messaging_product: "whatsapp",
-      to: targetTo,
-      type: "text",
-      text: { body: text }
-    };
+    let payload;
+    if (buttons && buttons.length > 0) {
+      payload = {
+        messaging_product: "whatsapp",
+        to: targetTo,
+        type: "interactive",
+        interactive: {
+          type: "button",
+          body: { text: text },
+          action: {
+            buttons: buttons.slice(0, 3).map(btn => ({
+              type: "reply",
+              reply: { id: btn.id, title: btn.title }
+            }))
+          }
+        }
+      };
+    } else {
+      payload = {
+        messaging_product: "whatsapp",
+        to: targetTo,
+        type: "text",
+        text: { body: text }
+      };
+    }
 
     await axios.post(url, payload, {
       headers: {

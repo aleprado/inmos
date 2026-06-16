@@ -414,6 +414,13 @@ export default function PropertyDetailView({ propertyId, tenantId, tenantData, s
                 </div>
               </div>
             )}
+
+            {/* Disclaimer Legal */}
+            <div className="pb-20">
+              <p className="text-[10px] text-slate-400 italic leading-relaxed text-justify px-2">
+                * Las descripciones, fotos y medidas de este inmueble son aproximadas. Los datos fueron proporcionados por el propietario y pueden arrojar inexactitudes. Venta supeditada al cumplimiento por parte del propietario.
+              </p>
+            </div>
           </div>
 
           {/* 3. Floating Action Bar (Mobile Premium UX) */}

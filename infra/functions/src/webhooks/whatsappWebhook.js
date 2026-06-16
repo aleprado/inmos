@@ -62,6 +62,13 @@ exports.whatsappWebhook = onRequest(async (req, res) => {
             // Si el usuario mandó texto adjunto a la imagen (caption)
             messageText = message.image.caption || "";
             console.log(`Imagen recibida: ${mediaId} (${mimeType})`);
+          } 
+          // Manejar mensaje interactivo (botón)
+          else if (message.type === 'interactive') {
+            if (message.interactive.type === 'button_reply') {
+              messageText = message.interactive.button_reply.id;
+              console.log(`Botón interactivo presionado: ${messageText}`);
+            }
           } else {
             console.log(`Tipo de mensaje no soportado: ${message.type}`);
             res.sendStatus(200);

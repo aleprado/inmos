@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logo Pin Variantes</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1A1030;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    gap: 48px;
+  }
+  .header { text-align: center; }
+  .header p { font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #8B6FFF; margin-bottom: 8px; }
+  .header h1 { font-size: 22px; font-weight: 600; color: white; letter-spacing: -0.02em; }
+  .grid { display: flex; gap: 80px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  .card { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .previews { display: flex; gap: 12px; align-items: flex-end; }
+  .preview-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .preview-group span { font-size: 10px; color: #6B5890; font-family: monospace; }
+  .label { text-align: center; }
+  .label strong { display: block; font-size: 14px; font-weight: 600; color: white; margin-bottom: 4px; }
+  .label small { font-size: 12px; color: #8B6FFF; line-height: 1.6; }
+  .note {
+    background: rgba(139,111,255,0.1);
+    border: 1px solid rgba(139,111,255,0.25);
+    border-radius: 14px;
+    padding: 16px 28px;
+    max-width: 600px;
+    text-align: center;
+  }
+  .note p { font-size: 13px; color: #B8A8FF; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <p>Logo · Pin de location</p>
+  <h1>Variante oscura · Variante clara</h1>
+</div>
+
+<div class="grid">
+
+  <!-- ══ VARIANTE OSCURA ══ -->
+  <div class="card">
+    <svg width="220" height="280" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gd" x1="22" y1="40" x2="78" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#00CFFF"/>
+          <stop offset="100%" stop-color="#CC44FF"/>
+        </linearGradient>
+        <filter id="glowD">
+          <feGaussianBlur stdDeviation="1.2" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="shadowD">
+          <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#8B3FFF" flood-opacity="0.45"/>
+        </filter>
+      </defs>
+      <!-- Pin oscuro -->
+      <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z"
+            fill="#0D0820" filter="url(#shadowD)"/>
+      <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z"
+            fill="none" stroke="url(#gd)" stroke-width="1.2" opacity="0.5"/>
+      <!-- Casa + red neuronal -->
+      <g filter="url(#glowD)">
+        <path d="M 30,62 L 30,42 L 50,20 L 70,42 L 70,62"
+              fill="none" stroke="url(#gd)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="30" y1="62" x2="70" y2="62" stroke="url(#gd)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 61,40 L 61,29 L 68,29 L 68,43"
+              fill="none" stroke="url(#gd)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="50" cy="25" r="3.2" fill="url(#gd)"/>
+        <circle cx="37" cy="48" r="3"   fill="url(#gd)"/>
+        <circle cx="50" cy="52" r="3.2" fill="url(#gd)"/>
+        <circle cx="63" cy="48" r="3"   fill="url(#gd)"/>
+        <circle cx="38" cy="59" r="2.5" fill="url(#gd)"/>
+        <circle cx="62" cy="59" r="2.5" fill="url(#gd)"/>
+        <path d="M 50,25 C 45,32 40,42 37,48" fill="none" stroke="url(#gd)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 50,25 C 55,32 60,42 63,48" fill="none" stroke="url(#gd)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 37,48 C 40,50 45,52 50,52" fill="none" stroke="url(#gd)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 63,48 C 60,50 55,52 50,52" fill="none" stroke="url(#gd)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 33,50 C 36,43 40,55 46,50 C 52,45 57,57 63,52 C 65,51 67,50 69,48"
+              fill="none" stroke="url(#gd)" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+        <path d="M 37,48 L 38,59" fill="none" stroke="url(#gd)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 63,48 L 62,59" fill="none" stroke="url(#gd)" stroke-width="2" stroke-linecap="round"/>
+      </g>
+    </svg>
+
+    <div class="previews">
+      <div class="preview-group">
+        <div style="background:#ECE5DD;border-radius:10px;padding:8px;">
+          <svg width="52" height="65" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="gd52" x1="22" y1="40" x2="78" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF"/><stop offset="100%" stop-color="#CC44FF"/></linearGradient></defs>
+            <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z" fill="#0D0820"/>
+            <path d="M 30,62 L 30,42 L 50,20 L 70,42 L 70,62" fill="none" stroke="url(#gd52)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <line x1="30" y1="62" x2="70" y2="62" stroke="url(#gd52)" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M 61,40 L 61,29 L 68,29 L 68,43" fill="none" stroke="url(#gd52)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle cx="50" cy="25" r="3.5" fill="url(#gd52)"/>
+            <circle cx="37" cy="48" r="3" fill="url(#gd52)"/>
+            <circle cx="63" cy="48" r="3" fill="url(#gd52)"/>
+            <path d="M 50,25 C 45,32 40,42 37,48" fill="none" stroke="url(#gd52)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M 50,25 C 55,32 60,42 63,48" fill="none" stroke="url(#gd52)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M 33,50 C 36,43 40,55 46,50 C 52,45 57,57 63,52" fill="none" stroke="url(#gd52)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>WA claro</span>
+      </div>
+      <div class="preview-group">
+        <div style="background:#1F2C34;border-radius:10px;padding:8px;">
+          <svg width="52" height="65" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="gd52dk" x1="22" y1="40" x2="78" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF"/><stop offset="100%" stop-color="#CC44FF"/></linearGradient></defs>
+            <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z" fill="#0D0820"/>
+            <path d="M 30,62 L 30,42 L 50,20 L 70,42 L 70,62" fill="none" stroke="url(#gd52dk)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <line x1="30" y1="62" x2="70" y2="62" stroke="url(#gd52dk)" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="50" cy="25" r="3.5" fill="url(#gd52dk)"/>
+            <circle cx="37" cy="48" r="3" fill="url(#gd52dk)"/>
+            <circle cx="63" cy="48" r="3" fill="url(#gd52dk)"/>
+            <path d="M 33,50 C 36,43 40,55 46,50 C 52,45 57,57 63,52" fill="none" stroke="url(#gd52dk)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>WA oscuro</span>
+      </div>
+    </div>
+
+    <div class="label">
+      <strong>Variante Oscura</strong>
+      <small>Fondo negro · neon cyan→magenta<br>Como el original, en pin</small>
+    </div>
+  </div>
+
+  <!-- ══ VARIANTE CLARA ══ -->
+  <div class="card">
+    <svg width="220" height="280" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gl" x1="22" y1="40" x2="78" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#00CFFF"/>
+          <stop offset="100%" stop-color="#CC44FF"/>
+        </linearGradient>
+        <linearGradient id="glPin" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#EAF9FF"/>
+          <stop offset="100%" stop-color="#F5EAFF"/>
+        </linearGradient>
+        <filter id="glowL">
+          <feGaussianBlur stdDeviation="0.9" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="shadowL">
+          <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#AA44FF" flood-opacity="0.22"/>
+        </filter>
+      </defs>
+      <!-- Pin claro -->
+      <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z"
+            fill="url(#glPin)" filter="url(#shadowL)"/>
+      <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z"
+            fill="none" stroke="url(#gl)" stroke-width="1.5" opacity="0.55"/>
+      <!-- Casa + red neuronal -->
+      <g filter="url(#glowL)">
+        <path d="M 30,62 L 30,42 L 50,20 L 70,42 L 70,62"
+              fill="none" stroke="url(#gl)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="30" y1="62" x2="70" y2="62" stroke="url(#gl)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 61,40 L 61,29 L 68,29 L 68,43"
+              fill="none" stroke="url(#gl)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="50" cy="25" r="3.2" fill="url(#gl)"/>
+        <circle cx="37" cy="48" r="3"   fill="url(#gl)"/>
+        <circle cx="50" cy="52" r="3.2" fill="url(#gl)"/>
+        <circle cx="63" cy="48" r="3"   fill="url(#gl)"/>
+        <circle cx="38" cy="59" r="2.5" fill="url(#gl)"/>
+        <circle cx="62" cy="59" r="2.5" fill="url(#gl)"/>
+        <path d="M 50,25 C 45,32 40,42 37,48" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 50,25 C 55,32 60,42 63,48" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 37,48 C 40,50 45,52 50,52" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 63,48 C 60,50 55,52 50,52" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 33,50 C 36,43 40,55 46,50 C 52,45 57,57 63,52 C 65,51 67,50 69,48"
+              fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+        <path d="M 37,48 L 38,59" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 63,48 L 62,59" fill="none" stroke="url(#gl)" stroke-width="2" stroke-linecap="round"/>
+      </g>
+    </svg>
+
+    <div class="previews">
+      <div class="preview-group">
+        <div style="background:#ECE5DD;border-radius:10px;padding:8px;">
+          <svg width="52" height="65" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gl52" x1="22" y1="40" x2="78" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF"/><stop offset="100%" stop-color="#CC44FF"/></linearGradient>
+              <linearGradient id="glPin52" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EAF9FF"/><stop offset="100%" stop-color="#F5EAFF"/></linearGradient>
+            </defs>
+            <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z" fill="url(#glPin52)"/>
+            <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z" fill="none" stroke="url(#gl52)" stroke-width="1.5" opacity="0.55"/>
+            <path d="M 30,62 L 30,42 L 50,20 L 70,42 L 70,62" fill="none" stroke="url(#gl52)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <line x1="30" y1="62" x2="70" y2="62" stroke="url(#gl52)" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M 61,40 L 61,29 L 68,29 L 68,43" fill="none" stroke="url(#gl52)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle cx="50" cy="25" r="3.5" fill="url(#gl52)"/>
+            <circle cx="37" cy="48" r="3" fill="url(#gl52)"/>
+            <circle cx="63" cy="48" r="3" fill="url(#gl52)"/>
+            <path d="M 50,25 C 45,32 40,42 37,48" fill="none" stroke="url(#gl52)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M 50,25 C 55,32 60,42 63,48" fill="none" stroke="url(#gl52)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M 33,50 C 36,43 40,55 46,50 C 52,45 57,57 63,52" fill="none" stroke="url(#gl52)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>WA claro</span>
+      </div>
+      <div class="preview-group">
+        <div style="background:#1F2C34;border-radius:10px;padding:8px;">
+          <svg width="52" height="65" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gl52dk" x1="22" y1="40" x2="78" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF"/><stop offset="100%" stop-color="#CC44FF"/></linearGradient>
+              <linearGradient id="glPin52dk" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EAF9FF"/><stop offset="100%" stop-color="#F5EAFF"/></linearGradient>
+            </defs>
+            <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z" fill="url(#glPin52dk)"/>
+            <path d="M 50,108 C 40,90 18,76 18,46 A 32,32 0 1,1 82,46 C 82,76 60,90 50,108 Z" fill="none" stroke="url(#gl52dk)" stroke-width="1.5" opacity="0.55"/>
+            <path d="M 30,62 L 30,42 L 50,20 L 70,42 L 70,62" fill="none" stroke="url(#gl52dk)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <line x1="30" y1="62" x2="70" y2="62" stroke="url(#gl52dk)" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="50" cy="25" r="3.5" fill="url(#gl52dk)"/>
+            <circle cx="37" cy="48" r="3" fill="url(#gl52dk)"/>
+            <circle cx="63" cy="48" r="3" fill="url(#gl52dk)"/>
+            <path d="M 33,50 C 36,43 40,55 46,50 C 52,45 57,57 63,52" fill="none" stroke="url(#gl52dk)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>WA oscuro</span>
+      </div>
+    </div>
+
+    <div class="label">
+      <strong>Variante Clara</strong>
+      <small>Fondo blanco-lavanda · mismo gradiente<br>Se ve bien en chats claros y oscuros</small>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <p>Mismo icono original — casa + red neuronal — ahora en <strong style="color:white;">gota de location pin</strong>.<br>
+  ¿Ajustamos algo o exportamos el SVG?</p>
+</div>
+
+</body>
+</html>
