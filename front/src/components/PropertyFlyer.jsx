@@ -15,7 +15,7 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
   const publicUrl = `${window.location.origin}/?p=${property.id}`;
   const price = property.price ? `${property.currency || 'USD'} ${property.price.toLocaleString()}` : 'Consultar Precio';
 
-  // Lógica de Collage Dinámico (Máximo 3 imágenes)
+  // Lógica de Collage Dinámico (Máximo 3 imágenes) con hack anti-deformación para html2canvas
   const renderImages = () => {
     const imgs = property.images || [];
     if (imgs.length === 0) {
@@ -26,46 +26,52 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
       );
     }
 
+    const imgStyle = {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      minWidth: '100%',
+      minHeight: '100%',
+      width: 'auto',
+      height: 'auto',
+      maxWidth: 'none'
+    };
+
     if (!isSocial || imgs.length === 1) {
       return (
-        <div 
-          className="w-full h-full" 
-          style={{ backgroundImage: `url(${imgs[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
-        />
+        <div className="w-full h-full relative overflow-hidden">
+          <img src={imgs[0]} style={imgStyle} crossOrigin="anonymous" alt="Propiedad" />
+        </div>
       );
     }
 
     if (imgs.length === 2) {
       return (
         <div className="flex w-full h-full bg-white">
-          <div 
-            className="w-[70%] h-full border-r-[8px] border-white" 
-            style={{ backgroundImage: `url(${imgs[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
-          />
-          <div 
-            className="w-[30%] h-full" 
-            style={{ backgroundImage: `url(${imgs[1]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
-          />
+          <div className="w-[70%] h-full relative overflow-hidden border-r-[8px] border-white">
+            <img src={imgs[0]} style={imgStyle} crossOrigin="anonymous" alt="Principal" />
+          </div>
+          <div className="w-[30%] h-full relative overflow-hidden">
+            <img src={imgs[1]} style={imgStyle} crossOrigin="anonymous" alt="Secundaria" />
+          </div>
         </div>
       );
     }
 
-    // 3 o más imágenes (tomamos solo las primeras 3)
+    // 3 o más imágenes
     return (
       <div className="flex w-full h-full bg-white">
-        <div 
-          className="w-[70%] h-full border-r-[8px] border-white" 
-          style={{ backgroundImage: `url(${imgs[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
-        />
+        <div className="w-[70%] h-full relative overflow-hidden border-r-[8px] border-white">
+          <img src={imgs[0]} style={imgStyle} crossOrigin="anonymous" alt="Principal" />
+        </div>
         <div className="w-[30%] h-full flex flex-col">
-          <div 
-            className="h-1/2 w-full border-b-[8px] border-white" 
-            style={{ backgroundImage: `url(${imgs[1]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
-          />
-          <div 
-            className="h-1/2 w-full" 
-            style={{ backgroundImage: `url(${imgs[2]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
-          />
+          <div className="h-1/2 w-full relative overflow-hidden border-b-[8px] border-white">
+            <img src={imgs[1]} style={imgStyle} crossOrigin="anonymous" alt="Secundaria 1" />
+          </div>
+          <div className="h-1/2 w-full relative overflow-hidden">
+            <img src={imgs[2]} style={imgStyle} crossOrigin="anonymous" alt="Secundaria 2" />
+          </div>
         </div>
       </div>
     );
@@ -89,20 +95,6 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
         {/* Imagen Principal o Collage Dinámico */}
         <div className={`relative w-full bg-slate-100 shrink-0 ${isSocial ? 'h-[500px]' : 'h-[480px]'}`}>
           {renderImages()}
-          
-          {/* Badge de Operación */}
-          <div className={`absolute left-10 flex gap-3 ${isSocial ? 'bottom-8' : 'bottom-6'}`}>
-            <div 
-              className={`bg-brand-600 text-white font-bold uppercase tracking-wider shadow-xl flex items-center justify-center ${isSocial ? 'px-8 pt-2 pb-3.5 rounded-full text-lg' : 'px-5 pt-1.5 pb-2.5 rounded-full text-sm'}`}
-            >
-              {property.operationType || 'Venta'}
-            </div>
-            <div 
-              className={`bg-white text-slate-900 font-bold uppercase tracking-wider shadow-xl flex items-center justify-center ${isSocial ? 'px-8 pt-2 pb-3.5 rounded-full text-lg' : 'px-5 pt-1.5 pb-2.5 rounded-full text-sm'}`}
-            >
-              {property.propertyType || 'Inmueble'}
-            </div>
-          </div>
         </div>
 
         {/* Contenido (Mitad Inferior) */}
@@ -110,6 +102,11 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
           
           {/* Título y Precio */}
           <div>
+            {/* Subtítulo de Operación y Tipo (Nuevo Enfoque) */}
+            <div className={`font-black tracking-widest uppercase text-brand-600 ${isSocial ? 'text-3xl mb-4' : 'text-sm mb-2'}`}>
+              {property.operationType || 'Venta'} • {property.propertyType || 'Inmueble'}
+            </div>
+
             <h1 className={`font-black leading-tight text-slate-900 ${isSocial ? 'text-5xl mb-4' : 'text-4xl mb-2'}`}>
               {property.title}
             </h1>
