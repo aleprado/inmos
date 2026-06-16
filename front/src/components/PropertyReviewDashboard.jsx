@@ -491,6 +491,13 @@ Tus credenciales de ingreso para el panel de administración son:
     }, 600);
   };
 
+  const getOperatorName = (phoneStr) => {
+    if (!phoneStr) return 'Desconocido';
+    const cleanSearch = phoneStr.replace(/\D/g, '');
+    const op = operators.find(o => o.phone && o.phone.replace(/\D/g, '') === cleanSearch);
+    return op ? (op.nombre || op.name || phoneStr) : phoneStr;
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-6 md:p-12">
       
@@ -1013,7 +1020,7 @@ Tus credenciales de ingreso para el panel de administración son:
                     {prop.metadata && (
                       <div className="border-t border-slate-200/80 pt-3.5 mb-4 flex items-center gap-2 text-slate-500 text-[10px]">
                         <MessageSquare className="h-3.5 w-3.5 text-brand-500" />
-                        <span>Cargado por: <strong className="text-slate-700">{prop.metadata.sender}</strong></span>
+                        <span>Cargado por: <strong className="text-slate-700">{getOperatorName(prop.metadata.sender)}</strong></span>
                       </div>
                     )}
 
@@ -1032,7 +1039,7 @@ Tus credenciales de ingreso para el panel de administración son:
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handleOpenEditModal(prop)}
-                          className="flex-1 bg-white hover:bg-slate-100 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition"
+                          className="flex-1 bg-white hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-slate-200"
                         >
                           <Edit3 className="h-3.5 w-3.5" />
                           Editar
@@ -1041,7 +1048,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         <button 
                           onClick={() => handleGeneratePdf(prop, 'pdf')}
                           disabled={generatingPdf === prop.id || generatingSignage === prop.id}
-                          className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-rose-500/20"
+                          className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-rose-200 shadow-sm"
                           title="Descargar Folleto Comercial (A4)"
                         >
                           {generatingPdf === prop.id ? (
@@ -1055,7 +1062,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         <button 
                           onClick={() => handleGeneratePdf(prop, 'social')}
                           disabled={generatingPdf === prop.id || generatingSignage === prop.id}
-                          className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-amber-500/20"
+                          className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-600 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-amber-200 shadow-sm"
                           title="Descargar Imagen Cuadrada para Redes (1080x1080)"
                         >
                           <Star className="h-3.5 w-3.5" />
@@ -1065,7 +1072,7 @@ Tus credenciales de ingreso para el panel de administración son:
                         <button 
                           onClick={() => handleGenerateSignage(prop)}
                           disabled={generatingSignage === prop.id || generatingPdf === prop.id}
-                          className="flex-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-indigo-500/20"
+                          className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs transition border border-indigo-200 shadow-sm"
                           title="Descargar Cartel para Vía Pública (A4)"
                         >
                           {generatingSignage === prop.id ? (
