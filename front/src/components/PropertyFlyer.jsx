@@ -93,12 +93,12 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
           {/* Badge de Operación */}
           <div className={`absolute left-10 flex gap-3 ${isSocial ? 'bottom-8' : 'bottom-6'}`}>
             <div 
-              className={`bg-brand-600 text-white font-bold uppercase tracking-wider shadow-xl text-center ${isSocial ? 'px-8 pt-3 pb-2 rounded-full text-lg' : 'px-5 pt-2 pb-1.5 rounded-full text-sm'}`}
+              className={`bg-brand-600 text-white font-bold uppercase tracking-wider shadow-xl flex items-center justify-center ${isSocial ? 'px-8 pt-2 pb-3.5 rounded-full text-lg' : 'px-5 pt-1.5 pb-2.5 rounded-full text-sm'}`}
             >
               {property.operationType || 'Venta'}
             </div>
             <div 
-              className={`bg-white text-slate-900 font-bold uppercase tracking-wider shadow-xl text-center ${isSocial ? 'px-8 pt-3 pb-2 rounded-full text-lg' : 'px-5 pt-2 pb-1.5 rounded-full text-sm'}`}
+              className={`bg-white text-slate-900 font-bold uppercase tracking-wider shadow-xl flex items-center justify-center ${isSocial ? 'px-8 pt-2 pb-3.5 rounded-full text-lg' : 'px-5 pt-1.5 pb-2.5 rounded-full text-sm'}`}
             >
               {property.propertyType || 'Inmueble'}
             </div>
