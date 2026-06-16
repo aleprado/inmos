@@ -28,15 +28,24 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
 
     if (!isSocial || imgs.length === 1) {
       return (
-        <img src={imgs[0]} alt="Principal" className="w-full h-full object-cover" crossOrigin="anonymous" />
+        <div 
+          className="w-full h-full" 
+          style={{ backgroundImage: `url(${imgs[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
+        />
       );
     }
 
     if (imgs.length === 2) {
       return (
         <div className="flex w-full h-full bg-white">
-          <img src={imgs[0]} alt="Principal" className="w-[70%] h-full object-cover border-r-[8px] border-white" crossOrigin="anonymous" />
-          <img src={imgs[1]} alt="Secundaria 1" className="w-[30%] h-full object-cover" crossOrigin="anonymous" />
+          <div 
+            className="w-[70%] h-full border-r-[8px] border-white" 
+            style={{ backgroundImage: `url(${imgs[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
+          />
+          <div 
+            className="w-[30%] h-full" 
+            style={{ backgroundImage: `url(${imgs[1]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
+          />
         </div>
       );
     }
@@ -44,10 +53,19 @@ export default function PropertyFlyer({ property, tenantId, type = 'pdf' }) {
     // 3 o más imágenes (tomamos solo las primeras 3)
     return (
       <div className="flex w-full h-full bg-white">
-        <img src={imgs[0]} alt="Principal" className="w-[70%] h-full object-cover border-r-[8px] border-white" crossOrigin="anonymous" />
+        <div 
+          className="w-[70%] h-full border-r-[8px] border-white" 
+          style={{ backgroundImage: `url(${imgs[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
+        />
         <div className="w-[30%] h-full flex flex-col">
-          <img src={imgs[1]} alt="Secundaria 1" className="h-1/2 w-full object-cover border-b-[8px] border-white" crossOrigin="anonymous" />
-          <img src={imgs[2]} alt="Secundaria 2" className="h-1/2 w-full object-cover" crossOrigin="anonymous" />
+          <div 
+            className="h-1/2 w-full border-b-[8px] border-white" 
+            style={{ backgroundImage: `url(${imgs[1]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
+          />
+          <div 
+            className="h-1/2 w-full" 
+            style={{ backgroundImage: `url(${imgs[2]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
+          />
         </div>
       </div>
     );
