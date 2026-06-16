@@ -24,7 +24,7 @@ async function transcribeAudio(audioBuffer, mimeType) {
     return result.response.text().trim();
   } catch (error) {
     console.error("Error transcribiendo audio:", error);
-    return "";
+    return null;
   }
 }
 
@@ -40,6 +40,17 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
     console.log(`Descargando y transcribiendo audio con mediaId: ${mediaId}`);
     const audioBuffer = await getMediaBufferFromId(mediaId);
     processedText = await transcribeAudio(audioBuffer, mimeType);
+    
+    if (processedText === null) {
+      await sendWhatsAppMessage(senderPhone, "⚠️ Ups, tuve un problema técnico al intentar escuchar tu audio (el servicio de IA puede estar saturado). ¿Podrías enviarme la información por texto o intentar de nuevo en un ratito?");
+      return;
+    }
+    
+    if (processedText === "") {
+      await sendWhatsAppMessage(senderPhone, "⚠️ No pude detectar ninguna voz clara en el audio. ¿Podrías volver a grabarlo o enviarme los datos por texto?");
+      return;
+    }
+
     console.log(`Audio transcrito con éxito: "${processedText}"`);
   }
 
