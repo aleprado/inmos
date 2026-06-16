@@ -66,9 +66,39 @@ function isSessionValid(session) {
  */
 function getMinutesSinceLastActivity(session) {
   if (!session || !session.lastActivity) return 0;
+  
   const lastActivityDate = session.lastActivity.toDate ? session.lastActivity.toDate() : new Date(session.lastActivity);
   const now = new Date();
-  return Math.floor((now - lastActivityDate) / 60000);
+  
+  return (now - lastActivityDate) / (1000 * 60);
+}
+
+/**
+ * Debounce para mensajes de acuse de imagen (Evita spam cuando envían 10 fotos juntas).
+ * Retorna true si han pasado más de 10 segundos desde el último ack.
+ */
+async function shouldSendImageAck(phone) {
+  try {
+    const sessionRef = db.collection('sessions').doc(phone);
+    return await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(sessionRef);
+      if (!doc.exists) return true;
+      
+      const data = doc.data();
+      const lastAck = data.lastImageAckTime;
+      const now = Date.now();
+      
+      if (lastAck && (now - lastAck < 15000)) { // 15 segundos
+        return false;
+      }
+      
+      transaction.update(sessionRef, { lastImageAckTime: now });
+      return true;
+    });
+  } catch (error) {
+    console.error(`Error en debounce de imagen para ${phone}:`, error);
+    return true;
+  }
 }
 
 module.exports = {
@@ -76,5 +106,6 @@ module.exports = {
   createOrUpdateSession,
   clearSession,
   isSessionValid,
-  getMinutesSinceLastActivity
+  getMinutesSinceLastActivity,
+  shouldSendImageAck
 };

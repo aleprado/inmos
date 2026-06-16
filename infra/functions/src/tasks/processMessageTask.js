@@ -1,7 +1,7 @@
 const { onTaskDispatched } = require('firebase-functions/v2/tasks');
 const { parsePropertyMessage, mergePropertyDetails, extractSingleField } = require('../services/aiAgent');
 const { saveProperty, getOperatorTenant, getPropertyById, updateProperty, appendImageToProperty } = require('../services/propertyService');
-const { getSession, createOrUpdateSession, clearSession, isSessionValid, getMinutesSinceLastActivity } = require('../services/sessionService');
+const { getSession, createOrUpdateSession, clearSession, isSessionValid, getMinutesSinceLastActivity, shouldSendImageAck } = require('../services/sessionService');
 const { sendWhatsAppMessage } = require('../services/whatsappSender');
 const { getMediaBufferFromId, uploadImageToStorage } = require('../services/whatsappMedia');
 const { aiTranscriptionModel } = require('../config/ai');
@@ -81,7 +81,12 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
       await createOrUpdateSession(senderPhone, propertyId, 'active', [], null);
       
       if (!processedText) {
-        await sendWhatsAppMessage(senderPhone, "📸 *¡Foto guardada con éxito!* ¿Algo más para agregar o ya estamos listos?", [{ id: 'finalizar', title: 'Finalizar Carga' }]);
+        const canSendAck = await shouldSendImageAck(senderPhone);
+        if (canSendAck) {
+          await sendWhatsAppMessage(senderPhone, "📸 *¡Foto guardada con éxito!* ¿Algo más para agregar o ya estamos listos?", [{ id: 'finalizar', title: 'Finalizar Carga' }]);
+        } else {
+          console.log(`Silenciando mensaje de éxito de foto para ${senderPhone} (debounce)`);
+        }
         return;
       }
     }
