@@ -157,6 +157,10 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
   if (!responseMsg.includes(propertyId)) {
      responseMsg += `\n\n*(Ref: ${propertyId})*`;
   }
+
+  // Deep link a la propiedad recién creada
+  const propertyLink = `https://${tenantId}.inmos.com/?p=${propertyId}`;
+  responseMsg += `\n\n🔗 *Ver propiedad:* ${propertyLink}`;
   
   await sendWhatsAppMessage(senderPhone, responseMsg, [{ id: 'finalizar', title: 'Finalizar Carga' }]);
 }
