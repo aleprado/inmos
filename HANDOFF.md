@@ -1,103 +1,104 @@
 # Inmos - Handoff & Context Document 🚀
 
-Este documento está diseñado específicamente para proveer **todo el contexto necesario** a una nueva instancia de Antigravity (o cualquier agente de IA) que deba continuar con el desarrollo y mantenimiento del proyecto Inmos.
+Este documento provee **todo el contexto necesario** a una nueva instancia de Antigravity (o cualquier agente de IA / desarrollador humano) que deba continuar con el desarrollo y mantenimiento del proyecto Inmos.
 
 ## 📌 Visión del Producto
-Inmos es una plataforma B2B (SaaS) diseñada para revolucionar cómo las inmobiliarias gestionan y publican sus propiedades. Su propuesta de valor principal es eliminar la fricción de entrada de datos: **los operadores (agentes inmobiliarios) suben propiedades enviando audios, fotos y videos por WhatsApp**. Un bot de IA (configurado en Meta) procesa esa información y publica automáticamente la propiedad en un frontend web estético y moderno.
+Inmos es una plataforma B2B (SaaS) multi-tenant diseñada para revolucionar cómo las inmobiliarias gestionan y publican sus propiedades. Su propuesta de valor principal es eliminar la fricción de entrada de datos: **los operadores (agentes inmobiliarios) suben propiedades enviando audios, fotos y texto por WhatsApp o mediante un Web Chat con IA**. Un agente autónomo impulsado por Gemini procesa esa información y publica automáticamente la propiedad en un catálogo web estético y moderno.
 
 ### Arquitectura General (Serverless Monorepo)
-El proyecto es un monorepo que contiene tanto el código frontend como la infraestructura backend (IaC).
 - **Backend/Infraestructura (`/infra`):** Basado 100% en Firebase/Google Cloud Platform. Provisionado vía Terraform.
-  - Base de Datos: Firestore.
-  - Funciones Serverless: Cloud Functions (Node.js).
-  - Almacenamiento: Cloud Storage (para imágenes y videos).
-  - Colas de Tareas: Cloud Tasks (como alternativa a SQS/SNS para escalabilidad ante ráfagas de mensajes de WhatsApp).
-- **Frontend (`/front`):** Aplicación web Single Page Application (SPA).
-  - Framework: React (Vite).
-  - Estilos: Tailwind CSS.
-  - Componentes UI: Lucide React (iconos).
+  - Base de Datos: Firestore (NoSQL).
+  - Funciones Serverless: Cloud Functions v2 (Node.js 20).
+  - Almacenamiento: Cloud Storage (para imágenes).
+  - Colas de Tareas: Cloud Tasks (para procesar mensajes de WhatsApp de forma asíncrona sin timeouts).
+- **Frontend (`/front`):** Single Page Application (SPA).
+  - Framework: React 18 (Vite).
+  - Enrutamiento: Manual basado en estado (sin React Router).
+  - Estilos: Tailwind CSS 3.4.
   - Hosting: Firebase Hosting.
-- **CI/CD (`/.github/workflows`):** GitHub Actions configuradas con Path Filters para despliegues independientes de Front, Functions e Infraestructura.
-
-## 📂 Estructura del Repositorio
-```
-/inmos
-├── .github/workflows/       # Pipelines de CI/CD (deploy-frontend, deploy-functions, deploy-infra)
-├── front/                   # Código fuente de React (Vite)
-│   ├── src/
-│   │   ├── components/      # PropertyReviewDashboard, PropertyDetailView, PropertyFlyer, SignageFlyer, etc.
-│   │   ├── contexts/        # ToastContext (Notificaciones custom)
-│   │   ├── hooks/           # useTenant (Lógica multi-tenant por URL)
-│   │   ├── utils/           # seo.js (Meta tags dinámicos)
-│   │   └── main.jsx         # Entry point, enrutador y Auth Listener
-│   ├── package.json         # Dependencias (incluye html2canvas, jspdf, qrcode.react)
-│   └── index.html
-├── infra/                   # Infraestructura como Código (Terraform) y Backend (Functions)
-│   ├── functions/           # Firebase Cloud Functions (Node.js)
-│   │   ├── src/
-│   │   │   ├── index.js     # Entry point de las funciones
-│   │   │   ├── callables/   # Funciones invocadas desde el cliente (ej: exportProperties.js)
-│   │   │   ├── http/        # Webhooks de Meta (WhatsApp)
-│   │   │   └── tasks/       # Handlers de Cloud Tasks (procesamiento de IA en background)
-│   │   └── package.json
-│   ├── main.tf              # Configuración principal de Terraform para GCP/Firebase
-│   ├── variables.tf         # Variables de entorno requeridas
-│   └── outputs.tf           # Exporta la configuración de Firebase (firebaseConfig)
-└── rules.md                 # Reglas de modularidad estrictas que el agente debe seguir
-```
-
-## ✨ Funcionalidades Core Implementadas
-1. **Multi-Tenancy por URL:** El sistema lee el subdominio o un parámetro para determinar a qué inmobiliaria (tenant) pertenece la vista (`useTenant.js`).
-2. **Dashboard Administrativo (`PropertyReviewDashboard.jsx`):**
-   - Sistema de pestañas: Pendientes (para revisar antes de publicar), Aprobadas y Archivadas.
-   - Edición completa de datos mediante `PropertyEditModal.jsx`.
-   - Gestión de Operadores (para dar acceso a números de WhatsApp específicos).
-3. **Vista Pública Premium (`PropertyDetailView.jsx`):**
-   - Carrusel de imágenes inmersivo.
-   - Reproductor embebido de Recorridos 360° (YouTube/Matterport).
-   - Botón directo de WhatsApp para contactar al agente.
-4. **Herramientas B2B (Adopción y Upselling):**
-   - **Contador de Vistas:** Se registran `views` en Firestore (protegido por `sessionStorage` contra spam) y se muestran en el dashboard (ícono 👁️) para demostrar ROI a la inmobiliaria.
-   - **Exportación Universal:** Botón "Exportar Catálogo" que invoca una Cloud Function para descargar todo en JSON (Data Freedom).
-   - **Folleto PDF (1-Clic):** Genera un A4 comercial con fotos, atributos y un Código QR dinámico usando `html2canvas` y `jsPDF` (`PropertyFlyer.jsx`). Todo en el cliente.
-   - **Cartel Vía Pública (QR):** Genera un cartel minimalista con un código QR masivo de 550px para pegar sobre cartelería física existente (`SignageFlyer.jsx`).
-   - **UX Moderna (Toasts):** Notificaciones flotantes no bloqueantes creadas con Tailwind y React Context, eliminando por completo los `alert()`.
-
-## ⚙️ Flujo de Procesamiento (WhatsApp a Web)
-1. **Ingreso:** Un mensaje llega al Webhook de Meta (`infra/functions/src/http/metaWebhook.js`).
-2. **Encolado:** Para soportar ráfagas sin timeout, el Webhook despacha rápidamente el payload a Google Cloud Tasks y retorna 200 OK a Meta.
-3. **Procesamiento de IA:** Un handler de la Task asíncrona (ej: `infra/functions/src/tasks/processPropertyAudio.js`) recibe la información, interactúa con LLMs (ej: Gemini) para extraer datos estructurados, sube imágenes a Storage y guarda la entidad en Firestore con estado `pending`.
-4. **Revisión:** El administrador entra al Dashboard en React, ve la propiedad pendiente, la edita si es necesario y la aprueba, haciéndola visible en la web pública.
-
-## 🛠️ Estado Actual y Últimos Desarrollos (Contexto Crítico)
-El proyecto se encuentra en un estado funcional avanzado con integraciones complejas de UI y Backend. **Si eres un nuevo agente analizando este repositorio, lee atentamente los siguientes puntos recientes:**
-
-1. **AI Chat Assistant Web (`AIChatAssistant.jsx`):**
-   - Se migró la funcionalidad del bot de WhatsApp al navegador. Los operadores autenticados pueden cargar propiedades chateando o subiendo imágenes directamente desde la web (`processOperatorMessage.js`).
-   - El entorno "Demo" (`inmos.app` público) también utiliza este componente, pero envía la data al endpoint `processDemoMessage.js`.
-
-2. **Personalización Multi-Tenant (White-label):**
-   - El `PropertyReviewDashboard` y `PropertyMarketplace` ahora leen configuraciones visuales del tenant (color principal, color de fondo, logo, diseño del catálogo 'grid/map/mixed') y las inyectan en el DOM (CSS vars).
-
-3. **Seguridad y Control de Costos (MUY IMPORTANTE):**
-   - **Rate Limiting por IP:** Para evitar que usuarios maliciosos agoten la cuota de Vertex AI / Gemini en el entorno Demo público, se implementó un Rate Limiter por IP en la Cloud Function `processDemoMessage`. El límite es de 20 interacciones por día por IP, respaldado en Firestore (`demo_rate_limits`).
-   - **Limpieza de Demo Segura (`keepalive`):** En lugar de un cronjob costoso, la limpieza de propiedades de la demo se dispara cuando el usuario cierra la pestaña (`beforeunload`). Para sortear la cancelación agresiva del navegador, se usa un `fetch` nativo con `keepalive: true` apuntando a la Callable `endDemoSession`.
-   - **Timeouts de Inactividad (`useInactivityTimer.js`):** El Frontend vigila inactividad pura (mouse/teclado). Si pasan 30 minutos, se finaliza la sesión de la Demo (limpiando backend) o se desloguea forzosamente al Operador.
-   - **Persistencia de Sesión de Operadores:** Firebase Auth está configurado explícitamente y globalmente con `browserSessionPersistence` en `firebase.js`. La sesión muere al cerrar el navegador.
-
-4. **Quirk de Firebase Storage con Terraform:**
-   - Terraform aprovisiona el bucket `inmos-2c701-inmos-media` nativamente en GCP. Debido a que la SDK Web de Firebase (`firebasestorage.googleapis.com`) no reconoce buckets genéricos por defecto (lanzando un error disfrazado de CORS), este bucket **debe estar enlazado manualmente a Firebase** mediante el menú "Importar Bucket" en la consola web de Firebase Storage.
-   - El frontend `.env` debe apuntar a `VITE_FIREBASE_STORAGE_BUCKET=inmos-2c701-inmos-media`.
-   - Las reglas de Storage están exportadas en `infra/storage.rules`.
-
-## 🚀 Próximos Pasos (Next Steps)
-- [ ] **Configuración Frontend en Hosting:** Asegurarse de que las variables de entorno inyectadas por el CI/CD (GitHub Secrets) coincidan con el `.env` local.
-- [ ] **Verificación de Meta Webhook:** Enlazar la URL pública de la Cloud Function del Webhook al dashboard de desarrolladores de Meta (WhatsApp Business API).
-
-## ⚠️ Reglas a Respetar por el Agente (Ver `rules.md`)
-- Modificar el código de manera quirúrgica y atómica.
-- Evitar regenerar archivos completos.
-- Mantener la separación de responsabilidades (ej. UI en componentes, estado en hooks, llamadas API en `functions/`).
+- **CI/CD (`/.github/workflows`):** GitHub Actions con Path Filters para despliegues independientes de Front, Functions e Infraestructura (Terraform).
 
 ---
-*Este documento fue autogenerado para asegurar una transición fluida hacia un nuevo entorno de desarrollo.*
+
+## 📂 Backend (Cloud Functions)
+El backend procesa la lógica de IA, la integración con WhatsApp y provee APIs para el frontend.
+
+### Entry Points (`infra/functions/src/`)
+| Función | Tipo | Descripción |
+|---|---|---|
+| `whatsappWebhook` | HTTP (`onRequest`) | Recibe mensajes de Meta (WhatsApp Graph API). Valida al operador, da feedback rápido ("Procesando...") y encola la tarea pesada en Cloud Tasks. Siempre devuelve HTTP 200 rápido para evitar penalizaciones de Meta. |
+| `processMessage` | Task (`onTaskDispatched`) | Consume la cola de Cloud Tasks. Transcribe audios (si los hay), maneja comandos ("continuar", "finalizar"), descarga imágenes, llama al Agente IA, y guarda en Firestore. |
+| `exportTenantData` | Callable (`onCall`) | Exporta todo el catálogo de una inmobiliaria en formato JSON. |
+| `processDemoMessage` | Callable (`onCall`) | Simula el bot de WhatsApp en la web para el tenant `demo`. Incluye **Rate Limiting** por IP (max 20 msg/día) guardado en Firestore. |
+| `processOperatorMessage`| Callable (`onCall`) | Permite a operadores autenticados usar la IA desde el dashboard web, reutilizando el motor core. |
+| `endDemoSession` | Callable (`onCall`) | Limpia datos (borra propiedades e imágenes de Storage) generados en la sesión de demo cuando el usuario cierra la pestaña. |
+
+### Servicios Clave (`infra/functions/src/services/`)
+- **`aiAgent.js`**: El cerebro de IA. Usa **Gemini 2.5 Flash** para:
+  1. `parsePropertyMessage`: Extraer JSON inicial (precio, ambientes, ubicación, etc.) a partir de texto o transcripciones.
+  2. `mergePropertyDetails`: Fusionar mensajes nuevos en un borrador existente (ej. el usuario dice "Ah, y tiene balcón", la IA actualiza el JSON).
+- **`sessionService.js`**: Mantiene el contexto conversacional en la colección `sessions` (expira en 30 min). Permite que la IA sepa de qué propiedad está hablando el usuario en mensajes consecutivos. Implementa un debounce de 15s para confirmaciones de fotos.
+- **`whatsappMedia.js` / `whatsappSender.js`**: Integración con Graph API v17.0 para descargar adjuntos y enviar mensajes interactivos (botones).
+
+### Variables de Entorno (Backend)
+- `GEMINI_API_KEY`, `GEMINI_PROCESSING_MODEL`, `GEMINI_TRANSCRIPTION_MODEL`
+- `WA_ACCESS_TOKEN`, `WA_PHONE_NUMBER_ID`, `WA_VERIFY_TOKEN` (Webhooks Meta)
+- `APP_DOMAIN` (ej. `inmos.app` para deep links)
+
+---
+
+## 💻 Frontend (React + Vite)
+SPA construida para ser rápida, visualmente premium y completamente "white-label" (personalizable por cada inmobiliaria).
+
+### Sistema de Multi-Tenancy y Theming
+El hook `useTenant.js` lee el subdominio de la URL (ej. `lopez.inmos.app`) y busca en la colección `tenants` de Firestore. El archivo `theme.js` inyecta dinámicamente variables CSS (`--brand-50` a `--brand-900`) basadas en el `primaryColor` del tenant, personalizando toda la UI.
+
+### Componentes Core (`front/src/components/`)
+1. **`main.jsx`**: Punto de entrada. Resuelve el tenant, aplica el tema, escucha el estado de autenticación (Firebase Auth) y renderiza la vista correspondiente (Landing, Catalog, Admin, Detail).
+2. **`PropertyMarketplace.jsx` (Catálogo Público)**:
+   - Modos de vista: Grid, Mapa, o Mixto. Configurable por el tenant.
+   - Mapa interactivo con **Leaflet** y CartoDB Positron.
+   - Filtros en tiempo real (operación, tipo, precio, ambientes).
+   - Incluye el componente `AIChatAssistant.jsx` flotante si es el entorno de Demo.
+3. **`PropertyDetailView.jsx` (Ficha de Propiedad)**:
+   - Carrusel de fotos, mapa, visualizador de Tour 360° (YouTube/Matterport).
+   - Contador de Vistas (`views`) persistido en Firestore por sesión.
+   - Botón flotante para contactar al operador por WhatsApp.
+   - Metadatos dinámicos para SEO (`seo.js`).
+4. **`PropertyReviewDashboard.jsx` (Panel Administrativo)**:
+   - Gestión de propiedades en pestañas: Pendientes (borradores de la IA), Aprobadas, Archivadas.
+   - Configuración White-label (colores, logo, layout).
+   - Gestión de Operadores (CRUD en la colección `operadores`).
+   - Generación de documentos: Folletos PDF A4 y Flyers 1080x1080 para Redes Sociales usando `html2canvas` + `jsPDF`.
+   - Generación de Cartelería Física (`SignageFlyer.jsx`): PDF A4 con QR gigante generado con `qrcode.react`.
+5. **`PropertyEditModal.jsx`**:
+   - Formulario completo de edición.
+   - Mapa interactivo donde el operador puede mover el pin (usa Nominatim de OpenStreetMap para geocoding inverso).
+   - Dropzone para arrastrar, reordenar (HTML5 Drag & Drop) y subir imágenes directamente a Firebase Storage.
+
+### UX y Retención
+- **`useInactivityTimer.js`**: Hook que detecta inactividad (mouse/teclado). Si pasan 30 minutos sin actividad:
+  - En la Demo pública: Limpia backend y recarga (protege costos).
+  - En el Dashboard Admin: Cierra la sesión por seguridad.
+- **`ToastContext.jsx`**: Sistema global de notificaciones no bloqueantes (reemplaza `alert()`).
+- **Limpieza Segura (`keepalive`)**: El componente `main.jsx` detecta cuando el usuario cierra la pestaña (`beforeunload`) y lanza un fetch nativo con `keepalive: true` hacia `endDemoSession` para asegurar que la Demo no acumule basura.
+
+---
+
+## 🛠️ Quirks y Detalles Operativos Críticos
+
+1. **Bug del Sandbox de Meta WhatsApp**: En modo pruebas, los números de teléfono argentinos (`549...`) sufren de un bug donde Meta a veces requiere el `9` y a veces no. El servicio `whatsappSender` incluye una limpieza específica para esto.
+2. **Firebase Storage CORS con Terraform**: Terraform aprovisiona el bucket `inmos-2c701-inmos-media` nativamente en GCP. La SDK Web de Firebase da un error disfrazado de CORS si este bucket no se enlaza manualmente en la consola web de Firebase. El `.env` del frontend debe usar `VITE_FIREBASE_STORAGE_BUCKET=inmos-2c701-inmos-media`.
+3. **Flujo de WhatsApp a Firestore**: 
+   - La IA **NO** analiza las imágenes visualmente para ahorrar costos y bajar latencia; solo extrae datos del texto/audio. Las fotos enviadas por WhatsApp se suben directo a Storage y se pegan al array `images` del documento en Firestore.
+4. **Rate Limits de la Demo**: La función pública `processDemoMessage` está expuesta a la web. Para evitar abuso de la API de Gemini, tiene un límite estricto de 20 mensajes por IP por día guardado en Firestore (`demo_rate_limits`).
+
+---
+
+## ⚠️ Reglas a Respetar por el Agente (`rules.md`)
+1. **Quirúrgico:** Modificar código con `replace_file_content` o `multi_replace_file_content` usando bloques exactos. No regenerar archivos enteros a menos que sea estrictamente necesario.
+2. **Separación:** Mantener la lógica de negocio pesada o dependiente de APIs secretas en Cloud Functions. Mantener el Frontend puramente para UI e interacciones de base de datos directas (con Reglas de Seguridad).
+3. **Multi-Tenancy:** Todo query en Frontend debe incluir `where('tenant_id', '==', tenantId)`. No asumir jamás un tenant único.
+4. **Dependencias Frontend:** Minimizar NPM; preferir CDNs (como Leaflet) para no inflar el bundle de Vite. Evitar React Router; usar el sistema de rutas manual ya implementado.
+
+*Este documento fue generado automáticamente por Antigravity analizando el código fuente en su totalidad.*
