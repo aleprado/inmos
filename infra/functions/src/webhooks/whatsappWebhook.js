@@ -115,7 +115,7 @@ exports.whatsappWebhook = onRequest(async (req, res) => {
                 }
               } else {
                 const cleanedText = messageText ? messageText.trim().toLowerCase() : "";
-                const isCommand = cleanedText === "listo" || cleanedText === "omitir" || cleanedText === "saltar" || cleanedText === "terminar" || cleanedText === "finalizar";
+                const isCommand = cleanedText === "listo" || cleanedText === "omitir" || cleanedText === "saltar" || cleanedText === "terminar" || cleanedText === "finalizar" || cleanedText === "continuar";
                 
                 if (session.status === 'waiting_images') {
                   if (isAudio) {

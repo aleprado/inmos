@@ -20,7 +20,7 @@ Estructura JSON esperada:
     "address": "La dirección o zona" o null
   },
   "missingLocation": boolean (true si address es null o ambiguo),
-  "chatResponse": "Tu respuesta conversacional. Si faltan datos importantes (como el precio, la ubicación, ambientes o baños según el tipo de inmueble), pídelos amigablemente. Si no falta nada, confirma que está listo y pregunta si quiere subir fotos (si aún no lo hizo). Usa lenguaje natural, no parezcas un robot.",
+  "chatResponse": "Tu respuesta conversacional. Si faltan datos importantes (como el precio, la ubicación, ambientes o baños según el tipo de inmueble), pídelos amigablemente. Si no falta nada, confirma que está listo y pregunta si quiere subir fotos (si aún no lo hizo). NUNCA le digas al usuario que escriba 'listo', 'terminar' ni ningún otro comando de texto para finalizar, ya que el sistema le muestra un botón automático para eso. Usa lenguaje natural, no parezcas un robot.",
   "isComplete": boolean (true si tenemos todos los datos esenciales para este tipo de propiedad y no falta pedir nada)
 }
 
@@ -69,7 +69,7 @@ async function parsePropertyMessage(messageText, mediaBuffer = null, mimeType = 
 async function mergePropertyDetails(existingProperty, newText, timeWarning = false) {
   try {
     let warningInstruction = timeWarning 
-      ? "\nATENCIÓN: Han pasado más de 10 minutos desde el último mensaje. En tu 'chatResponse', añade amigablemente una advertencia preguntando si este dato es para la misma propiedad, o si quiere enviar la palabra 'terminar' para empezar una nueva."
+      ? "\nATENCIÓN: Han pasado más de 10 minutos desde el último mensaje. En tu 'chatResponse', añade amigablemente una advertencia preguntando si este dato es para la misma propiedad o si es para una nueva. NO le pidas que escriba ninguna palabra; el sistema le mostrará botones automáticos para elegir."
       : "";
 
     const prompt = `
@@ -82,7 +82,7 @@ El corredor acaba de enviar este mensaje para agregar o corregir datos:
 ${warningInstruction}
 
 Analiza el nuevo mensaje y fusiona los datos. Si corrige algo, cámbialo. Si agrega, súmalo.
-ATENCIÓN: Si el mensaje indica claramente que el corredor quiere "crear una nueva propiedad", "empezar de cero" o cambiar a otro inmueble distinto, NO sobreescribas los datos actuales. En su lugar, indícale amigablemente en el 'chatResponse' que para empezar una nueva propiedad primero debe enviar la palabra exacta "terminar" para cerrar y guardar la actual.
+ATENCIÓN: Si el mensaje indica claramente que el corredor quiere "crear una nueva propiedad", "empezar de cero" o cambiar a otro inmueble distinto, NO sobreescribas los datos actuales. En su lugar, indícale amigablemente en el 'chatResponse' que para empezar una nueva propiedad primero debe usar el botón de "Finalizar Carga" para cerrar y guardar la actual.
 Devuelve estrictamente el objeto JSON actualizado con el siguiente formato:
 
 {
@@ -98,7 +98,7 @@ Devuelve estrictamente el objeto JSON actualizado con el siguiente formato:
     "description": "string",
     "address": "string" o null
   },
-  "chatResponse": "Respuesta conversacional. Confirma qué dato actualizaste. Luego, revisa el JSON resultante: si siguen faltando datos clave (precio, ubicación, ambientes/baños según corresponda), pídelos. Si no falta nada, dile que está completo y puede seguir mandando fotos o escribir 'listo'.",
+  "chatResponse": "Respuesta conversacional. Confirma qué dato actualizaste. Luego, revisa el JSON resultante: si siguen faltando datos clave (precio, ubicación, ambientes/baños según corresponda), pídelos. Si no falta nada, dile que está completo y puede seguir mandando fotos. NUNCA le digas al usuario que escriba 'listo', 'terminar' ni ningún otro comando de texto para finalizar, ya que el sistema le muestra un botón automático para eso.",
   "isComplete": boolean
 }
 

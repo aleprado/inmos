@@ -6,6 +6,9 @@ const { sendWhatsAppMessage } = require('../services/whatsappSender');
 const { getMediaBufferFromId, uploadImageToStorage } = require('../services/whatsappMedia');
 const { aiTranscriptionModel } = require('../config/ai');
 
+// Dominio base para deep links (configurable para extender a otros proyectos)
+const APP_DOMAIN = process.env.APP_DOMAIN || 'inmos.app';
+
 /**
  * Transcribe un archivo de audio a texto usando Gemini
  */
@@ -57,8 +60,27 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
   // 2. Comprobar comandos globales de finalización/cierre
   const cleanedText = processedText ? processedText.trim().toLowerCase() : "";
   if (cleanedText === "terminar" || cleanedText === "finalizar") {
+    const session = await getSession(senderPhone);
+    const propId = session?.lastPropertyId;
     await clearSession(senderPhone);
-    await sendWhatsAppMessage(senderPhone, "✅ *¡Entendido!* Sesión cerrada. Puedes comenzar a cargar una nueva propiedad cuando quieras.");
+    let msg = "✅ *¡Entendido!* Sesión cerrada. Puedes comenzar a cargar una nueva propiedad cuando quieras.";
+    if (propId) {
+      const propertyLink = `https://${tenantId}.${APP_DOMAIN}/?p=${propId}`;
+      msg += `\n\n🔗 *Ver propiedad:* ${propertyLink}`;
+    }
+    await sendWhatsAppMessage(senderPhone, msg);
+    return;
+  }
+
+  // 2b. Botón "Seguir Cargando": refrescar sesión y confirmar
+  if (cleanedText === "continuar") {
+    const session = await getSession(senderPhone);
+    if (isSessionValid(session)) {
+      await createOrUpdateSession(senderPhone, session.lastPropertyId, 'active', [], null);
+      await sendWhatsAppMessage(senderPhone, "👍 *¡Perfecto!* Seguimos con la misma propiedad. Enviame los datos o fotos que quieras agregar.", [{ id: 'finalizar', title: 'Finalizar Carga' }]);
+    } else {
+      await sendWhatsAppMessage(senderPhone, "ℹ️ No hay ninguna propiedad activa. Enviame un mensaje con los datos para crear una nueva.");
+    }
     return;
   }
 
@@ -83,7 +105,7 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
       if (!processedText) {
         const canSendAck = await shouldSendImageAck(senderPhone);
         if (canSendAck) {
-          await sendWhatsAppMessage(senderPhone, "📸 *¡Foto guardada con éxito!* ¿Algo más para agregar o ya estamos listos?", [{ id: 'finalizar', title: 'Finalizar Carga' }]);
+          await sendWhatsAppMessage(senderPhone, "📸 *¡Foto guardada con éxito!* ¿Algo más para agregar?", [{ id: 'finalizar', title: 'Finalizar Carga' }]);
         } else {
           console.log(`Silenciando mensaje de éxito de foto para ${senderPhone} (debounce)`);
         }
@@ -94,8 +116,9 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
     // CASO B: El mensaje es de texto o audio (acompañado o no de imagen)
     if (processedText) {
       if (cleanedText === 'listo') {
+        const propertyLink = `https://${tenantId}.${APP_DOMAIN}/?p=${propertyId}`;
         await clearSession(senderPhone);
-        await sendWhatsAppMessage(senderPhone, "✅ *¡Registro completado!* Ya guardé la propiedad. Puedes revisarla en el panel web.");
+        await sendWhatsAppMessage(senderPhone, `✅ *¡Registro completado!* Ya guardé la propiedad. Puedes revisarla en el panel web.\n\n🔗 *Ver propiedad:* ${propertyLink}`);
         return;
       }
 
@@ -113,9 +136,12 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
         // Refrescar sesión
         await createOrUpdateSession(senderPhone, propertyId, 'active', [], null);
         
-        // Si la IA marca isComplete y no hay warning, sugerimos finalizar
+        // Botones contextuales: si pasó mucho tiempo, ofrecer continuar o finalizar
         let responseMsg = aiResponse.chatResponse || "📝 *¡Detalles actualizados!*";
-        await sendWhatsAppMessage(senderPhone, responseMsg, [{ id: 'finalizar', title: 'Finalizar Carga' }]);
+        const buttons = timeWarning 
+          ? [{ id: 'continuar', title: 'Seguir Cargando' }, { id: 'finalizar', title: 'Finalizar Carga' }]
+          : [{ id: 'finalizar', title: 'Finalizar Carga' }];
+        await sendWhatsAppMessage(senderPhone, responseMsg, buttons);
         return;
       }
     }
@@ -159,7 +185,7 @@ async function handleCoreMessageProcess({ messageText, mediaId, mimeType, sender
   }
 
   // Deep link a la propiedad recién creada
-  const propertyLink = `https://${tenantId}.inmos.com/?p=${propertyId}`;
+  const propertyLink = `https://${tenantId}.${APP_DOMAIN}/?p=${propertyId}`;
   responseMsg += `\n\n🔗 *Ver propiedad:* ${propertyLink}`;
   
   await sendWhatsAppMessage(senderPhone, responseMsg, [{ id: 'finalizar', title: 'Finalizar Carga' }]);
