@@ -206,7 +206,7 @@ export default function Landing({ setRoute }) {
               </div>
               <h3 className="font-bold text-sm text-slate-200">Flyers y Posts para Redes</h3>
               <p className="text-slate-400 text-xs mt-2.5 leading-relaxed">
-                Genera folletos PDF en formato A4 comercial, imágenes cuadradas para publicar en redes sociales y código QR para cartelería con un solo clic.
+                Genera folletos PDF en formato A4 comercial, imágenes optimizadas para publicar en redes sociales y código QR para cartelería con un solo clic.
               </p>
             </div>
 
