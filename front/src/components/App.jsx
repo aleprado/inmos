@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { signOut }           from 'firebase/auth';
+import { httpsCallable }     from 'firebase/functions';
 import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { auth, db }          from '../firebase';
+import { auth, db, functions } from '../firebase';
 import { useUnits }          from '../hooks/useUnits';
 import IncomingRing          from './IncomingRing';
 import DoorManager           from './DoorManager';
@@ -194,9 +195,6 @@ function SetupPrompt({ user }) {
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg,     setMsg]     = useState('');
-
-  const { httpsCallable } = require('firebase/functions');
-  const { functions }     = require('../firebase');
 
   const create = async () => {
     if (!name.trim()) return;

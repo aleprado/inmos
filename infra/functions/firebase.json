@@ -11,42 +11,6 @@
         "firestore-debug.log",
         "ui-debug.log"
       ]
-    },
-    {
-      "source": "auth-trigger",
-      "codebase": "auth-trigger",
-      "runtime": "nodejs20",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firestore-debug.log",
-        "ui-debug.log"
-      ]
-    },
-    {
-      "source": "operator-manager",
-      "codebase": "operator-manager",
-      "runtime": "nodejs20",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firestore-debug.log",
-        "ui-debug.log"
-      ]
-    },
-    {
-      "source": "qr-generator",
-      "codebase": "qr-generator",
-      "runtime": "nodejs20",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firestore-debug.log",
-        "ui-debug.log"
-      ]
     }
   ]
 }

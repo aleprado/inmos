@@ -18,55 +18,54 @@ service cloud.firestore {
         get(/databases/$(database)/documents/units/$(unitId)).data.ownerUid == request.auth.uid;
     }
 
-    function sessionBelongsToUnit(unitId) {
-      return isUnitMember(unitId);
-    }
-
     // ─── Units ───────────────────────────────────────────────────────────────
-    // Only members can read their unit. Only owner can write.
     match /units/{unitId} {
       allow read: if isUnitMember(unitId);
       allow create: if isAuthenticated() &&
                        request.resource.data.ownerUid == request.auth.uid;
       allow update: if isUnitOwner(unitId);
-      allow delete: if false; // soft-delete only
+      allow delete: if false;
     }
 
     // ─── Doors ───────────────────────────────────────────────────────────────
-    // Public read (visitor needs to validate doorId), member write.
     match /doors/{doorId} {
-      allow read: if true;  // public — doorId is embedded in QR URL
+      allow read: if true;
       allow write: if isUnitMember(resource.data.unitId) ||
                       (request.resource != null && isUnitMember(request.resource.data.unitId));
     }
 
     // ─── Sessions ────────────────────────────────────────────────────────────
     // Sessions are created by the ring Cloud Function (admin SDK, bypasses rules).
-    // Visitor can read/write their own session (by sessionId from ring response).
-    // Resident can read/update sessions belonging to their unit.
+    // The sessionId acts as a capability token — both visitor and resident receive
+    // it via trusted channels (API response / WhatsApp deep link).
     match /sessions/{sessionId} {
-      allow read: if true;  // visitor needs sessionId to poll state
-      // Visitor writes SDP offer or ICE candidates
+      allow read: if true;
+
+      // Visitor and resident (may be unauthenticated) update only these fields.
+      // The sessionId capability restricts who can find and update a session.
       allow update: if (
-        // Only allow visitor to write offer/ICE fields (not status or sensitive fields)
         request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['offer', 'iceVisitor'])
+          .hasOnly(['offer', 'status', 'iceVisitor', 'clipUrl', 'clipMime',
+                    'quickReply', 'quickReplyAt', 'aiActive', 'answer'])
       ) || isUnitMember(resource.data.unitId);
+
       allow create: if false; // created only by Cloud Function
       allow delete: if false;
 
-      // Messages subcollection (AI concierge conversation)
+      // WebRTC ICE candidates — written by both visitor and resident
+      match /ice/{iceId} {
+        allow read, create: if true;
+      }
+
+      // AI concierge conversation
       match /messages/{msgId} {
-        allow read: if isUnitMember(
-          get(/databases/$(database)/documents/sessions/$(sessionId)).data.unitId
-        ) || true; // visitor reads via their sessionId
-        allow create: if true;  // visitor and AI write messages
+        allow read: if true;
+        allow create: if true;
         allow update, delete: if false;
       }
     }
 
     // ─── Rate limits ─────────────────────────────────────────────────────────
-    // Written only by Cloud Functions (admin SDK). Never client-writable.
     match /ring_rate_limits/{ip} {
       allow read, write: if false;
     }

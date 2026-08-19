@@ -1,9 +1,9 @@
 {
   "projects": {
-    "default": "YOUR_FIREBASE_PROJECT_ID"
+    "default": "inmos-2c701"
   },
   "targets": {
-    "YOUR_FIREBASE_PROJECT_ID": {
+    "inmos-2c701": {
       "hosting": {
         "visitor": ["timbre-qr-visitor"],
         "app":     ["timbre-qr-app"]
