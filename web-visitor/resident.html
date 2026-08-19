@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Timbre QR — Atender</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a; --surface: #1e293b; --surface2: #334155;
+      --accent: #38bdf8; --text: #f1f5f9; --text-muted: #94a3b8;
+      --danger: #f87171; --success: #4ade80; --warning: #fbbf24;
+      --radius: 16px; --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); }
+    #app { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; }
+
+    .screen { display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 420px; }
+    .screen.active { display: flex; }
+
+    .logo { font-size: 26px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+    .logo span { color: var(--text); }
+
+    .card { background: var(--surface); border-radius: var(--radius); padding: 20px; width: 100%; border: 1px solid rgba(148,163,184,0.1); }
+
+    h2 { font-size: 20px; font-weight: 700; }
+    p  { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
+    .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 2px; }
+    .value { font-size: 18px; font-weight: 600; }
+
+    /* Visitor photo / clip */
+    .visitor-photo {
+      width: 100%; aspect-ratio: 4/3; border-radius: 12px;
+      object-fit: cover; background: var(--surface2);
+      border: 2px solid rgba(56,189,248,0.3);
+    }
+    .visitor-video {
+      width: 100%; border-radius: 12px;
+      background: #000; border: 2px solid rgba(56,189,248,0.3);
+      display: block;
+    }
+    .clip-wrap { width: 100%; position: relative; }
+    .clip-badge {
+      position: absolute; top: 10px; left: 10px;
+      background: rgba(15,23,42,0.75); color: var(--accent);
+      font-size: 11px; font-weight: 700; padding: 3px 8px;
+      border-radius: 6px; backdrop-filter: blur(4px);
+      letter-spacing: 0.5px;
+    }
+    .clip-loading {
+      width: 100%; aspect-ratio: 4/3; border-radius: 12px;
+      background: var(--surface2); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+      color: var(--text-muted); font-size: 13px;
+      border: 2px dashed rgba(56,189,248,0.2);
+    }
+    .photo-placeholder {
+      width: 100%; aspect-ratio: 4/3; border-radius: 12px;
+      background: var(--surface2); display: flex; align-items: center;
+      justify-content: center; font-size: 64px; border: 2px dashed var(--surface2);
+    }
+    .btn-share {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--surface2); color: var(--text); border-radius: 10px;
+      padding: 11px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+      border: 1px solid rgba(148,163,184,0.15); width: 100%;
+      transition: background 0.15s;
+    }
+    .btn-share:active { background: #475569; }
+
+    /* Status badge */
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    }
+    .badge.ringing  { background: rgba(251,191,36,0.15); color: var(--warning); }
+    .badge.answered { background: rgba(74,222,128,0.15); color: var(--success); }
+    .badge.missed   { background: rgba(248,113,113,0.15); color: var(--danger); }
+    .badge.ai_mode  { background: rgba(56,189,248,0.15); color: var(--accent); }
+    .badge.ended    { background: rgba(148,163,184,0.1); color: var(--text-muted); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .dot.pulse { animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Timer */
+    .timer { font-size: 13px; color: var(--text-muted); }
+    .timer.urgent { color: var(--danger); }
+
+    /* Quick reply grid */
+    .qr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+    .qr-btn {
+      padding: 14px 10px; border-radius: 12px; border: 1px solid var(--surface2);
+      background: var(--surface); color: var(--text); font-size: 14px; font-weight: 500;
+      cursor: pointer; text-align: center; transition: background 0.15s, transform 0.1s;
+      line-height: 1.3;
+    }
+    .qr-btn:active { transform: scale(0.96); background: var(--surface2); }
+    .qr-btn.full { grid-column: 1 / -1; }
+    .qr-btn.sent { background: rgba(74,222,128,0.1); border-color: var(--success); color: var(--success); }
+
+    /* Custom reply input */
+    .reply-row { display: flex; gap: 8px; width: 100%; }
+    .reply-row input {
+      flex: 1; padding: 12px 14px; border-radius: 10px;
+      border: 1px solid var(--surface2); background: var(--surface);
+      color: var(--text); font-size: 14px;
+    }
+    .reply-row input:focus { outline: none; border-color: var(--accent); }
+    .reply-row button {
+      padding: 12px 14px; border-radius: 10px; background: var(--accent);
+      border: none; color: #0c1a2e; font-weight: 700; cursor: pointer; font-size: 16px;
+    }
+
+    /* Action buttons */
+    .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.15s; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-call    { background: var(--success); color: #052e16; }
+    .btn-hangup  { background: var(--danger);  color: #fff; }
+    .btn-ai      { background: var(--accent);  color: #0c1a2e; }
+    .btn-ghost   { background: var(--surface2); color: var(--text); }
+    .btn-relay   { background: rgba(251,191,36,0.15); color: var(--warning); border: 1px solid rgba(251,191,36,0.3); }
+
+    /* Video call */
+    .video-wrap { position: relative; width: 100%; border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 3/4; }
+    #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
+    #localVideo  { position: absolute; bottom: 10px; right: 10px; width: 80px; height: 108px; object-fit: cover; border-radius: 8px; border: 2px solid var(--accent); }
+    .call-row { display: flex; gap: 10px; justify-content: center; width: 100%; }
+    .call-icon-btn { width: 56px; height: 56px; border-radius: 50%; border: none; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
+    .call-icon-btn:active { transform: scale(0.9); }
+    .c-hangup { background: var(--danger); }
+    .c-mute   { background: var(--surface2); }
+
+    /* Spinner */
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--surface2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box { background: rgba(248,113,113,0.12); border: 1px solid var(--danger); border-radius: 12px; padding: 14px; color: var(--danger); font-size: 13px; width: 100%; }
+
+    .divider { width: 100%; display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 12px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--surface2); }
+
+    .sent-reply { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 12px; padding: 14px 16px; color: var(--success); font-weight: 600; width: 100%; text-align: center; animation: pop 0.25s ease; }
+    @keyframes pop { from { transform: scale(0.94); opacity:0; } to { transform: scale(1); opacity:1; } }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- loading -->
+  <div id="screen-loading" class="screen active">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- error -->
+  <div id="screen-error" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="error-box" id="error-msg">Error al cargar la sesión.</div>
+    <button class="btn btn-ghost" onclick="location.reload()">Reintentar</button>
+  </div>
+
+  <!-- expired -->
+  <div id="screen-expired" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div style="font-size:56px">⏰</div>
+    <h2>Sesión expirada</h2>
+    <p>El link ya no está disponible. Si alguien toca el timbre de nuevo recibirás un nuevo mensaje.</p>
+  </div>
+
+  <!-- main: visitor info + actions -->
+  <div id="screen-main" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+
+    <!-- Status + timer -->
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+      <div class="badge ringing" id="status-badge">
+        <span class="dot pulse"></span>
+        <span id="status-text">Timbrando...</span>
+      </div>
+      <span class="timer" id="timer-display">10:00</span>
+    </div>
+
+    <!-- Door info -->
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div>
+        <div class="label">Puerta</div>
+        <div class="value" id="door-label-res">—</div>
+      </div>
+      <div id="unit-row" style="display:none">
+        <div class="label">Unidad</div>
+        <div class="value" id="unit-name-res">—</div>
+      </div>
+    </div>
+
+    <!-- Visitor clip / photo / placeholder -->
+    <!-- State 1: clip uploading (shown first while recording uploads) -->
+    <div id="clip-loading" class="clip-loading" style="display:none;">
+      <div class="spinner"></div>
+      <span>Cargando video del visitante...</span>
+    </div>
+
+    <!-- State 2: clip ready -->
+    <div id="clip-container" class="clip-wrap" style="display:none;">
+      <video id="visitor-video" class="visitor-video" controls playsinline preload="metadata"></video>
+      <span class="clip-badge">🎥 Clip del timbre</span>
+    </div>
+
+    <!-- State 3: fallback photo if no clip -->
+    <div id="photo-container" style="width:100%;display:none;">
+      <img id="visitor-photo-img" class="visitor-photo" alt="Foto del visitante" />
+    </div>
+    <div id="photo-placeholder" class="photo-placeholder" style="display:none;">👤</div>
+
+    <!-- Share button (shown when clip or photo is available) -->
+    <button id="btn-share" class="btn-share" style="display:none;" onclick="shareClip()">
+      📤 Compartir grabación
+    </button>
+
+    <!-- Reply sent confirmation -->
+    <div id="sent-reply-banner" class="sent-reply" style="display:none;"></div>
+
+    <!-- Quick replies (shown when status is ringing/missed) -->
+    <div id="quick-replies-section" style="width:100%;display:flex;flex-direction:column;gap:12px;">
+      <div class="qr-grid" id="qr-grid">
+        <button class="qr-btn" onclick="sendQuickReply('🏃 Ya bajo')">🏃 Ya bajo</button>
+        <button class="qr-btn" onclick="sendQuickReply('🕐 En 5 minutos')">🕐 En 5 minutos</button>
+        <button class="qr-btn" onclick="sendQuickReply('📦 Dejalo en el buzón')">📦 Dejalo en el buzón</button>
+        <button class="qr-btn" onclick="sendQuickReply('🔒 No abrir. Gracias.')">🔒 No abrir</button>
+        <button class="qr-btn full" onclick="sendQuickReply('❌ No esperado. Retirarse.')">❌ No esperado. Retirarse.</button>
+      </div>
+
+      <div class="divider">o escribí un mensaje</div>
+
+      <div class="reply-row">
+        <input id="custom-reply" type="text" placeholder="Ej: Dejalo con el vecino del 3B" maxlength="120" onkeydown="if(event.key==='Enter')sendCustomReply()" />
+        <button onclick="sendCustomReply()">➤</button>
+      </div>
+    </div>
+
+    <!-- Call button (only when session is still ringing) -->
+    <div id="call-section" style="width:100%;display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-call" id="btn-answer-call" onclick="startCall()">📹 Atender videollamada</button>
+      <button class="btn btn-ai" onclick="activateAI()">🤖 Activar recepcionista IA</button>
+      <div id="relay-section" style="display:none;">
+        <button class="btn btn-relay" onclick="openDoor()">🔓 Abrir puerta remotamente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- in-call -->
+  <div id="screen-call" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="video-wrap">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo"  autoplay playsinline muted></video>
+    </div>
+    <div class="call-row">
+      <button class="call-icon-btn c-mute" id="btn-mute" onclick="toggleMute()" title="Silenciar">🎤</button>
+      <button class="call-icon-btn c-hangup" onclick="hangup()" title="Colgar">📵</button>
+      <button class="call-icon-btn c-mute" id="btn-cam" onclick="toggleCam()" title="Cámara">📷</button>
+    </div>
+    <button class="btn btn-relay" id="btn-relay-call" style="display:none;" onclick="openDoor()">🔓 Abrir puerta</button>
+  </div>
+
+  <!-- ended -->
+  <div id="screen-ended" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div style="font-size:60px">✅</div>
+    <h2>Listo</h2>
+    <p id="ended-msg">La sesión terminó.</p>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getFirestore, doc, getDoc, onSnapshot,
+  updateDoc, addDoc, collection, serverTimestamp,
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+// Storage not imported here — we just use the already-uploaded URL from Firestore
+
+// ── CONFIG (replace with real values) ────────────────────────────────────────
+const CONFIG = {
+  apiBase: 'https://us-central1-YOUR_PROJECT.cloudfunctions.net',
+  firebase: {
+    apiKey:            'YOUR_API_KEY',
+    authDomain:        'YOUR_PROJECT.firebaseapp.com',
+    projectId:         'YOUR_PROJECT',
+    storageBucket:     'YOUR_PROJECT.appspot.com',
+    messagingSenderId: 'YOUR_SENDER_ID',
+    appId:             'YOUR_APP_ID',
+  },
+  stunServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ],
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const sessionId   = new URLSearchParams(location.search).get('s');
+let sessionData   = null;
+let sessionUnsub  = null;
+let peerConn      = null;
+let localStream   = null;
+let isMuted       = false;
+let isCamOff      = false;
+let timerInterval = null;
+
+const app = initializeApp(CONFIG.firebase);
+const db  = getFirestore(app);
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+async function boot() {
+  if (!sessionId) { showExpired(); return; }
+
+  const snap = await getDoc(doc(db, 'sessions', sessionId)).catch(() => null);
+  if (!snap?.exists()) { showExpired(); return; }
+
+  sessionData = snap.data();
+
+  // Check expiry
+  if (sessionData.expiresAt?.toMillis() < Date.now()) { showExpired(); return; }
+
+  // Load door + unit info
+  const [doorSnap, unitSnap] = await Promise.all([
+    getDoc(doc(db, 'doors', sessionData.doorId)),
+    getDoc(doc(db, 'units', sessionData.unitId)),
+  ]);
+  const door = doorSnap.exists() ? doorSnap.data() : {};
+  const unit = unitSnap.exists() ? unitSnap.data() : {};
+
+  document.getElementById('door-label-res').textContent = door.label || 'Puerta Principal';
+  if (unit.name) {
+    document.getElementById('unit-name-res').textContent = unit.name;
+    document.getElementById('unit-row').style.display = 'block';
+  }
+  document.title = `Timbre — ${door.label || 'Puerta'}`;
+
+  // Show clip / photo / placeholder
+  renderVisualEvidence(sessionData);
+
+  // Show relay button if door has a webhook configured
+  if (door.webhookUrl) {
+    document.getElementById('relay-section').style.display = 'block';
+    document.getElementById('btn-relay-call').style.display = 'block';
+  }
+
+  startTimer(sessionData.expiresAt?.toMillis());
+  subscribeToSession();
+  renderStatus(sessionData.status);
+  showScreen('main');
+}
+
+// ── Session listener ──────────────────────────────────────────────────────────
+function subscribeToSession() {
+  if (sessionUnsub) sessionUnsub();
+  sessionUnsub = onSnapshot(doc(db, 'sessions', sessionId), (snap) => {
+    if (!snap.exists()) return;
+    const s = snap.data();
+    const prevClipUrl = sessionData?.clipUrl;
+    sessionData = s;
+    renderStatus(s.status);
+
+    // Clip just became available — update player
+    if (s.clipUrl && s.clipUrl !== prevClipUrl) {
+      renderVisualEvidence(s);
+    }
+
+    // Visitor sent WebRTC offer — initiate answer
+    if (s.offer && s.status === 'offer_sent' && peerConn && !peerConn.remoteDescription) {
+      handleOffer(JSON.parse(s.offer));
+    }
+  });
+}
+
+// ── Visual evidence: clip > photo > placeholder ───────────────────────────────
+function renderVisualEvidence(s) {
+  const clipLoading    = document.getElementById('clip-loading');
+  const clipContainer  = document.getElementById('clip-container');
+  const photoContainer = document.getElementById('photo-container');
+  const placeholder    = document.getElementById('photo-placeholder');
+  const shareBtn       = document.getElementById('btn-share');
+
+  // Hide all first
+  [clipLoading, clipContainer, photoContainer, placeholder].forEach(el => el.style.display = 'none');
+
+  if (s.clipUrl) {
+    // Clip ready
+    const vid = document.getElementById('visitor-video');
+    vid.src = s.clipUrl;
+    clipContainer.style.display = 'block';
+    shareBtn.style.display = 'block';
+    shareBtn.dataset.url = s.clipUrl;
+  } else if (s.visitorPhoto) {
+    // Only static photo
+    if (s.status === 'ringing') {
+      // Still recording — show loading state
+      clipLoading.style.display = 'flex';
+    } else {
+      document.getElementById('visitor-photo-img').src = s.visitorPhoto;
+      photoContainer.style.display = 'block';
+      shareBtn.style.display = 'block';
+      shareBtn.dataset.url = '';
+    }
+  } else {
+    placeholder.style.display = 'flex';
+  }
+}
+
+function renderStatus(status) {
+  const badge = document.getElementById('status-badge');
+  const text  = document.getElementById('status-text');
+  const dot   = badge.querySelector('.dot');
+  const states = {
+    ringing:  { label: 'Timbrando...', cls: 'ringing',  pulse: true  },
+    offer_sent: { label: 'Llamando...', cls: 'ringing', pulse: true  },
+    answered: { label: 'En llamada',  cls: 'answered', pulse: false },
+    replied:  { label: 'Respondido',  cls: 'answered', pulse: false },
+    ai_mode:  { label: 'IA activa',   cls: 'ai_mode',  pulse: true  },
+    missed:   { label: 'Sin atender', cls: 'missed',   pulse: false },
+    ended:    { label: 'Finalizado',  cls: 'ended',    pulse: false },
+  };
+  const s = states[status] || states.ringing;
+  badge.className = `badge ${s.cls}`;
+  text.textContent = s.label;
+  dot.className = `dot${s.pulse ? ' pulse' : ''}`;
+
+  if (status === 'ended') {
+    stopTimer();
+    showScreen('ended');
+  }
+}
+
+// ── Quick replies ─────────────────────────────────────────────────────────────
+window.sendQuickReply = async function (msg) {
+  await doSendReply(msg);
+};
+
+window.sendCustomReply = async function () {
+  const val = document.getElementById('custom-reply').value.trim();
+  if (!val) return;
+  document.getElementById('custom-reply').value = '';
+  await doSendReply(val);
+};
+
+async function doSendReply(msg) {
+  try {
+    await updateDoc(doc(db, 'sessions', sessionId), {
+      quickReply:        msg,
+      quickReplyAt:      serverTimestamp(),
+      status:            'replied',
+    });
+    const banner = document.getElementById('sent-reply-banner');
+    banner.textContent = `✓ Mensaje enviado: "${msg}"`;
+    banner.style.display = 'block';
+    // Disable all quick reply buttons
+    document.querySelectorAll('.qr-btn').forEach(b => { b.disabled = true; b.classList.add('sent'); });
+  } catch (err) {
+    alert('Error al enviar respuesta: ' + err.message);
+  }
+}
+
+// ── AI Mode ───────────────────────────────────────────────────────────────────
+window.activateAI = async function () {
+  await updateDoc(doc(db, 'sessions', sessionId), { status: 'ai_mode', aiActive: true });
+  document.getElementById('btn-answer-call').style.display = 'none';
+};
+
+// ── Relay / open door ─────────────────────────────────────────────────────────
+window.openDoor = async function () {
+  const doorSnap = await getDoc(doc(db, 'doors', sessionData.doorId));
+  const webhookUrl = doorSnap.data()?.webhookUrl;
+  if (!webhookUrl) return;
+  try {
+    await fetch(webhookUrl, { method: 'POST', mode: 'no-cors' });
+    alert('✅ Señal de apertura enviada');
+  } catch { alert('Error al enviar señal a la puerta'); }
+};
+
+// ── WebRTC (resident answers) ─────────────────────────────────────────────────
+window.startCall = async function () {
+  document.getElementById('btn-answer-call').disabled = true;
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .catch(() => navigator.mediaDevices.getUserMedia({ audio: true }));
+    document.getElementById('localVideo').srcObject = localStream;
+  } catch { alert('No se pudo acceder a la cámara/micrófono'); return; }
+
+  peerConn = new RTCPeerConnection({ iceServers: CONFIG.stunServers });
+  localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
+
+  peerConn.ontrack = (e) => {
+    document.getElementById('remoteVideo').srcObject = e.streams[0];
+  };
+
+  peerConn.onicecandidate = async ({ candidate }) => {
+    if (candidate) {
+      await addDoc(collection(db, 'sessions', sessionId, 'ice'), {
+        from: 'resident',
+        candidate: JSON.stringify(candidate.toJSON()),
+        createdAt: serverTimestamp(),
+      });
+    }
+  };
+
+  // If visitor already sent offer, answer immediately
+  if (sessionData?.offer) {
+    await handleOffer(JSON.parse(sessionData.offer));
+  } else {
+    // Wait for visitor offer (they'll initiate when we set status to answered)
+    await updateDoc(doc(db, 'sessions', sessionId), { status: 'answered' });
+  }
+
+  showScreen('call');
+};
+
+async function handleOffer(offer) {
+  if (!peerConn) return;
+  await peerConn.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await peerConn.createAnswer();
+  await peerConn.setLocalDescription(answer);
+  await updateDoc(doc(db, 'sessions', sessionId), {
+    answer: JSON.stringify(answer),
+    status: 'answered',
+  });
+  // Listen for visitor ICE candidates
+  onSnapshot(collection(db, 'sessions', sessionId, 'ice'), (snap) => {
+    snap.docChanges().forEach(async (ch) => {
+      if (ch.type === 'added' && ch.doc.data().from === 'visitor') {
+        try { await peerConn.addIceCandidate(new RTCIceCandidate(JSON.parse(ch.doc.data().candidate))); }
+        catch (_) {}
+      }
+    });
+  });
+  showScreen('call');
+}
+
+window.hangup = function () {
+  peerConn?.close(); peerConn = null;
+  localStream?.getTracks().forEach(t => t.stop()); localStream = null;
+  updateDoc(doc(db, 'sessions', sessionId), { status: 'ended' }).catch(() => {});
+  stopTimer();
+  showScreen('ended');
+  document.getElementById('ended-msg').textContent = 'La llamada terminó.';
+};
+
+window.toggleMute = function () {
+  isMuted = !isMuted;
+  localStream?.getAudioTracks().forEach(t => { t.enabled = !isMuted; });
+  document.getElementById('btn-mute').textContent = isMuted ? '🔇' : '🎤';
+};
+
+window.toggleCam = function () {
+  isCamOff = !isCamOff;
+  localStream?.getVideoTracks().forEach(t => { t.enabled = !isCamOff; });
+  document.getElementById('btn-cam').textContent = isCamOff ? '🚫' : '📷';
+};
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer(expiresMs) {
+  const el = document.getElementById('timer-display');
+  timerInterval = setInterval(() => {
+    const left = Math.max(0, expiresMs - Date.now());
+    const m = Math.floor(left / 60000);
+    const s = Math.floor((left % 60000) / 1000);
+    el.textContent = `${m}:${String(s).padStart(2, '0')}`;
+    el.className = `timer${left < 60000 ? ' urgent' : ''}`;
+    if (left === 0) { stopTimer(); showExpired(); }
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerInterval); }
+
+// ── Screens ───────────────────────────────────────────────────────────────────
+const SCREENS = ['loading','error','expired','main','call','ended'];
+function showScreen(name) {
+  SCREENS.forEach(s => document.getElementById(`screen-${s}`)?.classList.toggle('active', s === name));
+}
+function showExpired() { stopTimer(); showScreen('expired'); }
+
+// ── Share clip ────────────────────────────────────────────────────────────────
+window.shareClip = async function () {
+  const btn      = document.getElementById('btn-share');
+  const clipUrl  = btn.dataset.url;
+  const doorLabel = document.getElementById('door-label-res').textContent;
+
+  if (clipUrl && navigator.share) {
+    try {
+      await navigator.share({
+        title: `Timbre QR — ${doorLabel}`,
+        text:  `📹 Alguien tocó el timbre. Mirá el video:`,
+        url:   clipUrl,
+      });
+      return;
+    } catch (_) { /* fallback to copy */ }
+  }
+
+  // Fallback: copy to clipboard
+  const textToCopy = clipUrl || location.href;
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    btn.textContent = '✅ Link copiado';
+    setTimeout(() => { btn.innerHTML = '📤 Compartir grabación'; }, 2500);
+  } catch {
+    prompt('Copiá el link:', textToCopy);
+  }
+};
+
+// ── Go ────────────────────────────────────────────────────────────────────────
+boot().catch(err => {
+  console.error(err);
+  document.getElementById('error-msg').textContent = err.message;
+  showScreen('error');
+});
+</script>
+</body>
+</html>

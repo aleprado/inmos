@@ -1,90 +1,79 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Auxiliar: Verifica si la petición proviene de un cliente oficial verificado por Firebase App Check
-    function isValidApp() {
-      return request.app != null;
-    }
-    
-    // Auxiliar: Verifica si el usuario está autenticado en la plataforma
-    function isAuthed() {
+
+    // ─── Helper functions ────────────────────────────────────────────────────
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Auxiliar: Verifica si el token del usuario tiene asignado el tenant correspondiente a la propiedad
-    function belongsToTenant(tenantId) {
-      return isAuthed() && request.auth.token.tenant_id == tenantId;
+    function isUnitMember(unitId) {
+      return isAuthenticated() &&
+        request.auth.uid in get(/databases/$(database)/documents/units/$(unitId)).data.memberUids;
     }
 
-    // Auxiliar: Verifica si el usuario tiene rol de administrador del tenant
-    function isAdmin(tenantId) {
-      return isAuthed() && 
-             request.auth.token.admin == true && 
-             request.auth.token.tenant_id == tenantId;
+    function isUnitOwner(unitId) {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/units/$(unitId)).data.ownerUid == request.auth.uid;
     }
 
-    // --- REGLAS DE SEGURIDAD PARA LA COLECCIÓN DE PROPIEDADES ---
-    match /properties/{propertyId} {
-      
-      // Lectura: 
-      // 1. Un usuario anónimo puede leer si el inmueble está aprobado (status == "approved")
-      // 2. Un operador autenticado puede leer cualquier propiedad (incluso pendientes o archivadas)
-      //    que pertenezca a su propia inmobiliaria (tenant_id).
-      allow read: if resource.data.status == "approved"
-                  || belongsToTenant(resource.data.tenant_id);
-
-      // Creación:
-      // 1. El usuario debe estar logueado y registrar la propiedad bajo su propio tenant_id (evita suplantación).
-      // 2. Por defecto, las creaciones web por operadores quedan en estado "pending" para revisión.
-      allow create: if isAuthed() 
-                    && request.resource.data.tenant_id == request.auth.token.tenant_id
-                    && (request.resource.data.status == "pending" || isAdmin(request.resource.data.tenant_id));
-
-      // Edición y Eliminación:
-      // 1. Solo operadores autenticados pertenecientes a la inmobiliaria propietaria del anuncio.
-      // 2. El usuario no puede modificar el tenant_id original ni la fecha de creación.
-      allow update: if (belongsToTenant(resource.data.tenant_id)
-                        && request.resource.data.tenant_id == resource.data.tenant_id
-                        && request.resource.data.createdAt == resource.data.createdAt)
-                    || (
-                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
-                        && request.resource.data.views == resource.data.get('views', 0) + 1
-                    )
-                    || (
-                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inquiries'])
-                        && request.resource.data.inquiries == resource.data.get('inquiries', 0) + 1
-                    );
-                    
-      allow delete: if belongsToTenant(resource.data.tenant_id);
+    function sessionBelongsToUnit(unitId) {
+      return isUnitMember(unitId);
     }
 
-    // --- REGLAS DE SEGURIDAD PARA LA COLECCIÓN DE OPERADORES ---
-    match /operadores/{phone} {
-      
-      // Lectura y Escritura:
-      // Solo administradores autenticados de la inmobiliaria correspondiente pueden ver, agregar o remover operadores.
-      allow read, update, delete: if belongsToTenant(resource.data.tenant_id) 
-                                  && isAdmin(resource.data.tenant_id);
-                                  
-      allow create: if isAuthed() 
-                    && request.resource.data.tenant_id == request.auth.token.tenant_id
-                    && isAdmin(request.auth.token.tenant_id);
+    // ─── Units ───────────────────────────────────────────────────────────────
+    // Only members can read their unit. Only owner can write.
+    match /units/{unitId} {
+      allow read: if isUnitMember(unitId);
+      allow create: if isAuthenticated() &&
+                       request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isUnitOwner(unitId);
+      allow delete: if false; // soft-delete only
     }
 
-    // --- REGLAS DE SEGURIDAD PARA LA COLECCIÓN DE TENANTS ---
-    match /tenants/{tenantId} {
-      allow read: if true;
-      allow write: if isAuthed() && isAdmin(tenantId);
+    // ─── Doors ───────────────────────────────────────────────────────────────
+    // Public read (visitor needs to validate doorId), member write.
+    match /doors/{doorId} {
+      allow read: if true;  // public — doorId is embedded in QR URL
+      allow write: if isUnitMember(resource.data.unitId) ||
+                      (request.resource != null && isUnitMember(request.resource.data.unitId));
     }
 
-    // --- REGLAS DE SEGURIDAD PARA LA SIMULACIÓN DE CHATS (DEMO) ---
-    match /chats/{sessionId} {
-      allow read, write: if sessionId.startsWith('demo_session_');
-      
-      match /messages/{messageId} {
-        allow read, write: if sessionId.startsWith('demo_session_');
+    // ─── Sessions ────────────────────────────────────────────────────────────
+    // Sessions are created by the ring Cloud Function (admin SDK, bypasses rules).
+    // Visitor can read/write their own session (by sessionId from ring response).
+    // Resident can read/update sessions belonging to their unit.
+    match /sessions/{sessionId} {
+      allow read: if true;  // visitor needs sessionId to poll state
+      // Visitor writes SDP offer or ICE candidates
+      allow update: if (
+        // Only allow visitor to write offer/ICE fields (not status or sensitive fields)
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['offer', 'iceVisitor'])
+      ) || isUnitMember(resource.data.unitId);
+      allow create: if false; // created only by Cloud Function
+      allow delete: if false;
+
+      // Messages subcollection (AI concierge conversation)
+      match /messages/{msgId} {
+        allow read: if isUnitMember(
+          get(/databases/$(database)/documents/sessions/$(sessionId)).data.unitId
+        ) || true; // visitor reads via their sessionId
+        allow create: if true;  // visitor and AI write messages
+        allow update, delete: if false;
       }
+    }
+
+    // ─── Rate limits ─────────────────────────────────────────────────────────
+    // Written only by Cloud Functions (admin SDK). Never client-writable.
+    match /ring_rate_limits/{ip} {
+      allow read, write: if false;
+    }
+
+    // ─── Default deny ────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

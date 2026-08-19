@@ -1,20 +1,12 @@
+'use strict';
+
 const admin = require('firebase-admin');
 
-// Inicializa la aplicación de admin
-if (admin.apps.length === 0) {
-  const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'inmos-2c701';
-  admin.initializeApp({
-    storageBucket: process.env.STORAGE_BUCKET || `${projectId}-inmos-media`
-  });
+if (!admin.apps.length) {
+  admin.initializeApp();
 }
 
 const db = admin.firestore();
-const storage = admin.storage();
-const auth = admin.auth();
+const messaging = admin.messaging();
 
-module.exports = {
-  admin,
-  db,
-  storage,
-  auth
-};
+module.exports = { admin, db, messaging };

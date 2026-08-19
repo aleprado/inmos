@@ -2,95 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    font-family: 'Inter', sans-serif;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
-  }
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
-/* Micro-animaciones y efectos personalizados premium */
-.btn-premium {
-  @apply transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
-}
-
-.glassmorphism {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.dark-glassmorphism {
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* ========================================================
-   SMART CUSTOMIZATION THEMES
-   Override de colores globales para soporte instantáneo de Dark Mode y Temas Personalizados
-======================================================== */
-
-/* DARK MODE */
-html.dark body {
-  background-color: #020617; /* slate-950 */
-  color: #f1f5f9; /* slate-100 */
-}
-html.dark .bg-slate-50 {
-  background-color: #020617 !important; /* slate-950 */
-}
-html.dark .bg-white,
-html.dark .bg-slate-100 {
-  background-color: #0f172a !important; /* slate-900 */
-  color: #f1f5f9 !important;
-  border-color: #1e293b !important; /* slate-800 */
-}
-html.dark .text-slate-900,
-html.dark .text-slate-800,
-html.dark .text-slate-700,
-html.dark .text-slate-850 {
-  color: #f1f5f9 !important;
-}
-html.dark .text-slate-500,
-html.dark .text-slate-400 {
-  color: #94a3b8 !important; /* slate-400 */
-}
-html.dark .border-slate-150,
-html.dark .border-slate-100,
-html.dark .border-slate-200 {
-  border-color: #1e293b !important;
-}
-
-/* THEME CUSTOM (Background Elegido por la Agencia) */
-html.theme-custom body {
-  background-color: var(--bg-custom);
-  color: var(--text-custom);
-}
-html.theme-custom .bg-slate-50 {
-  background-color: var(--bg-custom) !important;
-}
-html.theme-custom .bg-white,
-html.theme-custom .bg-slate-100 {
-  background-color: var(--card-custom) !important;
-  color: var(--text-custom) !important;
-  border-color: var(--border-custom) !important;
-}
-html.theme-custom .text-slate-900,
-html.theme-custom .text-slate-800,
-html.theme-custom .text-slate-700,
-html.theme-custom .text-slate-850 {
-  color: var(--text-custom) !important;
-}
-html.theme-custom .text-slate-500,
-html.theme-custom .text-slate-400 {
-  color: var(--text-muted-custom) !important;
-}
-html.theme-custom .border-slate-150,
-html.theme-custom .border-slate-100,
-html.theme-custom .border-slate-200 {
-  border-color: var(--border-custom) !important;
+/* Safe area insets for mobile notches */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }

@@ -1,15 +1,24 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /chat_uploads/{tenantId}/{allPaths=**} {
-      // Cualquiera puede ver la imagen una vez generada (útil para links públicos)
+
+    // ── Ring clips ────────────────────────────────────────────────────────────
+    // Visitors upload a short video clip when they ring (from the browser).
+    // sessionId acts as an ephemeral token (UUID, TTL enforced in Firestore).
+    // Anyone with the URL can read (needed for sharing with third parties).
+    match /rings/{sessionId}/clip.{ext} {
+      // Public read — URL is long & unguessable (UUID-based)
       allow read: if true;
-      // Solo el operador autenticado del tenant o el entorno demo pueden subir
-      allow write: if (request.auth != null && request.auth.token.tenant_id == tenantId) || tenantId == 'demo';
+
+      // Visitor write: unauthenticated OK, but enforce file size (max 30 MB)
+      // and content type (video only).
+      allow write: if
+        request.resource.size < 30 * 1024 * 1024 &&
+        request.resource.contentType.matches('video/.*');
     }
-    
+
+    // ── Default: require auth for everything else ─────────────────────────────
     match /{allPaths=**} {
-      // Por defecto bloqueamos el resto a menos que estén autenticados
       allow read, write: if request.auth != null;
     }
   }

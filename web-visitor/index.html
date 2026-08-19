@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Timbre QR</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #334155;
+      --accent: #38bdf8;
+      --accent-dark: #0284c7;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --danger: #f87171;
+      --success: #4ade80;
+      --radius: 16px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); }
+
+    #app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 400px; text-align: center; }
+    .screen.active { display: flex; }
+
+    /* ── Logo / brand ── */
+    .logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+    .logo span { color: var(--text); }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      width: 100%;
+      border: 1px solid rgba(148,163,184,0.1);
+    }
+
+    /* ── Typography ── */
+    h2 { font-size: 22px; font-weight: 700; }
+    p { color: var(--text-muted); font-size: 15px; line-height: 1.5; }
+    .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+    .value { font-size: 20px; font-weight: 600; }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+      letter-spacing: -0.3px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #0c1a2e; }
+    .btn-danger  { background: var(--danger); color: #fff; }
+    .btn-ghost   { background: var(--surface2); color: var(--text); }
+    .btn-sm { padding: 10px 16px; font-size: 14px; width: auto; border-radius: 8px; }
+
+    /* ── Pulse ring (ringing animation) ── */
+    .ring-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 120px; height: 120px; }
+    .ring-icon { font-size: 52px; z-index: 1; }
+    .pulse {
+      position: absolute;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.2);
+      animation: pulse 1.6s ease-out infinite;
+    }
+    .pulse:nth-child(2) { animation-delay: 0.5s; }
+    @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+
+    /* ── Video call ── */
+    .video-container {
+      position: relative;
+      width: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 3/4;
+    }
+    #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
+    #localVideo {
+      position: absolute;
+      bottom: 12px; right: 12px;
+      width: 90px; height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid var(--accent);
+    }
+    .call-controls { display: flex; gap: 12px; justify-content: center; width: 100%; }
+    .call-btn {
+      width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+      transition: transform 0.1s;
+    }
+    .call-btn:active { transform: scale(0.92); }
+    .call-btn.hangup { background: var(--danger); }
+    .call-btn.mute   { background: var(--surface2); }
+
+    /* ── Chat (AI concierge) ── */
+    .chat-box {
+      width: 100%;
+      height: 260px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.1);
+    }
+    .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; text-align: left; }
+    .msg.visitor { background: var(--accent); color: #0c1a2e; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg.ai      { background: var(--surface2); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg.system  { background: transparent; color: var(--text-muted); font-style: italic; font-size: 13px; align-self: center; }
+
+    .chat-input { display: flex; gap: 8px; width: 100%; }
+    .chat-input input {
+      flex: 1; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--surface2);
+      background: var(--surface); color: var(--text); font-size: 15px;
+    }
+    .chat-input input:focus { outline: none; border-color: var(--accent); }
+    .chat-input button { padding: 12px 16px; border-radius: 10px; background: var(--accent); border: none; color: #0c1a2e; font-weight: 700; cursor: pointer; font-size: 18px; }
+
+    /* ── Quick replies from resident ── */
+    .quick-reply {
+      background: var(--success);
+      color: #052e16;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      font-size: 18px;
+      font-weight: 600;
+      width: 100%;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ── Status bar ── */
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .status-dot.green { background: var(--success); }
+    .status-dot.yellow { background: #fbbf24; animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── Error ── */
+    .error-box { background: rgba(248,113,113,0.15); border: 1px solid var(--danger); border-radius: 12px; padding: 16px; color: var(--danger); font-size: 14px; width: 100%; }
+
+    /* ── Spinner ── */
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--surface2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .gap-sm { gap: 10px !important; }
+    .row { display: flex; gap: 8px; width: 100%; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════════════════════════════════════════════════ SCREEN: loading -->
+  <div id="screen-loading" class="screen active">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ SCREEN: error -->
+  <div id="screen-error" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="error-box" id="error-msg">Ocurrió un error</div>
+    <button class="btn btn-ghost" onclick="location.reload()">Reintentar</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ SCREEN: ready -->
+  <div id="screen-ready" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="card" style="gap:12px;display:flex;flex-direction:column;">
+      <div>
+        <div class="label">Dirección</div>
+        <div class="value" id="door-label">—</div>
+      </div>
+      <div id="unit-name-row" style="display:none">
+        <div class="label">Unidad</div>
+        <div class="value" id="unit-name-display">—</div>
+      </div>
+    </div>
+    <div class="ring-wrapper" style="margin:8px 0">
+      <div class="ring-icon">🔔</div>
+    </div>
+    <button class="btn btn-primary" id="btn-ring" onclick="startRing()">Tocar timbre</button>
+    <p style="font-size:13px">Sin instalaciones. Sin app. Solo tocá el timbre.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ SCREEN: ringing -->
+  <div id="screen-ringing" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="ring-wrapper">
+      <div class="pulse"></div>
+      <div class="pulse"></div>
+      <div class="ring-icon">🔔</div>
+    </div>
+    <h2>Llamando...</h2>
+    <p>Avisándole al residente que estás en la puerta</p>
+    <button class="btn btn-ghost" onclick="cancelRing()">Cancelar</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ SCREEN: in-call -->
+  <div id="screen-call" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="video-container">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo"  autoplay playsinline muted></video>
+    </div>
+    <div class="call-controls">
+      <button class="call-btn mute" id="btn-mute" onclick="toggleMute()" title="Silenciar">🎤</button>
+      <button class="call-btn hangup" onclick="hangup()" title="Colgar">📵</button>
+      <button class="call-btn mute" id="btn-cam" onclick="toggleCam()" title="Cámara">📷</button>
+    </div>
+    <!-- quick reply from resident -->
+    <div id="quick-reply-box" style="display:none;" class="quick-reply"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ SCREEN: missed / AI mode -->
+  <div id="screen-ai" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="card">
+      <p style="margin-bottom:8px;">El residente no está disponible ahora. Podés dejar un mensaje con la recepcionista virtual.</p>
+    </div>
+    <div class="chat-box" id="chat-box"></div>
+    <div class="chat-input">
+      <input id="chat-input" type="text" placeholder="Escribí tu mensaje..." onkeydown="chatKeydown(event)" />
+      <button onclick="sendChatMessage()">➤</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="goToReady()">← Volver</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ SCREEN: ended -->
+  <div id="screen-ended" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div style="font-size:64px">✅</div>
+    <h2>¡Listo!</h2>
+    <p id="ended-msg">Tu mensaje fue enviado.</p>
+    <button class="btn btn-ghost" onclick="goToReady()">Volver al inicio</button>
+  </div>
+
+</div><!-- #app -->
+
+<script type="module">
+// ══════════════════════════════════════════════════════════════════════════════
+// CONFIG — set these via build env or a config endpoint
+// ══════════════════════════════════════════════════════════════════════════════
+const CONFIG = {
+  apiBase: 'https://us-central1-YOUR_PROJECT.cloudfunctions.net',
+  firebaseConfig: {
+    apiKey:            'YOUR_API_KEY',
+    authDomain:        'YOUR_PROJECT.firebaseapp.com',
+    projectId:         'YOUR_PROJECT',
+    storageBucket:     'YOUR_PROJECT.appspot.com',
+    messagingSenderId: 'YOUR_SENDER_ID',
+    appId:             'YOUR_APP_ID',
+  },
+  stunServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ],
+};
+
+// ── Parse doorId from URL path: /v/{doorId} or ?doorId=...
+const pathMatch = location.pathname.match(/\/v\/([^/?#]+)/);
+const doorId = pathMatch?.[1] || new URLSearchParams(location.search).get('doorId');
+
+// ── State
+let sessionId      = null;
+let sessionUnsub   = null;
+let peerConnection = null;
+let localStream    = null;
+let isMuted        = false;
+let isCamOff       = false;
+let ringTimeout    = null;
+let db             = null;
+
+// ── Clip recording state
+let mediaRecorder    = null;
+let recordedChunks   = [];
+let recordingStream  = null;
+let clipUploadDone   = false;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Firebase (dynamic import from CDN)
+// ══════════════════════════════════════════════════════════════════════════════
+import { initializeApp }            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+const fbApp = initializeApp(CONFIG.firebaseConfig);
+db = getFirestore(fbApp);
+const storage = getStorage(fbApp);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Boot
+// ══════════════════════════════════════════════════════════════════════════════
+async function boot() {
+  if (!doorId) {
+    showError('QR inválido. No se encontró el ID de puerta.');
+    return;
+  }
+  try {
+    // Fetch door info from Firestore (public read)
+    const { getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const doorSnap = await getDoc(doc(db, 'doors', doorId));
+    if (!doorSnap.exists() || doorSnap.data().status !== 'active') {
+      showError('Esta puerta no está registrada o está inactiva.');
+      return;
+    }
+    const door = doorSnap.data();
+    const unitSnap = await getDoc(doc(db, 'units', door.unitId));
+    const unit = unitSnap.exists() ? unitSnap.data() : {};
+
+    document.getElementById('door-label').textContent = door.label || 'Puerta Principal';
+    if (unit.name) {
+      document.getElementById('unit-name-display').textContent = unit.name;
+      document.getElementById('unit-name-row').style.display = 'block';
+    }
+    document.title = `Timbre — ${door.label || unit.name || 'Puerta'}`;
+    showScreen('ready');
+  } catch (err) {
+    showError('No se pudo cargar la información de la puerta. ' + err.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Ring flow
+// ══════════════════════════════════════════════════════════════════════════════
+window.startRing = async function () {
+  document.getElementById('btn-ring').disabled = true;
+  showScreen('ringing');
+
+  // ── 1. Start clip recording + grab snapshot photo from same stream ────────
+  let visitorPhoto = null;
+  recordedChunks   = [];
+  clipUploadDone   = false;
+
+  try {
+    recordingStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: 'user' },
+      audio: true,
+    });
+
+    // Snapshot from first video frame
+    const track = recordingStream.getVideoTracks()[0];
+    if (track) {
+      try {
+        const ic = new ImageCapture(track);
+        const blob = await ic.takePhoto({ imageWidth: 320 });
+        visitorPhoto = await blobToBase64(blob);
+      } catch (_) { /* ImageCapture not supported everywhere — OK */ }
+    }
+
+    // Start MediaRecorder
+    const mimeType = getBestMimeType();
+    mediaRecorder = new MediaRecorder(recordingStream, mimeType ? { mimeType } : {});
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.start(1000); // chunk every 1s
+
+    // Auto-stop recording after 25s (clip duration cap)
+    setTimeout(() => finishRecording(), 25_000);
+
+  } catch (_) { /* no camera — degrade gracefully */ }
+
+  // ── 2. POST /ring ─────────────────────────────────────────────────────────
+  try {
+    const res = await fetch(`${CONFIG.apiBase}/ring`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doorId, visitorPhoto }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || 'Error al tocar el timbre.'); return; }
+
+    sessionId = data.sessionId;
+    subscribeToSession();
+
+    // Upload clip in background once we have sessionId
+    uploadClipWhenReady(sessionId);
+
+    // If no residents registered → go straight to AI mode
+    if (!data.hasResidents) {
+      showScreen('ai');
+      appendAiGreeting();
+      return;
+    }
+
+    // Wait up to 30s for resident to answer
+    ringTimeout = setTimeout(() => {
+      markSessionMissed();
+      showScreen('ai');
+      appendAiGreeting();
+    }, 30_000);
+
+  } catch (err) {
+    showError('Error de red. Verificá tu conexión.');
+    console.error(err);
+  }
+};
+
+// ── Clip helpers ──────────────────────────────────────────────────────────────
+
+function finishRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  recordingStream?.getTracks().forEach(t => t.stop());
+  recordingStream = null;
+}
+
+/** Waits for recording to finish then uploads to Firebase Storage */
+function uploadClipWhenReady(sid) {
+  if (!mediaRecorder) return;
+  const doUpload = async () => {
+    if (clipUploadDone) return;
+    clipUploadDone = true;
+    if (!recordedChunks.length) return;
+    try {
+      const mimeType = mediaRecorder.mimeType || 'video/webm';
+      const ext      = mimeType.includes('mp4') ? 'mp4' : 'webm';
+      const blob     = new Blob(recordedChunks, { type: mimeType });
+      if (blob.size < 2000) return; // too small = no real video
+      const clipPath = `rings/${sid}/clip.${ext}`;
+      const clipRef  = storageRef(storage, clipPath);
+      await uploadBytes(clipRef, blob, { contentType: mimeType });
+      const url = await getDownloadURL(clipRef);
+      await updateDoc(doc(db, 'sessions', sid), { clipUrl: url, clipMime: mimeType });
+      console.log('[clip] uploaded OK:', url);
+    } catch (err) { console.error('[clip] upload failed:', err.message); }
+  };
+
+  if (mediaRecorder.state === 'inactive') {
+    doUpload();
+  } else {
+    mediaRecorder.addEventListener('stop', doUpload, { once: true });
+  }
+}
+
+function getBestMimeType() {
+  const candidates = [
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm',
+    'video/mp4',
+  ];
+  return candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
+}
+
+window.cancelRing = function () {
+  clearTimeout(ringTimeout);
+  finishRecording();
+  markSessionMissed();
+  goToReady();
+};
+
+async function markSessionMissed() {
+  if (!sessionId) return;
+  try { await updateDoc(doc(db, 'sessions', sessionId), { status: 'missed' }); } catch (_) {}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Firestore session listener
+// ══════════════════════════════════════════════════════════════════════════════
+function subscribeToSession() {
+  if (sessionUnsub) sessionUnsub();
+  sessionUnsub = onSnapshot(doc(db, 'sessions', sessionId), async (snap) => {
+    if (!snap.exists()) return;
+    const s = snap.data();
+
+    // Resident sent a quick reply
+    if (s.quickReply && s.status === 'replied') {
+      clearTimeout(ringTimeout);
+      document.getElementById('quick-reply-box').textContent = `💬 ${s.quickReply}`;
+      document.getElementById('quick-reply-box').style.display = 'block';
+      // If we're still in ringing screen, show it over the ringing screen
+      if (document.getElementById('screen-ringing').classList.contains('active')) {
+        showScreen('ringing'); // stay but show the reply
+        document.getElementById('screen-ringing').appendChild(document.getElementById('quick-reply-box'));
+      }
+    }
+
+    // Resident is answering — they wrote an SDP answer
+    if (s.status === 'answered' && s.answer && peerConnection) {
+      clearTimeout(ringTimeout);
+      if (peerConnection.signalingState !== 'stable') {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(s.answer)));
+        showScreen('call');
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WebRTC — visitor initiates offer
+// ══════════════════════════════════════════════════════════════════════════════
+async function initiateWebRTC() {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    document.getElementById('localVideo').srcObject = localStream;
+  } catch (err) {
+    // Fallback: audio only
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      showError('No se pudo acceder a la cámara ni al micrófono.');
+      return;
+    }
+  }
+
+  peerConnection = new RTCPeerConnection({ iceServers: CONFIG.stunServers });
+  localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+
+  peerConnection.ontrack = (event) => {
+    document.getElementById('remoteVideo').srcObject = event.streams[0];
+  };
+
+  // Send ICE candidates to Firestore
+  peerConnection.onicecandidate = async ({ candidate }) => {
+    if (candidate) {
+      await addDoc(collection(db, 'sessions', sessionId, 'ice'), {
+        from: 'visitor',
+        candidate: JSON.stringify(candidate.toJSON()),
+        createdAt: serverTimestamp(),
+      });
+    }
+  };
+
+  // Listen for ICE candidates from resident
+  const { onSnapshot: onSnap, query, where, orderBy } = await import(
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'
+  );
+  onSnap(collection(db, 'sessions', sessionId, 'ice'), async (snap) => {
+    snap.docChanges().forEach(async (change) => {
+      if (change.type === 'added') {
+        const d = change.doc.data();
+        if (d.from === 'resident' && peerConnection.remoteDescription) {
+          try {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(d.candidate)));
+          } catch (_) {}
+        }
+      }
+    });
+  });
+
+  const offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
+
+  // Write offer to Firestore — resident app will pick it up
+  await updateDoc(doc(db, 'sessions', sessionId), {
+    offer: JSON.stringify(offer),
+    status: 'offer_sent',
+  });
+}
+
+window.hangup = function () {
+  finishRecording();
+  if (peerConnection) { peerConnection.close(); peerConnection = null; }
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  if (sessionId) updateDoc(doc(db, 'sessions', sessionId), { status: 'ended' }).catch(() => {});
+  showScreen('ended');
+  document.getElementById('ended-msg').textContent = 'La llamada terminó.';
+};
+
+window.toggleMute = function () {
+  isMuted = !isMuted;
+  localStream?.getAudioTracks().forEach(t => { t.enabled = !isMuted; });
+  document.getElementById('btn-mute').textContent = isMuted ? '🔇' : '🎤';
+};
+
+window.toggleCam = function () {
+  isCamOff = !isCamOff;
+  localStream?.getVideoTracks().forEach(t => { t.enabled = !isCamOff; });
+  document.getElementById('btn-cam').textContent = isCamOff ? '🚫' : '📷';
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AI Concierge chat
+// ══════════════════════════════════════════════════════════════════════════════
+function appendAiGreeting() {
+  appendMsg('ai', '¡Hola! El residente no está disponible en este momento. ¿Quién sos y en qué te puedo ayudar?');
+}
+
+window.sendChatMessage = async function () {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !sessionId) return;
+  input.value = '';
+  appendMsg('visitor', text);
+
+  const typingEl = appendMsg('ai', '...');
+  try {
+    const res = await fetch(`${CONFIG.apiBase}/concierge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, message: text }),
+    });
+    const data = await res.json();
+    typingEl.textContent = data.reply || 'Entendido, le aviso al residente.';
+  } catch {
+    typingEl.textContent = 'Error al procesar tu mensaje. Intentá de nuevo.';
+  }
+};
+
+window.chatKeydown = function (e) {
+  if (e.key === 'Enter') sendChatMessage();
+};
+
+function appendMsg(role, text) {
+  const box = document.getElementById('chat-box');
+  const el = document.createElement('div');
+  el.className = `msg ${role}`;
+  el.textContent = text;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+  return el;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Screen helpers
+// ══════════════════════════════════════════════════════════════════════════════
+const SCREENS = ['loading','error','ready','ringing','call','ai','ended'];
+
+function showScreen(name) {
+  SCREENS.forEach(s => {
+    document.getElementById(`screen-${s}`)?.classList.toggle('active', s === name);
+  });
+  if (name === 'call') initiateWebRTC();
+}
+
+function showError(msg) {
+  document.getElementById('error-msg').textContent = msg;
+  showScreen('error');
+}
+
+window.goToReady = function () {
+  if (sessionUnsub) { sessionUnsub(); sessionUnsub = null; }
+  clearTimeout(ringTimeout);
+  finishRecording();
+  sessionId      = null;
+  recordedChunks = [];
+  clipUploadDone = false;
+  document.getElementById('btn-ring').disabled = false;
+  document.getElementById('quick-reply-box').style.display = 'none';
+  document.getElementById('chat-box').innerHTML = '';
+  showScreen('ready');
+};
+
+// ── Utility
+function blobToBase64(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
+// ── Start
+boot();
+</script>
+</body>
+</html>
