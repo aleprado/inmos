@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Timbre QR — Atender</title>
+  <title>Timbre QR â€” Atender</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -158,16 +158,16 @@
   <!-- error -->
   <div id="screen-error" class="screen">
     <div class="logo">timbre<span>QR</span></div>
-    <div class="error-box" id="error-msg">Error al cargar la sesión.</div>
+    <div class="error-box" id="error-msg">Error al cargar la sesiÃ³n.</div>
     <button class="btn btn-ghost" onclick="location.reload()">Reintentar</button>
   </div>
 
   <!-- expired -->
   <div id="screen-expired" class="screen">
     <div class="logo">timbre<span>QR</span></div>
-    <div style="font-size:56px">⏰</div>
-    <h2>Sesión expirada</h2>
-    <p>El link ya no está disponible. Si alguien toca el timbre de nuevo recibirás un nuevo mensaje.</p>
+    <div style="font-size:56px">â°</div>
+    <h2>SesiÃ³n expirada</h2>
+    <p>El link ya no estÃ¡ disponible. Si alguien toca el timbre de nuevo recibirÃ¡s un nuevo mensaje.</p>
   </div>
 
   <!-- main: visitor info + actions -->
@@ -187,11 +187,11 @@
     <div class="card" style="display:flex;flex-direction:column;gap:10px;">
       <div>
         <div class="label">Puerta</div>
-        <div class="value" id="door-label-res">—</div>
+        <div class="value" id="door-label-res">â€”</div>
       </div>
       <div id="unit-row" style="display:none">
         <div class="label">Unidad</div>
-        <div class="value" id="unit-name-res">—</div>
+        <div class="value" id="unit-name-res">â€”</div>
       </div>
     </div>
 
@@ -205,18 +205,18 @@
     <!-- State 2: clip ready -->
     <div id="clip-container" class="clip-wrap" style="display:none;">
       <video id="visitor-video" class="visitor-video" controls playsinline preload="metadata"></video>
-      <span class="clip-badge">🎥 Clip del timbre</span>
+      <span class="clip-badge">ðŸŽ¥ Clip del timbre</span>
     </div>
 
     <!-- State 3: fallback photo if no clip -->
     <div id="photo-container" style="width:100%;display:none;">
       <img id="visitor-photo-img" class="visitor-photo" alt="Foto del visitante" />
     </div>
-    <div id="photo-placeholder" class="photo-placeholder" style="display:none;">👤</div>
+    <div id="photo-placeholder" class="photo-placeholder" style="display:none;">ðŸ‘¤</div>
 
     <!-- Share button (shown when clip or photo is available) -->
     <button id="btn-share" class="btn-share" style="display:none;" onclick="shareClip()">
-      📤 Compartir grabación
+      ðŸ“¤ Compartir grabaciÃ³n
     </button>
 
     <!-- Reply sent confirmation -->
@@ -225,27 +225,27 @@
     <!-- Quick replies (shown when status is ringing/missed) -->
     <div id="quick-replies-section" style="width:100%;display:flex;flex-direction:column;gap:12px;">
       <div class="qr-grid" id="qr-grid">
-        <button class="qr-btn" onclick="sendQuickReply('🏃 Ya bajo')">🏃 Ya bajo</button>
-        <button class="qr-btn" onclick="sendQuickReply('🕐 En 5 minutos')">🕐 En 5 minutos</button>
-        <button class="qr-btn" onclick="sendQuickReply('📦 Dejalo en el buzón')">📦 Dejalo en el buzón</button>
-        <button class="qr-btn" onclick="sendQuickReply('🔒 No abrir. Gracias.')">🔒 No abrir</button>
-        <button class="qr-btn full" onclick="sendQuickReply('❌ No esperado. Retirarse.')">❌ No esperado. Retirarse.</button>
+        <button class="qr-btn" onclick="sendQuickReply('ðŸƒ Ya bajo')">ðŸƒ Ya bajo</button>
+        <button class="qr-btn" onclick="sendQuickReply('ðŸ• En 5 minutos')">ðŸ• En 5 minutos</button>
+        <button class="qr-btn" onclick="sendQuickReply('ðŸ“¦ Dejalo en el buzÃ³n')">ðŸ“¦ Dejalo en el buzÃ³n</button>
+        <button class="qr-btn" onclick="sendQuickReply('ðŸ”’ No abrir. Gracias.')">ðŸ”’ No abrir</button>
+        <button class="qr-btn full" onclick="sendQuickReply('âŒ No esperado. Retirarse.')">âŒ No esperado. Retirarse.</button>
       </div>
 
-      <div class="divider">o escribí un mensaje</div>
+      <div class="divider">o escribÃ­ un mensaje</div>
 
       <div class="reply-row">
         <input id="custom-reply" type="text" placeholder="Ej: Dejalo con el vecino del 3B" maxlength="120" onkeydown="if(event.key==='Enter')sendCustomReply()" />
-        <button onclick="sendCustomReply()">➤</button>
+        <button onclick="sendCustomReply()">âž¤</button>
       </div>
     </div>
 
     <!-- Call button (only when session is still ringing) -->
     <div id="call-section" style="width:100%;display:flex;flex-direction:column;gap:10px;">
-      <button class="btn btn-call" id="btn-answer-call" onclick="startCall()">📹 Atender videollamada</button>
-      <button class="btn btn-ai" onclick="activateAI()">🤖 Activar recepcionista IA</button>
+      <button class="btn btn-call" id="btn-answer-call" onclick="startCall()">ðŸ“¹ Atender videollamada</button>
+      <button class="btn btn-ai" onclick="activateAI()">ðŸ¤– Activar recepcionista IA</button>
       <div id="relay-section" style="display:none;">
-        <button class="btn btn-relay" onclick="openDoor()">🔓 Abrir puerta remotamente</button>
+        <button class="btn btn-relay" onclick="openDoor()">ðŸ”“ Abrir puerta remotamente</button>
       </div>
     </div>
   </div>
@@ -258,19 +258,19 @@
       <video id="localVideo"  autoplay playsinline muted></video>
     </div>
     <div class="call-row">
-      <button class="call-icon-btn c-mute" id="btn-mute" onclick="toggleMute()" title="Silenciar">🎤</button>
-      <button class="call-icon-btn c-hangup" onclick="hangup()" title="Colgar">📵</button>
-      <button class="call-icon-btn c-mute" id="btn-cam" onclick="toggleCam()" title="Cámara">📷</button>
+      <button class="call-icon-btn c-mute" id="btn-mute" onclick="toggleMute()" title="Silenciar">ðŸŽ¤</button>
+      <button class="call-icon-btn c-hangup" onclick="hangup()" title="Colgar">ðŸ“µ</button>
+      <button class="call-icon-btn c-mute" id="btn-cam" onclick="toggleCam()" title="CÃ¡mara">ðŸ“·</button>
     </div>
-    <button class="btn btn-relay" id="btn-relay-call" style="display:none;" onclick="openDoor()">🔓 Abrir puerta</button>
+    <button class="btn btn-relay" id="btn-relay-call" style="display:none;" onclick="openDoor()">ðŸ”“ Abrir puerta</button>
   </div>
 
   <!-- ended -->
   <div id="screen-ended" class="screen">
     <div class="logo">timbre<span>QR</span></div>
-    <div style="font-size:60px">✅</div>
+    <div style="font-size:60px">âœ…</div>
     <h2>Listo</h2>
-    <p id="ended-msg">La sesión terminó.</p>
+    <p id="ended-msg">La sesiÃ³n terminÃ³.</p>
   </div>
 
 </div>
@@ -281,18 +281,18 @@ import {
   getFirestore, doc, getDoc, onSnapshot,
   updateDoc, addDoc, collection, serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-// Storage not imported here — we just use the already-uploaded URL from Firestore
+// Storage not imported here â€” we just use the already-uploaded URL from Firestore
 
-// ── CONFIG (replace with real values) ────────────────────────────────────────
+// â”€â”€ CONFIG (replace with real values) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CONFIG = {
-  apiBase: 'https://us-central1-YOUR_PROJECT.cloudfunctions.net',
+  apiBase: 'https://us-central1-inmos-2c701.cloudfunctions.net',
   firebase: {
-    apiKey:            'YOUR_API_KEY',
-    authDomain:        'YOUR_PROJECT.firebaseapp.com',
-    projectId:         'YOUR_PROJECT',
-    storageBucket:     'YOUR_PROJECT.appspot.com',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    appId:             'YOUR_APP_ID',
+    apiKey:            'AIzaSyCluz-ufmhehaLSjoRSHtRTOupTsg5wwCw',
+    authDomain:        'inmos-2c701.firebaseapp.com',
+    projectId:         'inmos-2c701',
+    storageBucket:     'inmos-2c701.firebasestorage.app',
+    messagingSenderId: '200855748437',
+    appId:             '1:200855748437:web:791659deffb48d740239dc',
   },
   stunServers: [
     { urls: 'stun:stun.l.google.com:19302' },
@@ -300,7 +300,7 @@ const CONFIG = {
   ],
 };
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const sessionId   = new URLSearchParams(location.search).get('s');
 let sessionData   = null;
 let sessionUnsub  = null;
@@ -313,7 +313,7 @@ let timerInterval = null;
 const app = initializeApp(CONFIG.firebase);
 const db  = getFirestore(app);
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Boot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function boot() {
   if (!sessionId) { showExpired(); return; }
 
@@ -338,7 +338,7 @@ async function boot() {
     document.getElementById('unit-name-res').textContent = unit.name;
     document.getElementById('unit-row').style.display = 'block';
   }
-  document.title = `Timbre — ${door.label || 'Puerta'}`;
+  document.title = `Timbre â€” ${door.label || 'Puerta'}`;
 
   // Show clip / photo / placeholder
   renderVisualEvidence(sessionData);
@@ -355,7 +355,7 @@ async function boot() {
   showScreen('main');
 }
 
-// ── Session listener ──────────────────────────────────────────────────────────
+// â”€â”€ Session listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function subscribeToSession() {
   if (sessionUnsub) sessionUnsub();
   sessionUnsub = onSnapshot(doc(db, 'sessions', sessionId), (snap) => {
@@ -365,19 +365,19 @@ function subscribeToSession() {
     sessionData = s;
     renderStatus(s.status);
 
-    // Clip just became available — update player
+    // Clip just became available â€” update player
     if (s.clipUrl && s.clipUrl !== prevClipUrl) {
       renderVisualEvidence(s);
     }
 
-    // Visitor sent WebRTC offer — initiate answer
+    // Visitor sent WebRTC offer â€” initiate answer
     if (s.offer && s.status === 'offer_sent' && peerConn && !peerConn.remoteDescription) {
       handleOffer(JSON.parse(s.offer));
     }
   });
 }
 
-// ── Visual evidence: clip > photo > placeholder ───────────────────────────────
+// â”€â”€ Visual evidence: clip > photo > placeholder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderVisualEvidence(s) {
   const clipLoading    = document.getElementById('clip-loading');
   const clipContainer  = document.getElementById('clip-container');
@@ -398,7 +398,7 @@ function renderVisualEvidence(s) {
   } else if (s.visitorPhoto) {
     // Only static photo
     if (s.status === 'ringing') {
-      // Still recording — show loading state
+      // Still recording â€” show loading state
       clipLoading.style.display = 'flex';
     } else {
       document.getElementById('visitor-photo-img').src = s.visitorPhoto;
@@ -435,7 +435,7 @@ function renderStatus(status) {
   }
 }
 
-// ── Quick replies ─────────────────────────────────────────────────────────────
+// â”€â”€ Quick replies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.sendQuickReply = async function (msg) {
   await doSendReply(msg);
 };
@@ -455,7 +455,7 @@ async function doSendReply(msg) {
       status:            'replied',
     });
     const banner = document.getElementById('sent-reply-banner');
-    banner.textContent = `✓ Mensaje enviado: "${msg}"`;
+    banner.textContent = `âœ“ Mensaje enviado: "${msg}"`;
     banner.style.display = 'block';
     // Disable all quick reply buttons
     document.querySelectorAll('.qr-btn').forEach(b => { b.disabled = true; b.classList.add('sent'); });
@@ -464,31 +464,31 @@ async function doSendReply(msg) {
   }
 }
 
-// ── AI Mode ───────────────────────────────────────────────────────────────────
+// â”€â”€ AI Mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.activateAI = async function () {
   await updateDoc(doc(db, 'sessions', sessionId), { status: 'ai_mode', aiActive: true });
   document.getElementById('btn-answer-call').style.display = 'none';
 };
 
-// ── Relay / open door ─────────────────────────────────────────────────────────
+// â”€â”€ Relay / open door â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.openDoor = async function () {
   const doorSnap = await getDoc(doc(db, 'doors', sessionData.doorId));
   const webhookUrl = doorSnap.data()?.webhookUrl;
   if (!webhookUrl) return;
   try {
     await fetch(webhookUrl, { method: 'POST', mode: 'no-cors' });
-    alert('✅ Señal de apertura enviada');
-  } catch { alert('Error al enviar señal a la puerta'); }
+    alert('âœ… SeÃ±al de apertura enviada');
+  } catch { alert('Error al enviar seÃ±al a la puerta'); }
 };
 
-// ── WebRTC (resident answers) ─────────────────────────────────────────────────
+// â”€â”€ WebRTC (resident answers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.startCall = async function () {
   document.getElementById('btn-answer-call').disabled = true;
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .catch(() => navigator.mediaDevices.getUserMedia({ audio: true }));
     document.getElementById('localVideo').srcObject = localStream;
-  } catch { alert('No se pudo acceder a la cámara/micrófono'); return; }
+  } catch { alert('No se pudo acceder a la cÃ¡mara/micrÃ³fono'); return; }
 
   peerConn = new RTCPeerConnection({ iceServers: CONFIG.stunServers });
   localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
@@ -545,22 +545,22 @@ window.hangup = function () {
   updateDoc(doc(db, 'sessions', sessionId), { status: 'ended' }).catch(() => {});
   stopTimer();
   showScreen('ended');
-  document.getElementById('ended-msg').textContent = 'La llamada terminó.';
+  document.getElementById('ended-msg').textContent = 'La llamada terminÃ³.';
 };
 
 window.toggleMute = function () {
   isMuted = !isMuted;
   localStream?.getAudioTracks().forEach(t => { t.enabled = !isMuted; });
-  document.getElementById('btn-mute').textContent = isMuted ? '🔇' : '🎤';
+  document.getElementById('btn-mute').textContent = isMuted ? 'ðŸ”‡' : 'ðŸŽ¤';
 };
 
 window.toggleCam = function () {
   isCamOff = !isCamOff;
   localStream?.getVideoTracks().forEach(t => { t.enabled = !isCamOff; });
-  document.getElementById('btn-cam').textContent = isCamOff ? '🚫' : '📷';
+  document.getElementById('btn-cam').textContent = isCamOff ? 'ðŸš«' : 'ðŸ“·';
 };
 
-// ── Timer ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function startTimer(expiresMs) {
   const el = document.getElementById('timer-display');
   timerInterval = setInterval(() => {
@@ -574,14 +574,14 @@ function startTimer(expiresMs) {
 }
 function stopTimer() { clearInterval(timerInterval); }
 
-// ── Screens ───────────────────────────────────────────────────────────────────
+// â”€â”€ Screens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SCREENS = ['loading','error','expired','main','call','ended'];
 function showScreen(name) {
   SCREENS.forEach(s => document.getElementById(`screen-${s}`)?.classList.toggle('active', s === name));
 }
 function showExpired() { stopTimer(); showScreen('expired'); }
 
-// ── Share clip ────────────────────────────────────────────────────────────────
+// â”€â”€ Share clip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.shareClip = async function () {
   const btn      = document.getElementById('btn-share');
   const clipUrl  = btn.dataset.url;
@@ -590,8 +590,8 @@ window.shareClip = async function () {
   if (clipUrl && navigator.share) {
     try {
       await navigator.share({
-        title: `Timbre QR — ${doorLabel}`,
-        text:  `📹 Alguien tocó el timbre. Mirá el video:`,
+        title: `Timbre QR â€” ${doorLabel}`,
+        text:  `ðŸ“¹ Alguien tocÃ³ el timbre. MirÃ¡ el video:`,
         url:   clipUrl,
       });
       return;
@@ -602,14 +602,14 @@ window.shareClip = async function () {
   const textToCopy = clipUrl || location.href;
   try {
     await navigator.clipboard.writeText(textToCopy);
-    btn.textContent = '✅ Link copiado';
-    setTimeout(() => { btn.innerHTML = '📤 Compartir grabación'; }, 2500);
+    btn.textContent = 'âœ… Link copiado';
+    setTimeout(() => { btn.innerHTML = 'ðŸ“¤ Compartir grabaciÃ³n'; }, 2500);
   } catch {
-    prompt('Copiá el link:', textToCopy);
+    prompt('CopiÃ¡ el link:', textToCopy);
   }
 };
 
-// ── Go ────────────────────────────────────────────────────────────────────────
+// â”€â”€ Go â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 boot().catch(err => {
   console.error(err);
   document.getElementById('error-msg').textContent = err.message;
@@ -618,3 +618,4 @@ boot().catch(err => {
 </script>
 </body>
 </html>
+

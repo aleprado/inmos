@@ -34,15 +34,12 @@
       padding: 24px 16px;
     }
 
-    /* ── Screens ── */
     .screen { display: none; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 400px; text-align: center; }
     .screen.active { display: flex; }
 
-    /* ── Logo / brand ── */
     .logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
     .logo span { color: var(--text); }
 
-    /* ── Card ── */
     .card {
       background: var(--surface);
       border-radius: var(--radius);
@@ -51,13 +48,11 @@
       border: 1px solid rgba(148,163,184,0.1);
     }
 
-    /* ── Typography ── */
     h2 { font-size: 22px; font-weight: 700; }
     p { color: var(--text-muted); font-size: 15px; line-height: 1.5; }
     .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
     .value { font-size: 20px; font-weight: 600; }
 
-    /* ── Buttons ── */
     .btn {
       width: 100%;
       padding: 16px;
@@ -76,7 +71,27 @@
     .btn-ghost   { background: var(--surface2); color: var(--text); }
     .btn-sm { padding: 10px 16px; font-size: 14px; width: auto; border-radius: 8px; }
 
-    /* ── Pulse ring (ringing animation) ── */
+    /* Unit list (building picker) */
+    .unit-btn {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .unit-btn:active { background: var(--surface2); transform: scale(0.98); }
+    .unit-btn .unit-icon { font-size: 22px; }
+
+    /* Pulse ring */
     .ring-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 120px; height: 120px; }
     .ring-icon { font-size: 52px; z-index: 1; }
     .pulse {
@@ -89,7 +104,7 @@
     .pulse:nth-child(2) { animation-delay: 0.5s; }
     @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
 
-    /* ── Video call ── */
+    /* Video call */
     .video-container {
       position: relative;
       width: 100%;
@@ -117,7 +132,7 @@
     .call-btn.hangup { background: var(--danger); }
     .call-btn.mute   { background: var(--surface2); }
 
-    /* ── Chat (AI concierge) ── */
+    /* Chat */
     .chat-box {
       width: 100%;
       height: 260px;
@@ -143,7 +158,6 @@
     .chat-input input:focus { outline: none; border-color: var(--accent); }
     .chat-input button { padding: 12px 16px; border-radius: 10px; background: var(--accent); border: none; color: #0c1a2e; font-weight: 700; cursor: pointer; font-size: 18px; }
 
-    /* ── Quick replies from resident ── */
     .quick-reply {
       background: var(--success);
       color: #052e16;
@@ -156,16 +170,7 @@
     }
     @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* ── Status bar ── */
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-    .status-dot.green { background: var(--success); }
-    .status-dot.yellow { background: #fbbf24; animation: blink 1s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-    /* ── Error ── */
     .error-box { background: rgba(248,113,113,0.15); border: 1px solid var(--danger); border-radius: 12px; padding: 16px; color: var(--danger); font-size: 14px; width: 100%; }
-
-    /* ── Spinner ── */
     .spinner { width: 40px; height: 40px; border: 3px solid var(--surface2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -176,54 +181,64 @@
 <body>
 <div id="app">
 
-  <!-- ══════════════════════════════════════════════════════ SCREEN: loading -->
+  <!-- SCREEN: loading -->
   <div id="screen-loading" class="screen active">
     <div class="logo">timbre<span>QR</span></div>
     <div class="spinner"></div>
     <p>Cargando...</p>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════ SCREEN: error -->
+  <!-- SCREEN: error -->
   <div id="screen-error" class="screen">
     <div class="logo">timbre<span>QR</span></div>
-    <div class="error-box" id="error-msg">Ocurrió un error</div>
+    <div class="error-box" id="error-msg">Ocurrio un error</div>
     <button class="btn btn-ghost" onclick="location.reload()">Reintentar</button>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════ SCREEN: ready -->
+  <!-- SCREEN: building unit picker -->
+  <div id="screen-building" class="screen">
+    <div class="logo">timbre<span>QR</span></div>
+    <div class="card" style="gap:8px;display:flex;flex-direction:column;">
+      <div class="value" id="building-name">Edificio</div>
+      <p>A que departamento queres llamar?</p>
+    </div>
+    <div id="unit-list" style="width:100%;display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;"></div>
+  </div>
+
+  <!-- SCREEN: ready -->
   <div id="screen-ready" class="screen">
     <div class="logo">timbre<span>QR</span></div>
     <div class="card" style="gap:12px;display:flex;flex-direction:column;">
       <div>
-        <div class="label">Dirección</div>
-        <div class="value" id="door-label">—</div>
+        <div class="label">Direccion</div>
+        <div class="value" id="door-label">-</div>
       </div>
       <div id="unit-name-row" style="display:none">
         <div class="label">Unidad</div>
-        <div class="value" id="unit-name-display">—</div>
+        <div class="value" id="unit-name-display">-</div>
       </div>
     </div>
     <div class="ring-wrapper" style="margin:8px 0">
-      <div class="ring-icon">🔔</div>
+      <div class="ring-icon">&#128276;</div>
     </div>
     <button class="btn btn-primary" id="btn-ring" onclick="startRing()">Tocar timbre</button>
-    <p style="font-size:13px">Sin instalaciones. Sin app. Solo tocá el timbre.</p>
+    <p style="font-size:13px">Sin instalaciones. Sin app. Solo toca el timbre.</p>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════ SCREEN: ringing -->
+  <!-- SCREEN: ringing -->
   <div id="screen-ringing" class="screen">
     <div class="logo">timbre<span>QR</span></div>
     <div class="ring-wrapper">
       <div class="pulse"></div>
       <div class="pulse"></div>
-      <div class="ring-icon">🔔</div>
+      <div class="ring-icon">&#128276;</div>
     </div>
     <h2>Llamando...</h2>
-    <p>Avisándole al residente que estás en la puerta</p>
+    <p>Avisandole al residente que estas en la puerta</p>
     <button class="btn btn-ghost" onclick="cancelRing()">Cancelar</button>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════ SCREEN: in-call -->
+  <!-- SCREEN: in-call -->
   <div id="screen-call" class="screen">
     <div class="logo">timbre<span>QR</span></div>
     <div class="video-container">
@@ -231,45 +246,47 @@
       <video id="localVideo"  autoplay playsinline muted></video>
     </div>
     <div class="call-controls">
-      <button class="call-btn mute" id="btn-mute" onclick="toggleMute()" title="Silenciar">🎤</button>
-      <button class="call-btn hangup" onclick="hangup()" title="Colgar">📵</button>
-      <button class="call-btn mute" id="btn-cam" onclick="toggleCam()" title="Cámara">📷</button>
+      <button class="call-btn mute" id="btn-mute" onclick="toggleMute()" title="Silenciar">&#127908;</button>
+      <button class="call-btn hangup" onclick="hangup()" title="Colgar">&#128245;</button>
+      <button class="call-btn mute" id="btn-cam" onclick="toggleCam()" title="Camara">&#128247;</button>
     </div>
-    <!-- quick reply from resident -->
     <div id="quick-reply-box" style="display:none;" class="quick-reply"></div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════ SCREEN: missed / AI mode -->
+  <!-- SCREEN: missed / AI mode -->
   <div id="screen-ai" class="screen">
     <div class="logo">timbre<span>QR</span></div>
     <div class="card">
-      <p style="margin-bottom:8px;">El residente no está disponible ahora. Podés dejar un mensaje con la recepcionista virtual.</p>
+      <p style="margin-bottom:8px;">El residente no esta disponible ahora. Podes dejar un mensaje con la recepcionista virtual.</p>
     </div>
     <div class="chat-box" id="chat-box"></div>
     <div class="chat-input">
-      <input id="chat-input" type="text" placeholder="Escribí tu mensaje..." onkeydown="chatKeydown(event)" />
-      <button onclick="sendChatMessage()">➤</button>
+      <input id="chat-input" type="text" placeholder="Escribi tu mensaje..." onkeydown="chatKeydown(event)" />
+      <button onclick="sendChatMessage()">&#10148;</button>
     </div>
-    <button class="btn btn-ghost btn-sm" onclick="goToReady()">← Volver</button>
+    <button class="btn btn-ghost btn-sm" onclick="goToReady()">Volver</button>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════ SCREEN: ended -->
+  <!-- SCREEN: ended -->
   <div id="screen-ended" class="screen">
     <div class="logo">timbre<span>QR</span></div>
-    <div style="font-size:64px">✅</div>
-    <h2>¡Listo!</h2>
+    <div style="font-size:64px">&#9989;</div>
+    <h2>Listo!</h2>
     <p id="ended-msg">Tu mensaje fue enviado.</p>
     <button class="btn btn-ghost" onclick="goToReady()">Volver al inicio</button>
   </div>
 
-</div><!-- #app -->
+</div>
 
 <script type="module">
-// ══════════════════════════════════════════════════════════════════════════════
-// CONFIG — set these via build env or a config endpoint
-// ══════════════════════════════════════════════════════════════════════════════
+import { initializeApp }            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp, getDoc, getDocs, query, where }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
 const CONFIG = {
-  apiBase: 'https://us-central1-YOUR_PROJECT.cloudfunctions.net',
+  apiBase: 'YOUR_API_BASE',
   firebaseConfig: {
     apiKey:            'YOUR_API_KEY',
     authDomain:        'YOUR_PROJECT.firebaseapp.com',
@@ -284,12 +301,11 @@ const CONFIG = {
   ],
 };
 
-// ── Parse doorId from URL path: /v/{doorId} or ?doorId=...
 const pathMatch = location.pathname.match(/\/v\/([^/?#]+)/);
 const doorId = pathMatch?.[1] || new URLSearchParams(location.search).get('doorId');
 
-// ── State
 let sessionId      = null;
+let selectedUnitId = null;   // set when visitor picks a unit in a building
 let sessionUnsub   = null;
 let peerConnection = null;
 let localStream    = null;
@@ -298,65 +314,91 @@ let isCamOff       = false;
 let ringTimeout    = null;
 let db             = null;
 
-// ── Clip recording state
 let mediaRecorder    = null;
 let recordedChunks   = [];
 let recordingStream  = null;
 let clipUploadDone   = false;
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Firebase (dynamic import from CDN)
-// ══════════════════════════════════════════════════════════════════════════════
-import { initializeApp }            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
-
 const fbApp = initializeApp(CONFIG.firebaseConfig);
 db = getFirestore(fbApp);
 const storage = getStorage(fbApp);
 
-// ══════════════════════════════════════════════════════════════════════════════
 // Boot
-// ══════════════════════════════════════════════════════════════════════════════
 async function boot() {
   if (!doorId) {
-    showError('QR inválido. No se encontró el ID de puerta.');
+    showError('QR invalido. No se encontro el ID de puerta.');
     return;
   }
   try {
-    // Fetch door info from Firestore (public read)
-    const { getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
     const doorSnap = await getDoc(doc(db, 'doors', doorId));
     if (!doorSnap.exists() || doorSnap.data().status !== 'active') {
-      showError('Esta puerta no está registrada o está inactiva.');
+      showError('Esta puerta no esta registrada o esta inactiva.');
       return;
     }
     const door = doorSnap.data();
-    const unitSnap = await getDoc(doc(db, 'units', door.unitId));
-    const unit = unitSnap.exists() ? unitSnap.data() : {};
 
-    document.getElementById('door-label').textContent = door.label || 'Puerta Principal';
-    if (unit.name) {
-      document.getElementById('unit-name-display').textContent = unit.name;
-      document.getElementById('unit-name-row').style.display = 'block';
+    if (door.type === 'building') {
+      // Building entrance: show unit picker
+      const buildingSnap = await getDoc(doc(db, 'buildings', door.buildingId));
+      const building = buildingSnap.exists() ? buildingSnap.data() : {};
+      document.getElementById('building-name').textContent = building.name || door.label || 'Edificio';
+      document.title = `Timbre - ${building.name || door.label || 'Edificio'}`;
+
+      const unitsSnap = await getDocs(
+        query(collection(db, 'units'), where('buildingId', '==', door.buildingId))
+      );
+
+      const visibleUnits = unitsSnap.docs
+        .map(d => d.data())
+        .filter(u => u.visible !== false && u.memberUids && u.memberUids.length > 0)
+        .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+
+      if (visibleUnits.length === 0) {
+        showError('Este edificio no tiene departamentos configurados todavia.');
+        return;
+      }
+
+      const unitList = document.getElementById('unit-list');
+      visibleUnits.forEach(unit => {
+        const btn = document.createElement('button');
+        btn.className = 'unit-btn';
+        btn.innerHTML = '<span class="unit-icon">&#127968;</span>' + unit.name;
+        btn.onclick = () => selectBuildingUnit(door, unit);
+        unitList.appendChild(btn);
+      });
+
+      showScreen('building');
+    } else {
+      // Direct unit door (original flow)
+      const unitSnap = await getDoc(doc(db, 'units', door.unitId));
+      const unit = unitSnap.exists() ? unitSnap.data() : {};
+      document.getElementById('door-label').textContent = door.label || 'Puerta Principal';
+      if (unit.name) {
+        document.getElementById('unit-name-display').textContent = unit.name;
+        document.getElementById('unit-name-row').style.display = 'block';
+      }
+      document.title = `Timbre - ${door.label || unit.name || 'Puerta'}`;
+      showScreen('ready');
     }
-    document.title = `Timbre — ${door.label || unit.name || 'Puerta'}`;
-    showScreen('ready');
   } catch (err) {
-    showError('No se pudo cargar la información de la puerta. ' + err.message);
+    showError('No se pudo cargar la informacion de la puerta. ' + err.message);
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+function selectBuildingUnit(door, unit) {
+  selectedUnitId = unit.unitId;
+  document.getElementById('door-label').textContent = door.label || 'Entrada Principal';
+  document.getElementById('unit-name-display').textContent = unit.name;
+  document.getElementById('unit-name-row').style.display = 'block';
+  document.title = `Timbre - ${unit.name}`;
+  showScreen('ready');
+}
+
 // Ring flow
-// ══════════════════════════════════════════════════════════════════════════════
 window.startRing = async function () {
   document.getElementById('btn-ring').disabled = true;
   showScreen('ringing');
 
-  // ── 1. Start clip recording + grab snapshot photo from same stream ────────
   let visitorPhoto = null;
   recordedChunks   = [];
   clipUploadDone   = false;
@@ -366,52 +408,43 @@ window.startRing = async function () {
       video: { width: 640, height: 480, facingMode: 'user' },
       audio: true,
     });
-
-    // Snapshot from first video frame
     const track = recordingStream.getVideoTracks()[0];
     if (track) {
       try {
         const ic = new ImageCapture(track);
         const blob = await ic.takePhoto({ imageWidth: 320 });
         visitorPhoto = await blobToBase64(blob);
-      } catch (_) { /* ImageCapture not supported everywhere — OK */ }
+      } catch (_) {}
     }
-
-    // Start MediaRecorder
     const mimeType = getBestMimeType();
     mediaRecorder = new MediaRecorder(recordingStream, mimeType ? { mimeType } : {});
     mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
-    mediaRecorder.start(1000); // chunk every 1s
-
-    // Auto-stop recording after 25s (clip duration cap)
+    mediaRecorder.start(1000);
     setTimeout(() => finishRecording(), 25_000);
+  } catch (_) {}
 
-  } catch (_) { /* no camera — degrade gracefully */ }
-
-  // ── 2. POST /ring ─────────────────────────────────────────────────────────
   try {
+    const body = { doorId, visitorPhoto };
+    if (selectedUnitId) body.unitId = selectedUnitId;
+
     const res = await fetch(`${CONFIG.apiBase}/ring`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ doorId, visitorPhoto }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if (!res.ok) { showError(data.error || 'Error al tocar el timbre.'); return; }
 
     sessionId = data.sessionId;
     subscribeToSession();
-
-    // Upload clip in background once we have sessionId
     uploadClipWhenReady(sessionId);
 
-    // If no residents registered → go straight to AI mode
     if (!data.hasResidents) {
       showScreen('ai');
       appendAiGreeting();
       return;
     }
 
-    // Wait up to 30s for resident to answer
     ringTimeout = setTimeout(() => {
       markSessionMissed();
       showScreen('ai');
@@ -419,12 +452,10 @@ window.startRing = async function () {
     }, 30_000);
 
   } catch (err) {
-    showError('Error de red. Verificá tu conexión.');
+    showError('Error de red. Verifica tu conexion.');
     console.error(err);
   }
 };
-
-// ── Clip helpers ──────────────────────────────────────────────────────────────
 
 function finishRecording() {
   if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
@@ -432,7 +463,6 @@ function finishRecording() {
   recordingStream = null;
 }
 
-/** Waits for recording to finish then uploads to Firebase Storage */
 function uploadClipWhenReady(sid) {
   if (!mediaRecorder) return;
   const doUpload = async () => {
@@ -443,30 +473,19 @@ function uploadClipWhenReady(sid) {
       const mimeType = mediaRecorder.mimeType || 'video/webm';
       const ext      = mimeType.includes('mp4') ? 'mp4' : 'webm';
       const blob     = new Blob(recordedChunks, { type: mimeType });
-      if (blob.size < 2000) return; // too small = no real video
-      const clipPath = `rings/${sid}/clip.${ext}`;
-      const clipRef  = storageRef(storage, clipPath);
+      if (blob.size < 2000) return;
+      const clipRef  = storageRef(storage, `rings/${sid}/clip.${ext}`);
       await uploadBytes(clipRef, blob, { contentType: mimeType });
       const url = await getDownloadURL(clipRef);
       await updateDoc(doc(db, 'sessions', sid), { clipUrl: url, clipMime: mimeType });
-      console.log('[clip] uploaded OK:', url);
     } catch (err) { console.error('[clip] upload failed:', err.message); }
   };
-
-  if (mediaRecorder.state === 'inactive') {
-    doUpload();
-  } else {
-    mediaRecorder.addEventListener('stop', doUpload, { once: true });
-  }
+  if (mediaRecorder.state === 'inactive') doUpload();
+  else mediaRecorder.addEventListener('stop', doUpload, { once: true });
 }
 
 function getBestMimeType() {
-  const candidates = [
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm',
-    'video/mp4',
-  ];
+  const candidates = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'];
   return candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
 }
 
@@ -482,28 +501,22 @@ async function markSessionMissed() {
   try { await updateDoc(doc(db, 'sessions', sessionId), { status: 'missed' }); } catch (_) {}
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Firestore session listener
-// ══════════════════════════════════════════════════════════════════════════════
+// Session listener
 function subscribeToSession() {
   if (sessionUnsub) sessionUnsub();
   sessionUnsub = onSnapshot(doc(db, 'sessions', sessionId), async (snap) => {
     if (!snap.exists()) return;
     const s = snap.data();
 
-    // Resident sent a quick reply
     if (s.quickReply && s.status === 'replied') {
       clearTimeout(ringTimeout);
-      document.getElementById('quick-reply-box').textContent = `💬 ${s.quickReply}`;
+      document.getElementById('quick-reply-box').textContent = '💬 ' + s.quickReply;
       document.getElementById('quick-reply-box').style.display = 'block';
-      // If we're still in ringing screen, show it over the ringing screen
       if (document.getElementById('screen-ringing').classList.contains('active')) {
-        showScreen('ringing'); // stay but show the reply
         document.getElementById('screen-ringing').appendChild(document.getElementById('quick-reply-box'));
       }
     }
 
-    // Resident is answering — they wrote an SDP answer
     if (s.status === 'answered' && s.answer && peerConnection) {
       clearTimeout(ringTimeout);
       if (peerConnection.signalingState !== 'stable') {
@@ -514,31 +527,21 @@ function subscribeToSession() {
   });
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// WebRTC — visitor initiates offer
-// ══════════════════════════════════════════════════════════════════════════════
+// WebRTC
 async function initiateWebRTC() {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     document.getElementById('localVideo').srcObject = localStream;
   } catch (err) {
-    // Fallback: audio only
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch {
-      showError('No se pudo acceder a la cámara ni al micrófono.');
-      return;
-    }
+    try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch { showError('No se pudo acceder a la camara ni al microfono.'); return; }
   }
 
   peerConnection = new RTCPeerConnection({ iceServers: CONFIG.stunServers });
   localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-
   peerConnection.ontrack = (event) => {
     document.getElementById('remoteVideo').srcObject = event.streams[0];
   };
-
-  // Send ICE candidates to Firestore
   peerConnection.onicecandidate = async ({ candidate }) => {
     if (candidate) {
       await addDoc(collection(db, 'sessions', sessionId, 'ice'), {
@@ -548,19 +551,12 @@ async function initiateWebRTC() {
       });
     }
   };
-
-  // Listen for ICE candidates from resident
-  const { onSnapshot: onSnap, query, where, orderBy } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'
-  );
-  onSnap(collection(db, 'sessions', sessionId, 'ice'), async (snap) => {
+  onSnapshot(collection(db, 'sessions', sessionId, 'ice'), async (snap) => {
     snap.docChanges().forEach(async (change) => {
       if (change.type === 'added') {
         const d = change.doc.data();
         if (d.from === 'resident' && peerConnection.remoteDescription) {
-          try {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(d.candidate)));
-          } catch (_) {}
+          try { await peerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(d.candidate))); } catch (_) {}
         }
       }
     });
@@ -568,12 +564,7 @@ async function initiateWebRTC() {
 
   const offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
-
-  // Write offer to Firestore — resident app will pick it up
-  await updateDoc(doc(db, 'sessions', sessionId), {
-    offer: JSON.stringify(offer),
-    status: 'offer_sent',
-  });
+  await updateDoc(doc(db, 'sessions', sessionId), { offer: JSON.stringify(offer), status: 'offer_sent' });
 }
 
 window.hangup = function () {
@@ -582,7 +573,7 @@ window.hangup = function () {
   if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
   if (sessionId) updateDoc(doc(db, 'sessions', sessionId), { status: 'ended' }).catch(() => {});
   showScreen('ended');
-  document.getElementById('ended-msg').textContent = 'La llamada terminó.';
+  document.getElementById('ended-msg').textContent = 'La llamada termino.';
 };
 
 window.toggleMute = function () {
@@ -597,11 +588,9 @@ window.toggleCam = function () {
   document.getElementById('btn-cam').textContent = isCamOff ? '🚫' : '📷';
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// AI Concierge chat
-// ══════════════════════════════════════════════════════════════════════════════
+// AI chat
 function appendAiGreeting() {
-  appendMsg('ai', '¡Hola! El residente no está disponible en este momento. ¿Quién sos y en qué te puedo ayudar?');
+  appendMsg('ai', 'Hola! El residente no esta disponible en este momento. Quien sos y en que te puedo ayudar?');
 }
 
 window.sendChatMessage = async function () {
@@ -610,7 +599,6 @@ window.sendChatMessage = async function () {
   if (!text || !sessionId) return;
   input.value = '';
   appendMsg('visitor', text);
-
   const typingEl = appendMsg('ai', '...');
   try {
     const res = await fetch(`${CONFIG.apiBase}/concierge`, {
@@ -621,13 +609,11 @@ window.sendChatMessage = async function () {
     const data = await res.json();
     typingEl.textContent = data.reply || 'Entendido, le aviso al residente.';
   } catch {
-    typingEl.textContent = 'Error al procesar tu mensaje. Intentá de nuevo.';
+    typingEl.textContent = 'Error al procesar tu mensaje. Intenta de nuevo.';
   }
 };
 
-window.chatKeydown = function (e) {
-  if (e.key === 'Enter') sendChatMessage();
-};
+window.chatKeydown = function (e) { if (e.key === 'Enter') sendChatMessage(); };
 
 function appendMsg(role, text) {
   const box = document.getElementById('chat-box');
@@ -639,10 +625,8 @@ function appendMsg(role, text) {
   return el;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
 // Screen helpers
-// ══════════════════════════════════════════════════════════════════════════════
-const SCREENS = ['loading','error','ready','ringing','call','ai','ended'];
+const SCREENS = ['loading','error','building','ready','ringing','call','ai','ended'];
 
 function showScreen(name) {
   SCREENS.forEach(s => {
@@ -666,10 +650,11 @@ window.goToReady = function () {
   document.getElementById('btn-ring').disabled = false;
   document.getElementById('quick-reply-box').style.display = 'none';
   document.getElementById('chat-box').innerHTML = '';
-  showScreen('ready');
+  // If this was a building door, go back to unit picker
+  if (selectedUnitId) showScreen('building');
+  else showScreen('ready');
 };
 
-// ── Utility
 function blobToBase64(blob) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -678,7 +663,6 @@ function blobToBase64(blob) {
   });
 }
 
-// ── Start
 boot();
 </script>
 </body>

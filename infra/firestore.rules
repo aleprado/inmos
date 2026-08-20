@@ -3,7 +3,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ─── Helper functions ────────────────────────────────────────────────────
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -18,46 +17,57 @@ service cloud.firestore {
         get(/databases/$(database)/documents/units/$(unitId)).data.ownerUid == request.auth.uid;
     }
 
+    function isBuildingAdmin(buildingId) {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/buildings/$(buildingId)).data.adminUid == request.auth.uid;
+    }
+
+    // ─── Buildings ───────────────────────────────────────────────────────────
+    // Public read (visitor needs building name); only admin writes.
+    match /buildings/{buildingId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.adminUid == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.adminUid == request.auth.uid;
+      allow delete: if false;
+    }
+
     // ─── Units ───────────────────────────────────────────────────────────────
     match /units/{unitId} {
-      allow read: if isUnitMember(unitId);
-      allow create: if isAuthenticated() &&
-                       request.resource.data.ownerUid == request.auth.uid;
-      allow update: if isUnitOwner(unitId);
+      allow read: if isUnitMember(unitId)
+                  || (isAuthenticated() && resource.data.ownerUid == request.auth.uid)
+                  || (resource.data.buildingId != null && resource.data.visible != false);
+      allow create: if isAuthenticated() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isUnitOwner(unitId)
+                    || isUnitMember(unitId)
+                    || (resource.data.buildingId != null && isBuildingAdmin(resource.data.buildingId));
       allow delete: if false;
     }
 
     // ─── Doors ───────────────────────────────────────────────────────────────
     match /doors/{doorId} {
       allow read: if true;
-      allow write: if isUnitMember(resource.data.unitId) ||
-                      (request.resource != null && isUnitMember(request.resource.data.unitId));
+      allow write: if isUnitMember(resource.data.unitId)
+                   || (request.resource != null && isUnitMember(request.resource.data.unitId))
+                   || (resource.data.buildingId != null && isBuildingAdmin(resource.data.buildingId))
+                   || (request.resource != null && request.resource.data.buildingId != null
+                       && isBuildingAdmin(request.resource.data.buildingId));
     }
 
     // ─── Sessions ────────────────────────────────────────────────────────────
-    // Sessions are created by the ring Cloud Function (admin SDK, bypasses rules).
-    // The sessionId acts as a capability token — both visitor and resident receive
-    // it via trusted channels (API response / WhatsApp deep link).
     match /sessions/{sessionId} {
       allow read: if true;
-
-      // Visitor and resident (may be unauthenticated) update only these fields.
-      // The sessionId capability restricts who can find and update a session.
       allow update: if (
         request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['offer', 'status', 'iceVisitor', 'clipUrl', 'clipMime',
                     'quickReply', 'quickReplyAt', 'aiActive', 'answer'])
       ) || isUnitMember(resource.data.unitId);
-
-      allow create: if false; // created only by Cloud Function
+      allow create: if false;
       allow delete: if false;
 
-      // WebRTC ICE candidates — written by both visitor and resident
       match /ice/{iceId} {
         allow read, create: if true;
       }
 
-      // AI concierge conversation
       match /messages/{msgId} {
         allow read: if true;
         allow create: if true;
@@ -70,7 +80,6 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // ─── Default deny ────────────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }

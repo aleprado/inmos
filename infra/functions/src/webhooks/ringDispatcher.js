@@ -56,12 +56,27 @@ async function ringDispatcher(req, res) {
     const door = doorSnap.data();
 
     // ── 3. Get unit ───────────────────────────────────────────────────────
-    const unitSnap = await db.doc(`units/${door.unitId}`).get();
-    if (!unitSnap.exists)
-      return res.status(404).json({ error: 'Unidad no encontrada.' });
+    let unitId, unitSnap;
+
+    if (door.type === 'building') {
+      // Visitor selected a unit from the building directory
+      const selectedUnitId = req.body.unitId;
+      if (!selectedUnitId)
+        return res.status(400).json({ error: 'Seleccioná un departamento.' });
+      unitSnap = await db.doc(`units/${selectedUnitId}`).get();
+      if (!unitSnap.exists || unitSnap.data().buildingId !== door.buildingId)
+        return res.status(400).json({ error: 'Departamento inválido para este edificio.' });
+      unitId = selectedUnitId;
+    } else {
+      unitId = door.unitId;
+      unitSnap = await db.doc(`units/${unitId}`).get();
+      if (!unitSnap.exists)
+        return res.status(404).json({ error: 'Unidad no encontrada.' });
+    }
+
     const unit = unitSnap.data();
     const fcmTokens      = unit.fcmTokens || [];
-    const whatsappPhones = unit.whatsappPhones || [];   // array to support multiple residents
+    const whatsappPhones = unit.whatsappPhones || [];
 
     // ── 4. Create ephemeral session ───────────────────────────────────────
     const sessionId  = uuidv4();
@@ -70,7 +85,8 @@ async function ringDispatcher(req, res) {
     await db.doc(`sessions/${sessionId}`).set({
       sessionId,
       doorId,
-      unitId:       door.unitId,
+      unitId,
+      buildingId:   door.buildingId || null,
       status:       'ringing',     // ringing | answered | ai_mode | missed | ended | replied
       clientIp,
       visitorPhoto: visitorPhoto || null,

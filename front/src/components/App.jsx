@@ -8,7 +8,7 @@ import IncomingRing          from './IncomingRing';
 import DoorManager           from './DoorManager';
 
 export default function App({ user }) {
-  const { units, doors, loading } = useUnits(user.uid);
+  const { units, doors, buildings, loading } = useUnits(user.uid);
   const [view,          setView]          = useState('dashboard'); // dashboard | doors
   const [activeSession, setActiveSession] = useState(null);
   const [activeSessionDoor, setActiveSessionDoor] = useState(null);
@@ -58,10 +58,10 @@ export default function App({ user }) {
     </div>
   );
 
-  if (!units.length) return <SetupPrompt user={user} />;
+  if (!units.length && !buildings.length) return <SetupPrompt user={user} />;
 
   if (view === 'doors') return (
-    <DoorManager units={units} doors={doors} onBack={() => setView('dashboard')} />
+    <DoorManager units={units} doors={doors} buildings={buildings} onBack={() => setView('dashboard')} />
   );
 
   return (
@@ -191,18 +191,31 @@ export default function App({ user }) {
 }
 
 function SetupPrompt({ user }) {
+  const [mode,    setMode]    = useState('choose');  // choose | create | join
   const [name,    setName]    = useState('');
   const [address, setAddress] = useState('');
+  const [code,    setCode]    = useState('');
   const [loading, setLoading] = useState(false);
   const [msg,     setMsg]     = useState('');
+
+  const adminFn = httpsCallable(functions, 'adminConfig');
 
   const create = async () => {
     if (!name.trim()) return;
     setLoading(true);
     try {
-      const fn = httpsCallable(functions, 'adminConfig');
-      await fn({ action: 'createUnit', payload: { name: name.trim(), address: address.trim() } });
+      await adminFn({ action: 'createUnit', payload: { name: name.trim(), address: address.trim() } });
       setMsg('✅ Unidad creada. Recargá la página.');
+    } catch (e) { setMsg('❌ ' + e.message); }
+    setLoading(false);
+  };
+
+  const join = async () => {
+    if (!code.trim()) return;
+    setLoading(true);
+    try {
+      const res = await adminFn({ action: 'claimUnit', payload: { inviteCode: code.trim() } });
+      setMsg(`✅ Te uniste a ${res.data.unitName}. Recargá la página.`);
     } catch (e) { setMsg('❌ ' + e.message); }
     setLoading(false);
   };
@@ -213,22 +226,60 @@ function SetupPrompt({ user }) {
         <div className="text-center">
           <span className="text-4xl font-extrabold text-sky-400">timbre</span>
           <span className="text-4xl font-extrabold text-slate-100">QR</span>
-          <p className="mt-2 text-sm text-slate-400">Configurá tu primera unidad</p>
+          <p className="mt-2 text-sm text-slate-400">Bienvenido. ¿Cómo querés empezar?</p>
         </div>
-        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700/50 space-y-4">
-          {msg && <p className={`text-sm ${msg.startsWith('✅') ? 'text-green-400' : 'text-red-400'}`}>{msg}</p>}
-          <input value={name} onChange={e => setName(e.target.value)}
-            placeholder="Nombre (ej: Dpto 4B, Casa)"
-            className="w-full bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400"
-          />
-          <input value={address} onChange={e => setAddress(e.target.value)}
-            placeholder="Dirección (opcional)"
-            className="w-full bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400"
-          />
-          <button onClick={create} disabled={loading || !name.trim()}
-            className="w-full bg-sky-400 hover:bg-sky-300 disabled:opacity-50 text-slate-900 font-semibold rounded-xl py-3 text-sm"
-          >{loading ? 'Creando...' : 'Crear mi primera unidad'}</button>
-        </div>
+
+        {msg && <p className={`text-sm text-center ${msg.startsWith('✅') ? 'text-green-400' : 'text-red-400'}`}>{msg}</p>}
+
+        {mode === 'choose' && (
+          <div className="space-y-3">
+            <button onClick={() => setMode('create')}
+              className="w-full bg-sky-400 hover:bg-sky-300 text-slate-900 font-semibold rounded-xl py-4 text-sm flex flex-col items-center gap-1">
+              <span className="text-base">🏠 Configurar mi timbre</span>
+              <span className="font-normal text-xs opacity-70">Soy el dueño o inquilino, quiero recibir timbrazos</span>
+            </button>
+            <button onClick={() => setMode('join')}
+              className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 font-semibold rounded-xl py-4 text-sm flex flex-col items-center gap-1">
+              <span className="text-base">🔑 Unirme con código</span>
+              <span className="font-normal text-xs text-slate-400">Tengo un código de invitación de mi edificio</span>
+            </button>
+          </div>
+        )}
+
+        {mode === 'create' && (
+          <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700/50 space-y-4">
+            <button onClick={() => setMode('choose')} className="text-xs text-slate-400 hover:text-slate-200">← Volver</button>
+            <input value={name} onChange={e => setName(e.target.value)}
+              placeholder="Nombre (ej: Dpto 4B, Casa)"
+              className="w-full bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400"
+            />
+            <input value={address} onChange={e => setAddress(e.target.value)}
+              placeholder="Dirección (opcional)"
+              className="w-full bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-400"
+            />
+            <button onClick={create} disabled={loading || !name.trim()}
+              className="w-full bg-sky-400 hover:bg-sky-300 disabled:opacity-50 text-slate-900 font-semibold rounded-xl py-3 text-sm">
+              {loading ? 'Creando...' : 'Crear mi unidad'}
+            </button>
+          </div>
+        )}
+
+        {mode === 'join' && (
+          <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700/50 space-y-4">
+            <button onClick={() => setMode('choose')} className="text-xs text-slate-400 hover:text-slate-200">← Volver</button>
+            <p className="text-sm text-slate-400">Ingresá el código que te envió el administrador de tu edificio.</p>
+            <input value={code} onChange={e => setCode(e.target.value.toUpperCase())}
+              placeholder="Ej: A1B2C3D4"
+              maxLength={8}
+              className="w-full bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl px-4 py-3 text-sm font-mono tracking-widest text-center focus:outline-none focus:border-sky-400"
+            />
+            <button onClick={join} disabled={loading || code.length < 6}
+              className="w-full bg-sky-400 hover:bg-sky-300 disabled:opacity-50 text-slate-900 font-semibold rounded-xl py-3 text-sm">
+              {loading ? 'Verificando...' : 'Unirme'}
+            </button>
+          </div>
+        )}
+
         <button onClick={() => signOut(auth)} className="text-xs text-slate-500 w-full text-center">Salir</button>
       </div>
     </div>

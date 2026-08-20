@@ -5,33 +5,39 @@ const { admin, db } = require('../config/firebase');
 const { v4: uuidv4 } = require('uuid');
 
 /**
- * Callable: CRUD for units, doors, and members.
+ * Callable: CRUD for units, doors, buildings, and members.
  * data: { action, payload }
  *
- * Actions:
- *  - createUnit    { name, address }
- *  - updateUnit    { unitId, ...fields }
- *  - createDoor    { unitId, label, geofenceLatLng?, geofenceRadius? }
- *  - updateDoor    { doorId, ...fields }
- *  - deleteDoor    { doorId }
- *  - addMember     { unitId, email }
- *  - removeMember  { unitId, uid }
- *  - registerToken { unitId, fcmToken }
- *  - setAbsenceMode { unitId, enabled }
+ * Actions (unit/door):
+ *  - createUnit        { name, address }
+ *  - updateUnit        { unitId, ...fields }
+ *  - createDoor        { unitId, label }
+ *  - updateDoor        { doorId, ...fields }
+ *  - deleteDoor        { doorId }
+ *  - addMember         { unitId, email }
+ *  - removeMember      { unitId, uid }
+ *  - registerToken     { unitId, fcmToken }
+ *  - setAbsenceMode    { unitId, enabled }
+ *  - addWhatsappPhone  { unitId, phone }
+ *  - removeWhatsappPhone { unitId, phone }
+ *
+ * Actions (building):
+ *  - createBuilding      { name, address }
+ *  - createBuildingUnit  { buildingId, name }
+ *  - createBuildingDoor  { buildingId, label }
+ *  - claimUnit           { inviteCode }
  */
 async function adminConfig({ data, auth }) {
-  if (!auth) {
-    throw new HttpsError('unauthenticated', 'Debés estar autenticado.');
-  }
+  if (!auth) throw new HttpsError('unauthenticated', 'Debés estar autenticado.');
 
   const { action, payload } = data || {};
-  if (!action || !payload) {
-    throw new HttpsError('invalid-argument', 'action y payload son requeridos.');
-  }
+  if (!action || !payload) throw new HttpsError('invalid-argument', 'action y payload son requeridos.');
 
   const uid = auth.uid;
 
   switch (action) {
+
+    // ── Standalone unit ─────────────────────────────────────────────────────
 
     case 'createUnit': {
       const { name, address } = payload;
@@ -44,7 +50,7 @@ async function adminConfig({ data, auth }) {
         ownerUid: uid,
         memberUids: [uid],
         fcmTokens: [],
-        whatsappPhones: [],   // E.164 phones that receive ring WA notifications
+        whatsappPhones: [],
         absenceMode: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
@@ -54,7 +60,7 @@ async function adminConfig({ data, auth }) {
     case 'updateUnit': {
       const { unitId, ...fields } = payload;
       await assertUnitOwner(uid, unitId);
-      const allowed = ['name', 'address', 'absenceMode'];
+      const allowed = ['name', 'address', 'absenceMode', 'visible'];
       const update = Object.fromEntries(Object.entries(fields).filter(([k]) => allowed.includes(k)));
       if (!Object.keys(update).length) throw new HttpsError('invalid-argument', 'Sin campos válidos.');
       await db.doc(`units/${unitId}`).update(update);
@@ -62,7 +68,6 @@ async function adminConfig({ data, auth }) {
     }
 
     case 'addWhatsappPhone': {
-      // Adds a WhatsApp phone number to receive ring notifications
       const { unitId, phone } = payload;
       if (!unitId || !phone) throw new HttpsError('invalid-argument', 'unitId y phone son requeridos.');
       await assertUnitMember(uid, unitId);
@@ -86,20 +91,19 @@ async function adminConfig({ data, auth }) {
     }
 
     case 'createDoor': {
-      const { unitId, label, geofenceLatLng, geofenceRadius } = payload;
+      const { unitId, label } = payload;
       if (!unitId || !label) throw new HttpsError('invalid-argument', 'unitId y label son requeridos.');
       await assertUnitMember(uid, unitId);
       const doorId = uuidv4();
       const qrUrl = `${process.env.APP_DOMAIN || 'https://timbreqr.app'}/v/${doorId}`;
       await db.doc(`doors/${doorId}`).set({
         doorId,
+        type: 'unit',
         unitId,
         label,
         status: 'active',
         qrUrl,
-        geofenceLatLng: geofenceLatLng || null,
-        geofenceRadius: geofenceRadius || 60,  // meters
-        webhookUrl: null,  // for Shelly/Sonoff relay
+        webhookUrl: null,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
       return { doorId, qrUrl };
@@ -109,8 +113,10 @@ async function adminConfig({ data, auth }) {
       const { doorId, ...fields } = payload;
       const doorSnap = await db.doc(`doors/${doorId}`).get();
       if (!doorSnap.exists) throw new HttpsError('not-found', 'Puerta no encontrada.');
-      await assertUnitMember(uid, doorSnap.data().unitId);
-      const allowed = ['label', 'status', 'geofenceLatLng', 'geofenceRadius', 'webhookUrl'];
+      const door = doorSnap.data();
+      if (door.unitId) await assertUnitMember(uid, door.unitId);
+      else if (door.buildingId) await assertBuildingAdmin(uid, door.buildingId);
+      const allowed = ['label', 'status', 'webhookUrl'];
       const update = Object.fromEntries(Object.entries(fields).filter(([k]) => allowed.includes(k)));
       await db.doc(`doors/${doorId}`).update(update);
       return { ok: true };
@@ -120,7 +126,9 @@ async function adminConfig({ data, auth }) {
       const { doorId } = payload;
       const doorSnap = await db.doc(`doors/${doorId}`).get();
       if (!doorSnap.exists) throw new HttpsError('not-found', 'Puerta no encontrada.');
-      await assertUnitOwner(uid, doorSnap.data().unitId);
+      const door = doorSnap.data();
+      if (door.unitId) await assertUnitOwner(uid, door.unitId);
+      else if (door.buildingId) await assertBuildingAdmin(uid, door.buildingId);
       await db.doc(`doors/${doorId}`).update({ status: 'deleted' });
       return { ok: true };
     }
@@ -128,7 +136,6 @@ async function adminConfig({ data, auth }) {
     case 'addMember': {
       const { unitId, email } = payload;
       await assertUnitOwner(uid, unitId);
-      // Look up user by email
       let memberRecord;
       try {
         memberRecord = await admin.auth().getUserByEmail(email);
@@ -168,6 +175,82 @@ async function adminConfig({ data, auth }) {
       return { ok: true };
     }
 
+    // ── Building ────────────────────────────────────────────────────────────
+
+    case 'createBuilding': {
+      const { name, address } = payload;
+      if (!name) throw new HttpsError('invalid-argument', 'name es requerido.');
+      const buildingId = uuidv4();
+      await db.doc(`buildings/${buildingId}`).set({
+        buildingId,
+        name,
+        address: address || '',
+        adminUid: uid,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return { buildingId };
+    }
+
+    case 'createBuildingUnit': {
+      const { buildingId, name } = payload;
+      if (!buildingId || !name) throw new HttpsError('invalid-argument', 'buildingId y name son requeridos.');
+      await assertBuildingAdmin(uid, buildingId);
+      const unitId = uuidv4();
+      const inviteCode = uuidv4().slice(0, 8).toUpperCase();
+      await db.doc(`units/${unitId}`).set({
+        unitId,
+        name,
+        buildingId,
+        ownerUid: uid,
+        memberUids: [],        // empty until resident claims with invite code
+        fcmTokens: [],
+        whatsappPhones: [],
+        absenceMode: false,
+        visible: true,
+        inviteCode,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return { unitId, inviteCode };
+    }
+
+    case 'createBuildingDoor': {
+      const { buildingId, label } = payload;
+      if (!buildingId) throw new HttpsError('invalid-argument', 'buildingId es requerido.');
+      await assertBuildingAdmin(uid, buildingId);
+      const doorId = uuidv4();
+      const qrUrl = `${process.env.APP_DOMAIN || 'https://timbreqr.app'}/v/${doorId}`;
+      await db.doc(`doors/${doorId}`).set({
+        doorId,
+        type: 'building',
+        buildingId,
+        label: label || 'Entrada Principal',
+        status: 'active',
+        qrUrl,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return { doorId, qrUrl };
+    }
+
+    case 'claimUnit': {
+      // Resident enters the invite code they received from the building admin
+      const { inviteCode } = payload;
+      if (!inviteCode) throw new HttpsError('invalid-argument', 'inviteCode es requerido.');
+      const snap = await db.collection('units')
+        .where('inviteCode', '==', inviteCode.toUpperCase().trim())
+        .limit(1)
+        .get();
+      if (snap.empty) throw new HttpsError('not-found', 'Código de invitación inválido o ya usado.');
+      const unitDoc = snap.docs[0];
+      const unit = unitDoc.data();
+      if (unit.memberUids?.includes(uid)) {
+        return { unitId: unitDoc.id, unitName: unit.name, alreadyMember: true };
+      }
+      await unitDoc.ref.update({
+        memberUids: admin.firestore.FieldValue.arrayUnion(uid),
+      });
+      return { unitId: unitDoc.id, unitName: unit.name };
+    }
+
     default:
       throw new HttpsError('invalid-argument', `Acción desconocida: ${action}`);
   }
@@ -183,6 +266,12 @@ async function assertUnitMember(uid, unitId) {
   const snap = await db.doc(`units/${unitId}`).get();
   if (!snap.exists) throw new HttpsError('not-found', 'Unidad no encontrada.');
   if (!snap.data().memberUids?.includes(uid)) throw new HttpsError('permission-denied', 'No sos miembro de esta unidad.');
+}
+
+async function assertBuildingAdmin(uid, buildingId) {
+  const snap = await db.doc(`buildings/${buildingId}`).get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Edificio no encontrado.');
+  if (snap.data().adminUid !== uid) throw new HttpsError('permission-denied', 'Solo el administrador del edificio puede hacer esto.');
 }
 
 module.exports = { adminConfig };

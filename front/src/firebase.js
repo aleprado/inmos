@@ -3,7 +3,6 @@ import { getFirestore }    from 'firebase/firestore';
 import { getAuth }         from 'firebase/auth';
 import { getStorage }      from 'firebase/storage';
 import { getFunctions }    from 'firebase/functions';
-import { getMessaging, isSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
@@ -19,6 +18,5 @@ export const db          = getFirestore(app);
 export const auth        = getAuth(app);
 export const storage     = getStorage(app);
 export const functions   = getFunctions(app, 'us-central1');
-export const messaging   = await isSupported().then(ok => ok ? getMessaging(app) : null).catch(() => null);
 
 export default app;
